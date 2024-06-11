@@ -6,8 +6,7 @@ namespace StartUnityBuild;
 public static class RunCommand
 {
     public static void Execute(string prefix, string fileName, string arguments, string workingDirectory,
-        Action<string, string> readOutput,
-        Action<string, int> readExitCode)
+        Action<string, string> readOutput, Action<string, int> readExitCode)
     {
         if (!Directory.Exists(workingDirectory))
         {
@@ -19,9 +18,11 @@ public static class RunCommand
         {
             WorkingDirectory = workingDirectory,
             CreateNoWindow = true,
+            // Required for redirection
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            RedirectStandardInput = true,
         };
 
         var process = new Process { StartInfo = startInfo };
@@ -31,21 +32,28 @@ public static class RunCommand
             readExitCode(prefix, -1);
             return;
         }
-        var standardOutput =
-            new AsyncStreamReader(process.StandardOutput, data => { readOutput(prefix, data); });
-        var standardError = new AsyncStreamReader(process.StandardError, data => { readOutput(null!, data); });
+        Form1.AddLine("cmd", $"{prefix} started");
+        var standardOutput = new AsyncStreamReader(
+            process.StandardOutput, data => { readOutput(prefix, data); }, process.StandardInput);
+        var standardError = new AsyncStreamReader(
+            process.StandardError, data => { readOutput(null!, data); }, null);
         standardOutput.Start();
         standardError.Start();
 
-        process.WaitForExit();
-        readExitCode(prefix, process.ExitCode);
+        Task.Run(() =>
+        {
+            Form1.AddLine("cmd", $"{prefix} wait");
+            process.WaitForExit();
+            Form1.AddLine("cmd", $"{prefix} ended");
+            readExitCode(prefix, process.ExitCode);
+        });
     }
 
     /// <summary>
     /// Stream reader for StandardOutput and StandardError stream readers.<br />
     /// Runs an eternal BeginRead loop on the underlying stream bypassing the stream reader as lines.
     /// </summary>
-    private class AsyncStreamReader(StreamReader readerToBypass, Action<string> callback)
+    private class AsyncStreamReader(StreamReader readerToBypass, Action<string> callback, StreamWriter? writer)
     {
         private static readonly char[] Separators = ['\r', '\n'];
 
@@ -70,7 +78,16 @@ public static class RunCommand
             {
                 if (_builder.Length > 0)
                 {
-                    callback.Invoke(_builder.ToString());
+                    var lastBufferText = _builder.ToString();
+                    var lines = lastBufferText.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
+                    for (var i = 0; i < lines.Length - 1; ++i)
+                    {
+                        var line = lines[i];
+                        if (!HandledAnyKey(line))
+                        {
+                            callback.Invoke(line);
+                        }
+                    }
                 }
                 callback.Invoke(null!);
                 return;
@@ -82,7 +99,10 @@ public static class RunCommand
                 var lines = bufferText.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in lines)
                 {
-                    callback.Invoke(line);
+                    if (!HandledAnyKey(line))
+                    {
+                        callback.Invoke(line);
+                    }
                 }
                 _builder.Clear();
             }
@@ -91,14 +111,33 @@ public static class RunCommand
                 var lines = bufferText.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
                 for (var i = 0; i < lines.Length - 1; ++i)
                 {
-                    callback.Invoke(lines[i]);
+                    var line = lines[i];
+                    if (!HandledAnyKey(line))
+                    {
+                        callback.Invoke(line);
+                    }
                 }
                 _builder.Clear();
-                _builder.Append(lines[..^1]);
+                var lastLine = lines[^1];
+                if (!HandledAnyKey(lastLine))
+                {
+                    _builder.Append(lastLine);
+                }
             }
 
             //Wait for more data from stream
             BeginReadAsync();
+            return;
+
+            bool HandledAnyKey(string text)
+            {
+                if (!text.StartsWith("Press any key to continue"))
+                {
+                    return false;
+                }
+                writer?.Write("Y");
+                return true;
+            }
         }
     }
 }

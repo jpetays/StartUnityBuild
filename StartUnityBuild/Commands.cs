@@ -6,7 +6,8 @@ public static class Commands
     {
         const string outPrefix = "git";
         Form1.AddLine($">{outPrefix}", "status");
-        RunCommand.Execute(outPrefix, "git", "status", workingDirectory, OutputListener, Form1.ExitListener);
+        RunCommand.Execute(outPrefix, "git", "status", workingDirectory,
+            OutputListener, Form1.ExitListener);
         return;
 
         void OutputListener(string prefix, string? line)
@@ -23,7 +24,16 @@ public static class Commands
     public static void UnityBuild(string workingDirectory)
     {
         const string outPrefix = "unity";
-        Form1.AddLine($">{outPrefix}", "build");
-        RunCommand.Execute(outPrefix, "cmd", "/C dir", workingDirectory, Form1.OutputListener, Form1.ExitListener);
+        const string batchFile = "__local_Build_Win64.bat";
+        workingDirectory = Path.Combine(workingDirectory, "etc", "batchBuild");
+        var path = Path.Combine(workingDirectory, batchFile);
+        if (!File.Exists(path))
+        {
+            Form1.AddLine(outPrefix, $"command not found: {path}");
+            return;
+        }
+        Form1.AddLine($">{outPrefix}", $"start {batchFile}");
+        RunCommand.Execute(outPrefix, "cmd.exe", $"/C {batchFile}", workingDirectory,
+            Form1.OutputListener, Form1.ExitListener);
     }
 }
