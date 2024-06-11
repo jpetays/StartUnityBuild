@@ -3,13 +3,21 @@ using System.Text;
 
 namespace StartUnityBuild;
 
-public class RunCommand
+public static class RunCommand
 {
-    public RunCommand(string prefix, string fileName, string arguments, Action<string, string> readOutput,
+    public static void Execute(string prefix, string fileName, string arguments, string workingDirectory,
+        Action<string, string> readOutput,
         Action<string, int> readExitCode)
     {
+        if (!Directory.Exists(workingDirectory))
+        {
+            Form1.AddLine(prefix, $"working directory not found: {workingDirectory}");
+            readExitCode(prefix, -1);
+            return;
+        }
         var startInfo = new ProcessStartInfo(fileName, arguments)
         {
+            WorkingDirectory = workingDirectory,
             CreateNoWindow = true,
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -17,8 +25,12 @@ public class RunCommand
         };
 
         var process = new Process { StartInfo = startInfo };
-        process.Start();
-
+        if (!process.Start())
+        {
+            Form1.AddLine(prefix, "unable start process");
+            readExitCode(prefix, -1);
+            return;
+        }
         var standardOutput =
             new AsyncStreamReader(process.StandardOutput, data => { readOutput(prefix, data); });
         var standardError = new AsyncStreamReader(process.StandardError, data => { readOutput(null!, data); });
@@ -27,11 +39,6 @@ public class RunCommand
 
         process.WaitForExit();
         readExitCode(prefix, process.ExitCode);
-    }
-
-    public void Execute()
-    {
-
     }
 
     /// <summary>

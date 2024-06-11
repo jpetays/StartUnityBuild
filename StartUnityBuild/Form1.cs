@@ -23,12 +23,12 @@ public partial class Form1 : Form
         gitStatusToolStripMenuItem.Click += (_, _) =>
         {
             ClearLines();
-            Commands.GitStatus();
+            Commands.GitStatus(_currentDirectory);
         };
         startBuildToolStripMenuItem.Click += (_, _) =>
         {
             ClearLines();
-            Commands.UnityBuild();
+            Commands.UnityBuild(_currentDirectory);
         };
     }
 
@@ -39,8 +39,7 @@ public partial class Form1 : Form
         try
         {
             LoadEnvironment();
-            AddLine($">git status");
-            Commands.GitStatus();
+            Commands.GitStatus(_currentDirectory);
         }
         catch (Exception x)
         {

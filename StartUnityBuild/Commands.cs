@@ -2,9 +2,11 @@ namespace StartUnityBuild;
 
 public static class Commands
 {
-    public static void GitStatus()
+    public static void GitStatus(string workingDirectory)
     {
-        new RunCommand("git", "git", "status", OutputListener, Form1.ExitListener).Execute();
+        const string outPrefix = "git";
+        Form1.AddLine($">{outPrefix}", "status");
+        RunCommand.Execute(outPrefix, "git", "status", workingDirectory, OutputListener, Form1.ExitListener);
         return;
 
         void OutputListener(string prefix, string? line)
@@ -18,8 +20,10 @@ public static class Commands
         }
     }
 
-    public static void UnityBuild()
+    public static void UnityBuild(string workingDirectory)
     {
-        Form1.OutputListener("unity", "start build");
+        const string outPrefix = "unity";
+        Form1.AddLine($">{outPrefix}", "build");
+        RunCommand.Execute(outPrefix, "cmd", "/C dir", workingDirectory, Form1.OutputListener, Form1.ExitListener);
     }
 }
