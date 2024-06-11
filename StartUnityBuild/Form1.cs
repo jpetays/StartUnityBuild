@@ -8,6 +8,9 @@ public partial class Form1 : Form
     private static Form1 _instance = null!;
     private string _currentDirectory;
     private string _unityVersion;
+    private string _productName;
+    private string _productVersion;
+    private string _bundleVersion;
 
     public Form1()
     {
@@ -16,18 +19,23 @@ public partial class Form1 : Form
         InitializeComponent();
         listView1.Font = new Font("Cascadia Mono", 10);
         listView1.View = View.List;
+        fileToolStripMenuItem.SubMenu("Git Status", () =>
+        {
+            ClearLines();
+            Commands.GitStatus();
+        });
+        exitToolStripMenuItem.Click += (o, e) => Application.Exit();
     }
 
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
         Text = "UNITY Build";
-        exitToolStripMenuItem.Click += (o, e) => Application.Exit();
         try
         {
             LoadEnvironment();
             AddLine($">git status");
-            new RunCommand("git", "status", ConsoleListener, ExitListener);
+            Commands.GitStatus();
         }
         catch (Exception x)
         {
@@ -42,7 +50,7 @@ public partial class Form1 : Form
                 }
             }
         }
-        Text = $"UNITY {_unityVersion} Build";
+        Text = $"UNITY {_unityVersion} Build : {_productName} ver {_productVersion} bundle {_bundleVersion}";
     }
 
     private void LoadEnvironment()
@@ -50,25 +58,43 @@ public partial class Form1 : Form
         AddLine("CWD", $"{_currentDirectory}");
         LoadProjectVersionFile();
         AddLine("Unity", $"{_unityVersion}");
+        LoadProjectSettingsFile();
+        AddLine("Product", $"{_productName}");
+        AddLine("Version", $"{_productVersion}");
+        AddLine("Bundle", $"{_bundleVersion}");
     }
 
-    public static void ConsoleListener(int stream, string line)
+    public static void OutputListener(string prefix, string line)
     {
         if (string.IsNullOrEmpty(line))
         {
             return;
         }
-        AddLine(stream == 1 ? "stdout" : "ERROR", line);
+        AddLine(prefix ?? "ERROR", line);
     }
 
-    public static void ExitListener(int exitCode)
+    public static void ExitListener(string prefix, int exitCode)
     {
-        AddLine("exit", exitCode.ToString());
+        AddLine($">{prefix}", $"exit: {exitCode}");
     }
 
     public static void AddLine(string prefix, string content)
     {
         AddLine($"{prefix,-12}: {content}");
+    }
+
+    public static void ClearLines()
+    {
+        if (_instance.InvokeRequired)
+        {
+            _instance.Invoke(() => ClearLines);
+            return;
+        }
+        var listView = _instance.listView1;
+        listView.BeginUpdate();
+        listView.Items.Clear();
+        listView.EndUpdate();
+        listView.EnsureVisible(listView.Items.Count - 1);
     }
 
     public static void AddLine(string line)
@@ -96,6 +122,27 @@ public partial class Form1 : Form
             {
                 _unityVersion = tokens[1].Trim();
                 return;
+            }
+        }
+    }
+    private void LoadProjectSettingsFile()
+    {
+        var path = Path.Combine(_currentDirectory, "ProjectSettings", "ProjectSettings.asset");
+        var lines = File.ReadAllLines(path);
+        foreach (var line in lines)
+        {
+            var tokens = line.Split(':');
+            if (tokens[0] == "  productName")
+            {
+                _productName = tokens[1].Trim();
+            }
+            else if (tokens[0] == "  bundleVersion")
+            {
+                _productVersion = tokens[1].Trim();
+            }
+            else if (tokens[0] == "  AndroidBundleVersionCode")
+            {
+                _bundleVersion = tokens[1].Trim();
             }
         }
     }

@@ -29,6 +29,11 @@ public class RunCommand
         readExitCode(prefix, process.ExitCode);
     }
 
+    public void Execute()
+    {
+
+    }
+
     /// <summary>
     /// Stream reader for StandardOutput and StandardError stream readers.<br />
     /// Runs an eternal BeginRead loop on the underlying stream bypassing the stream reader as lines.
