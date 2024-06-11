@@ -1,10 +1,12 @@
 using System.Diagnostics;
+using System.Text;
 
 namespace StartUnityBuild;
 
 public class RunCommand
 {
-    public RunCommand(string fileName, string arguments, Action<int, string> readOutput, Action<int> readExitCode)
+    public RunCommand(string prefix, string fileName, string arguments, Action<string, string> readOutput,
+        Action<string, int> readExitCode)
     {
         var startInfo = new ProcessStartInfo(fileName, arguments)
         {
@@ -17,87 +19,74 @@ public class RunCommand
         var process = new Process { StartInfo = startInfo };
         process.Start();
 
-        var standardOutput = new AsyncStreamReader(process.StandardOutput, (sender, data) => { readOutput(1, data); });
-        var standardError = new AsyncStreamReader(process.StandardError, (sender, data) => { readOutput(2, data); });
+        var standardOutput =
+            new AsyncStreamReader(process.StandardOutput, data => { readOutput(prefix, data); });
+        var standardError = new AsyncStreamReader(process.StandardError, data => { readOutput(null!, data); });
         standardOutput.Start();
         standardError.Start();
 
         process.WaitForExit();
-        readExitCode(process.ExitCode);
+        readExitCode(prefix, process.ExitCode);
     }
 
     /// <summary>
-    /// Stream reader for StandardOutput and StandardError stream readers
-    /// Runs an eternal BeginRead loop on the underlaying stream bypassing the stream reader.
-    ///
-    /// The TextReceived sends data received on the stream in non delimited chunks. Event subscriber can
-    /// then split on newline characters etc as desired.
+    /// Stream reader for StandardOutput and StandardError stream readers.<br />
+    /// Runs an eternal BeginRead loop on the underlying stream bypassing the stream reader as lines.
     /// </summary>
-    private class AsyncStreamReader
+    private class AsyncStreamReader(StreamReader readerToBypass, Action<string> callback)
     {
-        public delegate void EventHandler<T>(object sender, string Data);
+        private static readonly char[] Separators = ['\r', '\n'];
 
-        public event EventHandler<string> DataReceived;
-
-        protected readonly byte[] buffer = new byte[4096];
-        private StreamReader reader;
-
-        public bool Active { get; private set; }
+        private readonly byte[] _buffer = new byte[4096];
+        private readonly StringBuilder _builder = new StringBuilder();
 
         public void Start()
         {
-            if (!Active)
-            {
-                Active = true;
-                BeginReadAsync();
-            }
-        }
-
-        public void Stop()
-        {
-            Active = false;
-        }
-
-        public AsyncStreamReader(StreamReader readerToBypass, EventHandler<string> callback)
-        {
-            reader = readerToBypass;
-            Active = false;
-            DataReceived = callback;
+            BeginReadAsync();
         }
 
         private void BeginReadAsync()
         {
-            if (this.Active)
-            {
-                reader.BaseStream.BeginRead(this.buffer, 0, this.buffer.Length, new AsyncCallback(ReadCallback), null);
-            }
+            readerToBypass.BaseStream.BeginRead(_buffer, 0, _buffer.Length, ReadCallback, null);
         }
 
         private void ReadCallback(IAsyncResult asyncResult)
         {
-            var bytesRead = reader.BaseStream.EndRead(asyncResult);
+            var bytesRead = readerToBypass.BaseStream.EndRead(asyncResult);
 
-            string data = null;
-
-            //Terminate async processing if callback has no bytes
-            if (bytesRead > 0)
+            if (bytesRead == 0)
             {
-                data = reader.CurrentEncoding.GetString(this.buffer, 0, bytesRead);
+                if (_builder.Length > 0)
+                {
+                    callback.Invoke(_builder.ToString());
+                }
+                callback.Invoke(null!);
+                return;
             }
-            else
+            _builder.Append(readerToBypass.CurrentEncoding.GetString(_buffer, 0, bytesRead));
+            var bufferText = _builder.ToString();
+            if (bufferText.EndsWith('\r') || bufferText.EndsWith('\n'))
             {
-                //callback without data - stop async
-                this.Active = false;
+                var lines = bufferText.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var line in lines)
+                {
+                    callback.Invoke(line);
+                }
+                _builder.Clear();
             }
-
-            //Send data to event subscriber - null if no longer active
-            if (this.DataReceived != null)
+            else if (bufferText.Contains('\r') || bufferText.Contains('\n'))
             {
-                this.DataReceived.Invoke(this, data);
+                var lines = bufferText.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
+                for (var i = 0; i < lines.Length - 1; ++i)
+                {
+                    callback.Invoke(lines[i]);
+                }
+                _builder.Clear();
+                _builder.Append(lines[..^1]);
             }
 
             //Wait for more data from stream
-            this.BeginReadAsync();
+            BeginReadAsync();
         }
     }
 }
