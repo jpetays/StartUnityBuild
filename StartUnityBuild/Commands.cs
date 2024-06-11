@@ -17,4 +17,9 @@ public static class Commands
             Form1.OutputListener(prefix, line);
         }
     }
+
+    public static void UnityBuild()
+    {
+        Form1.OutputListener("unity", "start build");
+    }
 }

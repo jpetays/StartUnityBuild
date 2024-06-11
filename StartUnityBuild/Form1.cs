@@ -19,12 +19,17 @@ public partial class Form1 : Form
         InitializeComponent();
         listView1.Font = new Font("Cascadia Mono", 10);
         listView1.View = View.List;
-        fileToolStripMenuItem.SubMenu("Git Status", () =>
+        exitToolStripMenuItem.Click += (o, e) => Application.Exit();
+        gitStatusToolStripMenuItem.Click += (_, _) =>
         {
             ClearLines();
             Commands.GitStatus();
-        });
-        exitToolStripMenuItem.Click += (o, e) => Application.Exit();
+        };
+        startBuildToolStripMenuItem.Click += (_, _) =>
+        {
+            ClearLines();
+            Commands.UnityBuild();
+        };
     }
 
     protected override void OnLoad(EventArgs e)
@@ -94,7 +99,6 @@ public partial class Form1 : Form
         listView.BeginUpdate();
         listView.Items.Clear();
         listView.EndUpdate();
-        listView.EnsureVisible(listView.Items.Count - 1);
     }
 
     public static void AddLine(string line)
@@ -125,6 +129,7 @@ public partial class Form1 : Form
             }
         }
     }
+
     private void LoadProjectSettingsFile()
     {
         var path = Path.Combine(_currentDirectory, "ProjectSettings", "ProjectSettings.asset");

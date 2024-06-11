@@ -29,20 +29,35 @@ partial class Form1
     private void InitializeComponent()
     {
         menuStrip1 = new MenuStrip();
-        listView1 = new ListView();
         fileToolStripMenuItem = new ToolStripMenuItem();
         exitToolStripMenuItem = new ToolStripMenuItem();
+        listView1 = new ListView();
+        gitStatusToolStripMenuItem = new ToolStripMenuItem();
+        startBuildToolStripMenuItem = new ToolStripMenuItem();
         menuStrip1.SuspendLayout();
         SuspendLayout();
         // 
         // menuStrip1
         // 
-        menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem });
+        menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, gitStatusToolStripMenuItem, startBuildToolStripMenuItem });
         menuStrip1.Location = new Point(0, 0);
         menuStrip1.Name = "menuStrip1";
         menuStrip1.Size = new Size(1063, 24);
         menuStrip1.TabIndex = 0;
         menuStrip1.Text = "menuStrip1";
+        // 
+        // fileToolStripMenuItem
+        // 
+        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { exitToolStripMenuItem });
+        fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+        fileToolStripMenuItem.Size = new Size(37, 20);
+        fileToolStripMenuItem.Text = "File";
+        // 
+        // exitToolStripMenuItem
+        // 
+        exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+        exitToolStripMenuItem.Size = new Size(180, 22);
+        exitToolStripMenuItem.Text = "Exit";
         // 
         // listView1
         // 
@@ -53,18 +68,17 @@ partial class Form1
         listView1.TabIndex = 1;
         listView1.UseCompatibleStateImageBehavior = false;
         // 
-        // fIleToolStripMenuItem
+        // gitStatusToolStripMenuItem
         // 
-        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { exitToolStripMenuItem });
-        fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-        fileToolStripMenuItem.Size = new Size(37, 20);
-        fileToolStripMenuItem.Text = "FIle";
+        gitStatusToolStripMenuItem.Name = "gitStatusToolStripMenuItem";
+        gitStatusToolStripMenuItem.Size = new Size(69, 20);
+        gitStatusToolStripMenuItem.Text = "Git Status";
         // 
-        // exitToolStripMenuItem
+        // startBuildToolStripMenuItem
         // 
-        exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-        exitToolStripMenuItem.Size = new Size(180, 22);
-        exitToolStripMenuItem.Text = "Exit";
+        startBuildToolStripMenuItem.Name = "startBuildToolStripMenuItem";
+        startBuildToolStripMenuItem.Size = new Size(73, 20);
+        startBuildToolStripMenuItem.Text = "Start Build";
         // 
         // Form1
         // 
@@ -88,4 +102,6 @@ partial class Form1
     private ToolStripMenuItem fileToolStripMenuItem;
     private ToolStripMenuItem exitToolStripMenuItem;
     private ListView listView1;
+    private ToolStripMenuItem gitStatusToolStripMenuItem;
+    private ToolStripMenuItem startBuildToolStripMenuItem;
 }
