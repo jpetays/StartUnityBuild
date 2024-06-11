@@ -26,11 +26,21 @@ public partial class Form1 : Form
         try
         {
             LoadEnvironment();
+            AddLine($">git status");
+            new RunCommand("git", "status", ConsoleListener, ExitListener);
         }
         catch (Exception x)
         {
             AddLine($"Failed to LoadEnvironment");
-            AddLine($"Error: {x.Message}");
+            AddLine("Error", $"{x.Message}");
+            if (x.StackTrace != null)
+            {
+                foreach (var line in x.StackTrace.Split(new char[] { '\r', '\n' },
+                             StringSplitOptions.RemoveEmptyEntries))
+                {
+                    AddLine(line.Trim());
+                }
+            }
         }
         Text = $"UNITY {_unityVersion} Build";
     }
@@ -40,6 +50,20 @@ public partial class Form1 : Form
         AddLine("CWD", $"{_currentDirectory}");
         LoadProjectVersionFile();
         AddLine("Unity", $"{_unityVersion}");
+    }
+
+    public static void ConsoleListener(int stream, string line)
+    {
+        if (string.IsNullOrEmpty(line))
+        {
+            return;
+        }
+        AddLine(stream == 1 ? "stdout" : "ERROR", line);
+    }
+
+    public static void ExitListener(int exitCode)
+    {
+        AddLine("exit", exitCode.ToString());
     }
 
     public static void AddLine(string prefix, string content)
@@ -52,6 +76,7 @@ public partial class Form1 : Form
         if (_instance.InvokeRequired)
         {
             _instance.Invoke(() => AddLine(line));
+            return;
         }
         var listView = _instance.listView1;
         listView.BeginUpdate();
