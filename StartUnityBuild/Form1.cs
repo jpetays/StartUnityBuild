@@ -18,6 +18,9 @@ public partial class Form1 : Form
         _instance = this;
         _currentDirectory = Directory.GetCurrentDirectory();
         InitializeComponent();
+        KeyPreview = true;
+        KeyDown += OnKeyDown!;
+
         listView1.Font = new Font("Cascadia Mono", 10);
         listView1.Columns.Add("Output", 1920, HorizontalAlignment.Left);
         listView1.FullRowSelect = true;
@@ -36,6 +39,16 @@ public partial class Form1 : Form
             ClearLines();
             Commands.UnityBuild(_currentDirectory);
         };
+    }
+
+    private void OnKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e is not { Control: true, KeyCode: Keys.C })
+        {
+            return;
+        }
+        CopyLines();
+        e.SuppressKeyPress = true; // Stops other controls on the form receiving event.
     }
 
     protected override void OnLoad(EventArgs e)
