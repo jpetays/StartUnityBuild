@@ -31,9 +31,10 @@ partial class Form1
         menuStrip1 = new MenuStrip();
         fileToolStripMenuItem = new ToolStripMenuItem();
         exitToolStripMenuItem = new ToolStripMenuItem();
-        listView1 = new ListView();
         gitStatusToolStripMenuItem = new ToolStripMenuItem();
         startBuildToolStripMenuItem = new ToolStripMenuItem();
+        listView1 = new ListView();
+        copyOutputToClipboardToolStripMenuItem = new ToolStripMenuItem();
         menuStrip1.SuspendLayout();
         SuspendLayout();
         // 
@@ -48,7 +49,7 @@ partial class Form1
         // 
         // fileToolStripMenuItem
         // 
-        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { exitToolStripMenuItem });
+        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { copyOutputToClipboardToolStripMenuItem, exitToolStripMenuItem });
         fileToolStripMenuItem.Name = "fileToolStripMenuItem";
         fileToolStripMenuItem.Size = new Size(37, 20);
         fileToolStripMenuItem.Text = "File";
@@ -56,17 +57,8 @@ partial class Form1
         // exitToolStripMenuItem
         // 
         exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-        exitToolStripMenuItem.Size = new Size(180, 22);
+        exitToolStripMenuItem.Size = new Size(212, 22);
         exitToolStripMenuItem.Text = "Exit";
-        // 
-        // listView1
-        // 
-        listView1.Dock = DockStyle.Fill;
-        listView1.Location = new Point(0, 24);
-        listView1.Name = "listView1";
-        listView1.Size = new Size(1063, 539);
-        listView1.TabIndex = 1;
-        listView1.UseCompatibleStateImageBehavior = false;
         // 
         // gitStatusToolStripMenuItem
         // 
@@ -79,6 +71,21 @@ partial class Form1
         startBuildToolStripMenuItem.Name = "startBuildToolStripMenuItem";
         startBuildToolStripMenuItem.Size = new Size(73, 20);
         startBuildToolStripMenuItem.Text = "Start Build";
+        // 
+        // listView1
+        // 
+        listView1.Dock = DockStyle.Fill;
+        listView1.Location = new Point(0, 24);
+        listView1.Name = "listView1";
+        listView1.Size = new Size(1063, 539);
+        listView1.TabIndex = 1;
+        listView1.UseCompatibleStateImageBehavior = false;
+        // 
+        // copyOutputToClipboardToolStripMenuItem
+        // 
+        copyOutputToClipboardToolStripMenuItem.Name = "copyOutputToClipboardToolStripMenuItem";
+        copyOutputToClipboardToolStripMenuItem.Size = new Size(212, 22);
+        copyOutputToClipboardToolStripMenuItem.Text = "Copy Output to Clipboard";
         // 
         // Form1
         // 
@@ -104,4 +111,5 @@ partial class Form1
     private ListView listView1;
     private ToolStripMenuItem gitStatusToolStripMenuItem;
     private ToolStripMenuItem startBuildToolStripMenuItem;
+    private ToolStripMenuItem copyOutputToClipboardToolStripMenuItem;
 }

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace StartUnityBuild;
 
@@ -6,11 +7,11 @@ namespace StartUnityBuild;
 public partial class Form1 : Form
 {
     private static Form1 _instance = null!;
-    private string _currentDirectory;
-    private string _unityVersion;
-    private string _productName;
-    private string _productVersion;
-    private string _bundleVersion;
+    private readonly string _currentDirectory;
+    private string? _unityVersion;
+    private string? _productName;
+    private string? _productVersion;
+    private string? _bundleVersion;
 
     public Form1()
     {
@@ -18,7 +19,12 @@ public partial class Form1 : Form
         _currentDirectory = Directory.GetCurrentDirectory();
         InitializeComponent();
         listView1.Font = new Font("Cascadia Mono", 10);
-        listView1.View = View.List;
+        listView1.Columns.Add("Output", 1920, HorizontalAlignment.Left);
+        listView1.FullRowSelect = true;
+        //listView1.GridLines = true;
+        listView1.View = View.Details;
+
+        copyOutputToClipboardToolStripMenuItem.Click += (o, e) => CopyLines();
         exitToolStripMenuItem.Click += (o, e) => Application.Exit();
         gitStatusToolStripMenuItem.Click += (_, _) =>
         {
@@ -112,6 +118,17 @@ public partial class Form1 : Form
         listView.Items.Add(line);
         listView.EndUpdate();
         listView.EnsureVisible(listView.Items.Count - 1);
+    }
+
+    private static void CopyLines()
+    {
+        var builder = new StringBuilder();
+        var listView = _instance.listView1;
+        foreach (var item in listView.Items)
+        {
+            builder.AppendLine(item is ListViewItem listViewItem ? listViewItem.Text : item.ToString());
+        }
+        Clipboard.SetText(builder.ToString());
     }
 
     private void LoadProjectVersionFile()
