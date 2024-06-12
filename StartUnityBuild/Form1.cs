@@ -33,28 +33,40 @@ public partial class Form1 : Form
 
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
+        var gitStatusExcuting = false;
         gitStatusToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
         {
+            if (gitStatusExcuting)
+            {
+                AddLine("ERROR", "command is already executing");
+                return;
+            }
             SetStatus("Executing 00:00", Color.Green);
             ClearLines();
-            DisableMenus();
+            gitStatusExcuting = true;
             Commands.GitStatus(_currentDirectory, () =>
             {
                 SetStatus("Done", Color.Blue);
-                EnableMenus();
+                gitStatusExcuting = false;
             });
         });
+        var startBuildExcuting = false;
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
         {
+            if (startBuildExcuting)
+            {
+                AddLine("ERROR", "command is already executing");
+                return;
+            }
             SetStatus("Building 00:00", Color.Green);
             ClearLines();
-            DisableMenus();
+            startBuildExcuting = true;
             var startTime = DateTime.Now;
             Commands.UnityBuild(_currentDirectory, _buildTargets, () =>
             {
                 var duration = DateTime.Now - startTime;
                 SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
-                EnableMenus();
+                startBuildExcuting = false;
             });
         });
     }
@@ -86,7 +98,7 @@ public partial class Form1 : Form
     private void StartupCommand()
     {
         Thread.Yield();
-        ExecuteMenuCommand(() => Commands.GitStatus(_currentDirectory, () => { SetStatus("Done", Color.Blue); }));
+        ExecuteMenuCommand(() => Commands.GitStatus(_currentDirectory, () => { SetStatus("Ready", Color.Blue); }));
     }
 
     private void ExecuteMenuCommand(Action command)
@@ -98,7 +110,6 @@ public partial class Form1 : Form
         catch (Exception x)
         {
             AddLine("Error", $"{x.Message}");
-            EnableMenus();
         }
     }
 
@@ -106,40 +117,11 @@ public partial class Form1 : Form
     {
         if (InvokeRequired)
         {
-            Invoke(() => SetStatus(statusText, color));
+            Invoke(() => SetStatus($"[{statusText}]", color));
             return;
         }
         label1.Text = statusText;
         label1.ForeColor = color;
-    }
-
-    private void DisableMenus()
-    {
-        AddLine(".disable", $"menu count {menuStrip1.Items.Count}");
-        foreach (var toolStripItem in menuStrip1.Items)
-        {
-            if (toolStripItem is ToolStripMenuItem menu)
-            {
-                menu.Enabled = false;
-            }
-        }
-    }
-
-    private void EnableMenus()
-    {
-        if (InvokeRequired)
-        {
-            Invoke(() => EnableMenus);
-            return;
-        }
-        AddLine(".enable", $"menu count {menuStrip1.Items.Count}");
-        foreach (var toolStripItem in menuStrip1.Items)
-        {
-            if (toolStripItem is ToolStripMenuItem menu)
-            {
-                menu.Enabled = true;
-            }
-        }
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
@@ -148,18 +130,6 @@ public partial class Form1 : Form
         {
             CopyLines();
             e.SuppressKeyPress = true; // Stops other controls on the form receiving event.
-            return;
-        }
-        if (e is { Control: true, KeyCode: Keys.M })
-        {
-            if (e.Shift)
-            {
-                DisableMenus();
-            }
-            else
-            {
-                EnableMenus();
-            }
         }
     }
 
