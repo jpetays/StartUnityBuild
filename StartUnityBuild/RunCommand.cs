@@ -5,6 +5,50 @@ namespace StartUnityBuild;
 
 public static class RunCommand
 {
+    public static async Task<int> ExecuteAsync(string prefix, string fileName, string arguments,
+        string workingDirectory,
+        Action<string, string> readOutput, Action<string, int> readExitCode)
+    {
+        if (!Directory.Exists(workingDirectory))
+        {
+            Form1.AddLine("ERROR", $"working directory not found: {workingDirectory}");
+            readExitCode(prefix, -1);
+            return -1;
+        }
+        var startInfo = new ProcessStartInfo(fileName, arguments)
+        {
+            WorkingDirectory = workingDirectory,
+            CreateNoWindow = true,
+            // Required for redirection
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            RedirectStandardInput = true,
+        };
+
+        var process = new Process { StartInfo = startInfo };
+        if (!process.Start())
+        {
+            Form1.AddLine("ERROR", "unable start process");
+            readExitCode(prefix, -1);
+            return -1;
+        }
+        var standardOutput = new AsyncStreamReader(
+            process.StandardOutput, data => { readOutput(prefix, data); }, process.StandardInput);
+        var standardError = new AsyncStreamReader(
+            process.StandardError, data => { readOutput(null!, data); }, null);
+        standardOutput.Start();
+        standardError.Start();
+
+        Form1.AddLine(".cmd", $"{prefix} started");
+        Form1.AddLine(".cmd", $"{prefix} wait");
+        await process.WaitForExitAsync();
+        Form1.AddLine(".cmd", $"{prefix} ended");
+        readExitCode(prefix, process.ExitCode);
+        Form1.AddLine(".cmd", $"{prefix} done");
+        return process.ExitCode;
+    }
+
     public static void Execute(string prefix, string fileName, string arguments, string workingDirectory,
         Action<string, string> readOutput, Action<string, int> readExitCode, Action finished)
     {
@@ -44,7 +88,8 @@ public static class RunCommand
         Task.Run(() =>
         {
             Form1.AddLine(".cmd", $"{prefix} wait");
-            Thread.Sleep(1000);
+            // Let first output (if nay) to arrive first.
+            Thread.Sleep(100);
             process.WaitForExit();
             Form1.AddLine(".cmd", $"{prefix} ended");
             readExitCode(prefix, process.ExitCode);

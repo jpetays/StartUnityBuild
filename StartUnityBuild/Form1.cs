@@ -33,40 +33,41 @@ public partial class Form1 : Form
 
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
-        var gitStatusExcuting = false;
+        var isCommandExecuting = false;
         gitStatusToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
         {
-            if (gitStatusExcuting)
+            if (isCommandExecuting)
             {
-                AddLine("ERROR", "command is already executing");
+                MessageBox.Show("A command is already executing", "UNITY Build", MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
                 return;
             }
             SetStatus("Executing 00:00", Color.Green);
             ClearLines();
-            gitStatusExcuting = true;
+            isCommandExecuting = true;
             Commands.GitStatus(_currentDirectory, () =>
             {
                 SetStatus("Done", Color.Blue);
-                gitStatusExcuting = false;
+                isCommandExecuting = false;
             });
         });
-        var startBuildExcuting = false;
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
         {
-            if (startBuildExcuting)
+            if (isCommandExecuting)
             {
-                AddLine("ERROR", "command is already executing");
+                MessageBox.Show("A command is already executing", "UNITY Build", MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
                 return;
             }
             SetStatus("Building 00:00", Color.Green);
             ClearLines();
-            startBuildExcuting = true;
+            isCommandExecuting = true;
             var startTime = DateTime.Now;
             Commands.UnityBuild(_currentDirectory, _buildTargets, () =>
             {
                 var duration = DateTime.Now - startTime;
                 SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
-                startBuildExcuting = false;
+                isCommandExecuting = false;
             });
         });
     }

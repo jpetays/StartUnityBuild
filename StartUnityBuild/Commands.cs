@@ -33,7 +33,7 @@ public static class Commands
         }
     }
 
-    public static void UnityBuild(string workingDirectory, List<string> buildTargets, Action finished)
+    public static async void UnityBuild(string workingDirectory, List<string> buildTargets, Action finished)
     {
         const string outPrefix = "unity";
         const string batchFile = "_unity_build_driver_auto.bat";
@@ -45,8 +45,17 @@ public static class Commands
             return;
         }
         Form1.AddLine($">{outPrefix}", $"start {batchFile} {string.Join(", ", buildTargets)}");
-        var arguments = $"/C {batchFile} {buildTargets[0]}";
-        RunCommand.Execute(outPrefix, "cmd.exe", arguments, workingDirectory,
-            Form1.OutputListener, Form1.ExitListener, finished);
+        foreach (var buildTarget in buildTargets)
+        {
+            var arguments = $"/C {batchFile} {buildTarget}";
+            var result = await RunCommand.ExecuteAsync(outPrefix, "cmd.exe", arguments, workingDirectory,
+                Form1.OutputListener, Form1.ExitListener);
+            if (result != 0)
+            {
+                Form1.AddLine("ERROR", $"{buildTarget}: unexpected return code: {result}");
+                break;
+            }
+        }
+        finished();
     }
 }
