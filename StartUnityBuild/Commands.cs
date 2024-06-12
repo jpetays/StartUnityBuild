@@ -17,14 +17,22 @@ public static class Commands
                 return;
             }
             line = line.Replace("\t", "    ");
+            if (line.Contains(" modified: "))
+            {
+                line = $"--> {line}";
+            }
+            else if (line.Contains(" new file: "))
+            {
+                line = $"--> {line}";
+            }
             Form1.OutputListener(prefix, line);
         }
     }
 
-    public static void UnityBuild(string workingDirectory)
+    public static void UnityBuild(string workingDirectory, List<string> buildTargets)
     {
         const string outPrefix = "unity";
-        const string batchFile = "__local_Build_Win64.bat";
+        const string batchFile = "_unity_build_driver_auto.bat";
         workingDirectory = Path.Combine(workingDirectory, "etc", "batchBuild");
         var path = Path.Combine(workingDirectory, batchFile);
         if (!File.Exists(path))
@@ -32,8 +40,9 @@ public static class Commands
             Form1.AddLine(outPrefix, $"command not found: {path}");
             return;
         }
-        Form1.AddLine($">{outPrefix}", $"start {batchFile}");
-        RunCommand.Execute(outPrefix, "cmd.exe", $"/C {batchFile}", workingDirectory,
+        Form1.AddLine($">{outPrefix}", $"start {batchFile} {string.Join(", ", buildTargets)}");
+        var arguments = $"/C {batchFile} {buildTargets[0]}";
+        RunCommand.Execute(outPrefix, "cmd.exe", arguments, workingDirectory,
             Form1.OutputListener, Form1.ExitListener);
     }
 }

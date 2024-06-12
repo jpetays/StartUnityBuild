@@ -12,6 +12,7 @@ public partial class Form1 : Form
     private string? _productName;
     private string? _productVersion;
     private string? _bundleVersion;
+    private readonly List<string> _buildTargets = new List<string>();
 
     public Form1()
     {
@@ -37,7 +38,7 @@ public partial class Form1 : Form
         startBuildToolStripMenuItem.Click += (_, _) =>
         {
             ClearLines();
-            Commands.UnityBuild(_currentDirectory);
+            Commands.UnityBuild(_currentDirectory, _buildTargets);
         };
     }
 
@@ -85,6 +86,8 @@ public partial class Form1 : Form
         AddLine("Product", $"{_productName}");
         AddLine("Version", $"{_productVersion}");
         AddLine("Bundle", $"{_bundleVersion}");
+        _buildTargets.Add("Win64");
+        AddLine("Builds", $"{string.Join(", ", _buildTargets)}");
     }
 
     public static void OutputListener(string prefix, string line)
