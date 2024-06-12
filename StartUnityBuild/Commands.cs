@@ -17,11 +17,15 @@ public static class Commands
                 return;
             }
             line = line.Replace("\t", "    ");
-            if (line.Contains(" modified: "))
+            if (line.Contains(" new file: "))
             {
                 line = $"--> {line}";
             }
-            else if (line.Contains(" new file: "))
+            else if (line.Contains(" modified: "))
+            {
+                line = $"--> {line}";
+            }
+            else if (line.Contains(" deleted: "))
             {
                 line = $"--> {line}";
             }

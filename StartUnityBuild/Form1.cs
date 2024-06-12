@@ -106,7 +106,11 @@ public partial class Form1 : Form
 
     public static void AddLine(string prefix, string content)
     {
-        AddLine($"{prefix,-12}: {content}");
+        Color? color = prefix == "ERROR" ? Color.Red
+            : prefix.StartsWith('>') ? Color.Blue
+            : content.StartsWith('-') ? Color.Green
+            : null;
+        AddLine($"{prefix,-12}: {content}", color);
     }
 
     public static void ClearLines()
@@ -122,16 +126,26 @@ public partial class Form1 : Form
         listView.EndUpdate();
     }
 
-    public static void AddLine(string line)
+    public static void AddLine(string line, Color? color = null)
     {
         if (_instance.InvokeRequired)
         {
-            _instance.Invoke(() => AddLine(line));
+            _instance.Invoke(() => AddLine(line, color));
             return;
         }
         var listView = _instance.listView1;
         listView.BeginUpdate();
-        listView.Items.Add(line);
+        if (color == null)
+        {
+            listView.Items.Add(line);
+        }
+        else
+        {
+            listView.Items.Add(new ListViewItem(line)
+            {
+                ForeColor = color.Value
+            });
+        }
         listView.EndUpdate();
         listView.EnsureVisible(listView.Items.Count - 1);
     }
