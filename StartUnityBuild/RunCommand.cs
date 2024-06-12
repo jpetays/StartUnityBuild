@@ -10,7 +10,7 @@ public static class RunCommand
     {
         if (!Directory.Exists(workingDirectory))
         {
-            Form1.AddLine(prefix, $"working directory not found: {workingDirectory}");
+            Form1.AddLine("ERROR", $"working directory not found: {workingDirectory}");
             readExitCode(prefix, -1);
             return;
         }
@@ -28,11 +28,11 @@ public static class RunCommand
         var process = new Process { StartInfo = startInfo };
         if (!process.Start())
         {
-            Form1.AddLine(prefix, "unable start process");
+            Form1.AddLine("ERROR", "unable start process");
             readExitCode(prefix, -1);
             return;
         }
-        Form1.AddLine("cmd", $"{prefix} started");
+        Form1.AddLine(".cmd", $"{prefix} started");
         var standardOutput = new AsyncStreamReader(
             process.StandardOutput, data => { readOutput(prefix, data); }, process.StandardInput);
         var standardError = new AsyncStreamReader(
@@ -42,9 +42,9 @@ public static class RunCommand
 
         Task.Run(() =>
         {
-            Form1.AddLine("cmd", $"{prefix} wait");
+            Form1.AddLine(".cmd", $"{prefix} wait");
             process.WaitForExit();
-            Form1.AddLine("cmd", $"{prefix} ended");
+            Form1.AddLine(".cmd", $"{prefix} ended");
             readExitCode(prefix, process.ExitCode);
         });
     }

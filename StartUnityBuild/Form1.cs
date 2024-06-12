@@ -107,6 +107,7 @@ public partial class Form1 : Form
     public static void AddLine(string prefix, string content)
     {
         Color? color = prefix == "ERROR" ? Color.Red
+            : prefix.StartsWith('.') ? Color.Gray
             : prefix.StartsWith('>') ? Color.Blue
             : content.StartsWith('-') ? Color.Green
             : null;
