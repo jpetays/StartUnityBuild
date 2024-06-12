@@ -59,6 +59,12 @@ public partial class Form1 : Form
                     MessageBoxIcon.Exclamation);
                 return;
             }
+            if (_buildTargets.Count == 0)
+            {
+                MessageBox.Show("No build target found", "UNITY Build", MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+                return;
+            }
             SetStatus("Building 00:00", Color.Green);
             ClearLines();
             isCommandExecuting = true;
@@ -79,7 +85,8 @@ public partial class Form1 : Form
         try
         {
             LoadEnvironment();
-            Text = $"UNITY {_unityVersion} Build : {_productName} ver {_productVersion} bundle {_bundleVersion}";
+            Text = $"UNITY {_unityVersion} Build : " +
+                   $"{_productName} Version {_productVersion} Bundle {_bundleVersion} Targets: {string.Join(',', _buildTargets)}";
             StartupCommand();
         }
         catch (Exception x)
@@ -143,8 +150,8 @@ public partial class Form1 : Form
         AddLine("Product", $"{_productName}");
         AddLine("Version", $"{_productVersion}");
         AddLine("Bundle", $"{_bundleVersion}");
-        _buildTargets.Add("Win64");
-        AddLine("Builds", $"{string.Join(", ", _buildTargets)}");
+        LoadAutoBuildTargets();
+        AddLine("Builds", $"{string.Join(',', _buildTargets)}");
     }
 
     [SuppressMessage("ReSharper", "NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract")]
@@ -254,6 +261,25 @@ public partial class Form1 : Form
             else if (tokens[0] == "  AndroidBundleVersionCode")
             {
                 _bundleVersion = tokens[1].Trim();
+            }
+        }
+    }
+
+    private void LoadAutoBuildTargets()
+    {
+        var path = Path.Combine(_currentDirectory, "etc", "batchBuild", "_auto_build.env");
+        var lines = File.ReadAllLines(path);
+        foreach (var line in lines)
+        {
+            var tokens = line.Split('=');
+            if (tokens[0].Trim() == "buildTargets")
+            {
+                var targets = tokens[1].Split(',');
+                foreach (var target in targets)
+                {
+                    _buildTargets.Add(target.Trim());
+                }
+                return;
             }
         }
     }
