@@ -6,7 +6,7 @@ namespace StartUnityBuild;
 public static class RunCommand
 {
     public static void Execute(string prefix, string fileName, string arguments, string workingDirectory,
-        Action<string, string> readOutput, Action<string, int> readExitCode)
+        Action<string, string> readOutput, Action<string, int> readExitCode, Action finished)
     {
         if (!Directory.Exists(workingDirectory))
         {
@@ -43,9 +43,11 @@ public static class RunCommand
         Task.Run(() =>
         {
             Form1.AddLine(".cmd", $"{prefix} wait");
+            Thread.Sleep(1000);
             process.WaitForExit();
             Form1.AddLine(".cmd", $"{prefix} ended");
             readExitCode(prefix, process.ExitCode);
+            finished.Invoke();
         });
     }
 

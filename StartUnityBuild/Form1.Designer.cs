@@ -30,11 +30,12 @@ partial class Form1
     {
         menuStrip1 = new MenuStrip();
         fileToolStripMenuItem = new ToolStripMenuItem();
+        copyOutputToClipboardToolStripMenuItem = new ToolStripMenuItem();
         exitToolStripMenuItem = new ToolStripMenuItem();
         gitStatusToolStripMenuItem = new ToolStripMenuItem();
         startBuildToolStripMenuItem = new ToolStripMenuItem();
         listView1 = new ListView();
-        copyOutputToClipboardToolStripMenuItem = new ToolStripMenuItem();
+        label1 = new Label();
         menuStrip1.SuspendLayout();
         SuspendLayout();
         // 
@@ -53,6 +54,12 @@ partial class Form1
         fileToolStripMenuItem.Name = "fileToolStripMenuItem";
         fileToolStripMenuItem.Size = new Size(37, 20);
         fileToolStripMenuItem.Text = "File";
+        // 
+        // copyOutputToClipboardToolStripMenuItem
+        // 
+        copyOutputToClipboardToolStripMenuItem.Name = "copyOutputToClipboardToolStripMenuItem";
+        copyOutputToClipboardToolStripMenuItem.Size = new Size(212, 22);
+        copyOutputToClipboardToolStripMenuItem.Text = "Copy Output to Clipboard";
         // 
         // exitToolStripMenuItem
         // 
@@ -81,17 +88,25 @@ partial class Form1
         listView1.TabIndex = 1;
         listView1.UseCompatibleStateImageBehavior = false;
         // 
-        // copyOutputToClipboardToolStripMenuItem
+        // label1
         // 
-        copyOutputToClipboardToolStripMenuItem.Name = "copyOutputToClipboardToolStripMenuItem";
-        copyOutputToClipboardToolStripMenuItem.Size = new Size(212, 22);
-        copyOutputToClipboardToolStripMenuItem.Text = "Copy Output to Clipboard";
+        label1.AutoSize = true;
+        label1.BackColor = SystemColors.ControlLightLight;
+        label1.Dock = DockStyle.Right;
+        label1.Font = new Font("Cascadia Mono", 9.75F, FontStyle.Regular, GraphicsUnit.Point,  0);
+        label1.Location = new Point(943, 24);
+        label1.Name = "label1";
+        label1.Size = new Size(120, 17);
+        label1.TabIndex = 2;
+        label1.Text = "Building 00:00";
+        label1.TextAlign = ContentAlignment.MiddleRight;
         // 
         // Form1
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(1063, 563);
+        Controls.Add(label1);
         Controls.Add(listView1);
         Controls.Add(menuStrip1);
         MainMenuStrip = menuStrip1;
@@ -112,4 +127,5 @@ partial class Form1
     private ToolStripMenuItem gitStatusToolStripMenuItem;
     private ToolStripMenuItem startBuildToolStripMenuItem;
     private ToolStripMenuItem copyOutputToClipboardToolStripMenuItem;
+    private Label label1;
 }

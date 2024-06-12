@@ -2,12 +2,12 @@ namespace StartUnityBuild;
 
 public static class Commands
 {
-    public static void GitStatus(string workingDirectory)
+    public static void GitStatus(string workingDirectory, Action finished)
     {
         const string outPrefix = "git";
         Form1.AddLine($">{outPrefix}", "status");
         RunCommand.Execute(outPrefix, "git", "status", workingDirectory,
-            OutputListener, Form1.ExitListener);
+            OutputListener, Form1.ExitListener, finished);
         return;
 
         void OutputListener(string prefix, string? line)
@@ -33,7 +33,7 @@ public static class Commands
         }
     }
 
-    public static void UnityBuild(string workingDirectory, List<string> buildTargets)
+    public static void UnityBuild(string workingDirectory, List<string> buildTargets, Action finished)
     {
         const string outPrefix = "unity";
         const string batchFile = "_unity_build_driver_auto.bat";
@@ -47,6 +47,6 @@ public static class Commands
         Form1.AddLine($">{outPrefix}", $"start {batchFile} {string.Join(", ", buildTargets)}");
         var arguments = $"/C {batchFile} {buildTargets[0]}";
         RunCommand.Execute(outPrefix, "cmd.exe", arguments, workingDirectory,
-            Form1.OutputListener, Form1.ExitListener);
+            Form1.OutputListener, Form1.ExitListener, finished);
     }
 }

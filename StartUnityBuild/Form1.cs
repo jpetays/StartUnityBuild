@@ -14,7 +14,7 @@ public partial class Form1 : Form
     private string? _productName;
     private string? _productVersion;
     private string? _bundleVersion;
-    private readonly List<string> _buildTargets = new List<string>();
+    private readonly List<string> _buildTargets = new();
 
     public Form1()
     {
@@ -29,18 +29,33 @@ public partial class Form1 : Form
         listView1.FullRowSelect = true;
         //listView1.GridLines = true;
         listView1.View = View.Details;
+        label1.Text = "";
 
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
         gitStatusToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
         {
+            SetStatus("Executing 00:00", Color.Green);
             ClearLines();
-            Commands.GitStatus(_currentDirectory);
+            DisableMenus();
+            Commands.GitStatus(_currentDirectory, () =>
+            {
+                SetStatus("Done", Color.Blue);
+                EnableMenus();
+            });
         });
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
         {
+            SetStatus("Building 00:00", Color.Green);
             ClearLines();
-            Commands.UnityBuild(_currentDirectory, _buildTargets);
+            DisableMenus();
+            var startTime = DateTime.Now;
+            Commands.UnityBuild(_currentDirectory, _buildTargets, () =>
+            {
+                var duration = DateTime.Now - startTime;
+                SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
+                EnableMenus();
+            });
         });
     }
 
@@ -51,6 +66,8 @@ public partial class Form1 : Form
         try
         {
             LoadEnvironment();
+            Text = $"UNITY {_unityVersion} Build : {_productName} ver {_productVersion} bundle {_bundleVersion}";
+            StartupCommand();
         }
         catch (Exception x)
         {
@@ -64,66 +81,86 @@ public partial class Form1 : Form
                 }
             }
         }
-        Text = $"UNITY {_unityVersion} Build : {_productName} ver {_productVersion} bundle {_bundleVersion}";
-        StartupCommand();
     }
 
     private void StartupCommand()
     {
         Thread.Yield();
-        ExecuteMenuCommand(() => Commands.GitStatus(_currentDirectory));
+        ExecuteMenuCommand(() => Commands.GitStatus(_currentDirectory, () => { SetStatus("Done", Color.Blue); }));
     }
 
     private void ExecuteMenuCommand(Action command)
     {
         try
         {
-            DisableMenus();
             command();
         }
         catch (Exception x)
         {
             AddLine("Error", $"{x.Message}");
-            foreach (ToolStripItem toolStripItem in menuStrip1.Items)
-            {
-                toolStripItem.Enabled = true;
-            }
+            EnableMenus();
         }
+    }
+
+    private void SetStatus(string statusText, Color color)
+    {
+        if (InvokeRequired)
+        {
+            Invoke(() => SetStatus(statusText, color));
+            return;
+        }
+        label1.Text = statusText;
+        label1.ForeColor = color;
     }
 
     private void DisableMenus()
     {
-        return;
-        AddLine("-disable", $"menu count {menuStrip1.Items.Count}");
-        foreach (ToolStripItem toolStripItem in menuStrip1.Items)
+        AddLine(".disable", $"menu count {menuStrip1.Items.Count}");
+        foreach (var toolStripItem in menuStrip1.Items)
         {
-            toolStripItem.Enabled = false;
+            if (toolStripItem is ToolStripMenuItem menu)
+            {
+                menu.Enabled = false;
+            }
         }
     }
 
     private void EnableMenus()
     {
-        return;
         if (InvokeRequired)
         {
             Invoke(() => EnableMenus);
             return;
         }
-        AddLine("-enable", $"menu count {menuStrip1.Items.Count}");
-        foreach (ToolStripItem toolStripItem in menuStrip1.Items)
+        AddLine(".enable", $"menu count {menuStrip1.Items.Count}");
+        foreach (var toolStripItem in menuStrip1.Items)
         {
-            toolStripItem.Enabled = true;
+            if (toolStripItem is ToolStripMenuItem menu)
+            {
+                menu.Enabled = true;
+            }
         }
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)
     {
-        if (e is not { Control: true, KeyCode: Keys.C })
+        if (e is { Control: true, KeyCode: Keys.C })
         {
+            CopyLines();
+            e.SuppressKeyPress = true; // Stops other controls on the form receiving event.
             return;
         }
-        CopyLines();
-        e.SuppressKeyPress = true; // Stops other controls on the form receiving event.
+        if (e is { Control: true, KeyCode: Keys.M })
+        {
+            if (e.Shift)
+            {
+                DisableMenus();
+            }
+            else
+            {
+                EnableMenus();
+            }
+        }
     }
 
     private void LoadEnvironment()
@@ -152,7 +189,6 @@ public partial class Form1 : Form
     public static void ExitListener(string prefix, int exitCode)
     {
         AddLine($">{prefix}", $"exit: {exitCode}");
-        _instance.EnableMenus();
     }
 
     public static void AddLine(string prefix, string content)
@@ -185,6 +221,7 @@ public partial class Form1 : Form
             _instance.Invoke(() => AddLine(line, color));
             return;
         }
+        line = $"{DateTime.Now:hh:mm:ss} {line}";
         var listView = _instance.listView1;
         listView.BeginUpdate();
         if (color == null)
