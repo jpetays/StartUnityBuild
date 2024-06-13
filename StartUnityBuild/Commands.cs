@@ -6,7 +6,7 @@ public static class Commands
     {
         const string outPrefix = "git";
         Form1.AddLine($">{outPrefix}", "status");
-        RunCommand.Execute(outPrefix, "git", "status", workingDirectory,
+        RunCommand.ExecuteAsync(outPrefix, "git", "status", workingDirectory,
             OutputListener, Form1.ExitListener, finished);
         return;
 
@@ -33,23 +33,37 @@ public static class Commands
         }
     }
 
-    public static async void UnityBuild(string workingDirectory, List<string> buildTargets, Action finished)
+    public static void UnityBuild(string workingDirectory, string unityExecutable,
+        List<string> buildTargets, Action finished)
     {
         const string outPrefix = "unity";
-        const string batchFile = "_unity_build_driver_auto.bat";
-        workingDirectory = Path.Combine(workingDirectory, "etc", "batchBuild");
-        var path = Path.Combine(workingDirectory, batchFile);
-        if (!File.Exists(path))
+        const string batchFile = "unityBatchBuild.bat";
+        var batchBuildFolder = Path.Combine(".", "etc", "batchBuild");
+        var batchBuildCommand = Path.Combine(batchBuildFolder, batchFile);
+        if (!File.Exists(batchBuildCommand))
         {
-            Form1.AddLine(outPrefix, $"command not found: {path}");
+            Form1.AddLine(outPrefix, $"build command not found: {batchBuildCommand}");
             return;
         }
-        Form1.AddLine($">{outPrefix}", $"start {batchFile} {string.Join(", ", buildTargets)}");
+        Form1.AddLine($">{outPrefix}", $"build targets: {string.Join(", ", buildTargets)}");
+        var environmentVariables = new Dictionary<string, string>();
+        if (!string.IsNullOrEmpty(unityExecutable))
+        {
+            if (!File.Exists(unityExecutable))
+            {
+                Form1.AddLine(outPrefix, $"Unity Executable not found: {unityExecutable}");
+                return;
+            }
+            environmentVariables.Add("UNITY_EXE_OVERRIDE", unityExecutable);
+        }
         foreach (var buildTarget in buildTargets)
         {
-            var arguments = $"/C {batchFile} {buildTarget}";
-            var result = await RunCommand.ExecuteAsync(outPrefix, "cmd.exe", arguments, workingDirectory,
-                Form1.OutputListener, Form1.ExitListener);
+            var arguments = $"""
+                             /C {batchBuildCommand} .\etc\batchBuild\_build_{buildTarget}.env
+                             """.Trim();
+            Form1.AddLine($">{outPrefix}", $"start {arguments}");
+            var result = RunCommand.ExecuteBlocking(outPrefix, "cmd.exe", arguments,
+                workingDirectory, environmentVariables, Form1.OutputListener, Form1.ExitListener);
             if (result != 0)
             {
                 Form1.AddLine("ERROR", $"{buildTarget}: unexpected return code: {result}");

@@ -15,6 +15,8 @@ public partial class Form1 : Form
     private string? _productVersion;
     private string? _bundleVersion;
     private readonly List<string> _buildTargets = new();
+    private string? _unityPath;
+    private string? _unityExecutable;
 
     public Form1()
     {
@@ -69,7 +71,7 @@ public partial class Form1 : Form
             ClearLines();
             isCommandExecuting = true;
             var startTime = DateTime.Now;
-            Commands.UnityBuild(_currentDirectory, _buildTargets, () =>
+            Commands.UnityBuild(_currentDirectory, _unityExecutable!, _buildTargets, () =>
             {
                 var duration = DateTime.Now - startTime;
                 SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
@@ -152,6 +154,12 @@ public partial class Form1 : Form
         AddLine("Bundle", $"{_bundleVersion}");
         LoadAutoBuildTargets();
         AddLine("Builds", $"{string.Join(',', _buildTargets)}");
+        var setUnityExecutablePath = !string.IsNullOrEmpty(_unityPath) && !string.IsNullOrEmpty(_unityVersion);
+        if (setUnityExecutablePath)
+        {
+            _unityExecutable = _unityPath!.Replace("$VERSION$", _unityVersion);
+            AddLine("Executable", $"{_unityExecutable}");
+        }
     }
 
     [SuppressMessage("ReSharper", "NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract")]
@@ -171,7 +179,7 @@ public partial class Form1 : Form
 
     public static void AddLine(string prefix, string content)
     {
-        Color? color = prefix == "ERROR" ? Color.Red
+        Color? color = prefix.StartsWith("ERROR") ? Color.Red
             : prefix.StartsWith('.') ? Color.Gray
             : prefix.StartsWith('>') ? Color.Blue
             : content.StartsWith('-') ? Color.Magenta
@@ -192,7 +200,7 @@ public partial class Form1 : Form
         listView1.EndUpdate();
     }
 
-    public static void AddLine(string line, Color? color = null)
+    private static void AddLine(string line, Color? color = null)
     {
         if (_instance.InvokeRequired)
         {
@@ -231,6 +239,7 @@ public partial class Form1 : Form
     private void LoadProjectVersionFile()
     {
         var path = Path.Combine(_currentDirectory, "ProjectSettings", "ProjectVersion.txt");
+        AddLine(".file", $"{path}");
         var lines = File.ReadAllLines(path);
         foreach (var line in lines)
         {
@@ -246,6 +255,7 @@ public partial class Form1 : Form
     private void LoadProjectSettingsFile()
     {
         var path = Path.Combine(_currentDirectory, "ProjectSettings", "ProjectSettings.asset");
+        AddLine(".file", $"{path}");
         var lines = File.ReadAllLines(path);
         foreach (var line in lines)
         {
@@ -268,18 +278,25 @@ public partial class Form1 : Form
     private void LoadAutoBuildTargets()
     {
         var path = Path.Combine(_currentDirectory, "etc", "batchBuild", "_auto_build.env");
+        AddLine(".file", $"{path}");
         var lines = File.ReadAllLines(path);
         foreach (var line in lines)
         {
             var tokens = line.Split('=');
-            if (tokens[0].Trim() == "buildTargets")
+            switch (tokens[0].Trim())
             {
-                var targets = tokens[1].Split(',');
-                foreach (var target in targets)
+                case "buildTargets":
                 {
-                    _buildTargets.Add(target.Trim());
+                    var targets = tokens[1].Split(',');
+                    foreach (var target in targets)
+                    {
+                        _buildTargets.Add(target.Trim());
+                    }
+                    break;
                 }
-                return;
+                case "unityPath":
+                    _unityPath = tokens[1].Trim();
+                    break;
             }
         }
     }
