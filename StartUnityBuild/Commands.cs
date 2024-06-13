@@ -62,8 +62,15 @@ public static class Commands
         }
         Task.Run(async () =>
         {
-            foreach (var buildTarget in buildTargets)
+            for (var i = 0; i < buildTargets.Count; ++i)
             {
+                var buildTarget = buildTargets[i];
+                var buildOutputFolder = $"build{buildTarget}";
+                if (Directory.Exists(buildOutputFolder))
+                {
+                    Form1.AddLine($".{outPrefix}", $"delete build output: {buildOutputFolder}");
+                    Directory.Delete(buildOutputFolder, true);
+                }
                 var arguments = $"""
                                  /C {batchBuildCommand} .\etc\batchBuild\_build_{buildTarget}.env
                                  """.Trim();
@@ -74,6 +81,17 @@ public static class Commands
                 {
                     Form1.AddLine("ERROR", $"{buildTarget}: unexpected return code: {result}");
                     break;
+                }
+                if (!Directory.Exists(buildOutputFolder))
+                {
+                    Form1.AddLine("ERROR", $"build output not found: {buildOutputFolder}");
+                    break;
+                }
+                if (i < buildTargets.Count - 1)
+                {
+                    const int delay = 5;
+                    Form1.AddLine($".{outPrefix}", $"wait build shutdown for {delay} sec");
+                    Thread.Sleep(delay * 000);
                 }
             }
             finished();
