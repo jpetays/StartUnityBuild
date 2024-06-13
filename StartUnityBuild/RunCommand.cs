@@ -62,58 +62,6 @@ public static class RunCommand
         return process.ExitCode;
     }
 
-    public static void ExecuteAsync(string prefix, string fileName, string arguments, string workingDirectory,
-        Action<string, string> readOutput, Action<string, int> readExitCode, Action finished)
-    {
-        if (!Directory.Exists(workingDirectory))
-        {
-            readOutput("ERROR", $"working directory not found: {workingDirectory}");
-            readExitCode(prefix, -1);
-            finished.Invoke();
-            return;
-        }
-        var startInfo = new ProcessStartInfo(fileName, arguments)
-        {
-            WorkingDirectory = workingDirectory,
-            CreateNoWindow = true,
-            // Required for redirection
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            RedirectStandardInput = true,
-        };
-
-        var process = new Process { StartInfo = startInfo };
-        if (!process.Start())
-        {
-            readOutput("ERROR", "unable start process");
-            readExitCode(prefix, -1);
-            finished.Invoke();
-            return;
-        }
-        var outputPrefix = $"{prefix}[{process.Id:x}]";
-        var errorPrefix = $"ERROR[{process.Id:x}]";
-        var standardOutput = new AsyncStreamReader(
-            process.StandardOutput, data => { readOutput(outputPrefix, data); }, process.StandardInput);
-        var standardError = new AsyncStreamReader(
-            process.StandardError, data => { readOutput(errorPrefix, data); }, null);
-        standardOutput.Start();
-        standardError.Start();
-
-        Task.Run(() =>
-        {
-            readOutput(".cmd", $"{outputPrefix} wait");
-            // Let first output (if nay) to arrive first.
-            Thread.Sleep(100);
-            process.WaitForExit();
-            readOutput(".cmd", $"{outputPrefix} ended");
-            readExitCode(outputPrefix, process.ExitCode);
-            finished.Invoke();
-            readOutput(".cmd", $"{outputPrefix} done");
-        });
-        readOutput(".cmd", $"{outputPrefix} started");
-    }
-
     /// <summary>
     /// Stream reader for StandardOutput and StandardError stream readers.<br />
     /// Runs an eternal BeginRead loop on the underlying stream bypassing the stream reader as lines.

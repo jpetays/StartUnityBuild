@@ -6,8 +6,12 @@ public static class Commands
     {
         const string outPrefix = "git";
         Form1.AddLine($">{outPrefix}", "status");
-        RunCommand.ExecuteAsync(outPrefix, "git", "status", workingDirectory,
-            OutputListener, Form1.ExitListener, finished);
+        Task.Run(async () =>
+        {
+            await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
+                OutputListener, Form1.ExitListener);
+            finished();
+        });
         return;
 
         void OutputListener(string prefix, string? line)
