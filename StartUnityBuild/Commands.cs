@@ -56,20 +56,23 @@ public static class Commands
             }
             environmentVariables.Add("UNITY_EXE_OVERRIDE", unityExecutable);
         }
-        foreach (var buildTarget in buildTargets)
+        Task.Run(async () =>
         {
-            var arguments = $"""
-                             /C {batchBuildCommand} .\etc\batchBuild\_build_{buildTarget}.env
-                             """.Trim();
-            Form1.AddLine($">{outPrefix}", $"start {arguments}");
-            var result = RunCommand.ExecuteBlocking(outPrefix, "cmd.exe", arguments,
-                workingDirectory, environmentVariables, Form1.OutputListener, Form1.ExitListener);
-            if (result != 0)
+            foreach (var buildTarget in buildTargets)
             {
-                Form1.AddLine("ERROR", $"{buildTarget}: unexpected return code: {result}");
-                break;
+                var arguments = $"""
+                                 /C {batchBuildCommand} .\etc\batchBuild\_build_{buildTarget}.env
+                                 """.Trim();
+                Form1.AddLine($">{outPrefix}", $"run {batchFile} {buildTarget}");
+                var result = await RunCommand.Execute(outPrefix, "cmd.exe", arguments,
+                    workingDirectory, environmentVariables, Form1.OutputListener, Form1.ExitListener);
+                if (result != 0)
+                {
+                    Form1.AddLine("ERROR", $"{buildTarget}: unexpected return code: {result}");
+                    break;
+                }
             }
-        }
-        finished();
+            finished();
+        });
     }
 }

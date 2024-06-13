@@ -5,13 +5,13 @@ namespace StartUnityBuild;
 
 public static class RunCommand
 {
-    public static int ExecuteBlocking(string prefix, string fileName, string arguments,
+    public static async Task<int> Execute(string prefix, string fileName, string arguments,
         string workingDirectory, Dictionary<string, string>? environmentVariables,
         Action<string, string> readOutput, Action<string, int> readExitCode)
     {
         if (!Directory.Exists(workingDirectory))
         {
-            Form1.AddLine("ERROR", $"working directory not found: {workingDirectory}");
+            readOutput("ERROR", $"working directory not found: {workingDirectory}");
             readExitCode(prefix, -1);
             return -1;
         }
@@ -36,26 +36,29 @@ public static class RunCommand
         var process = new Process { StartInfo = startInfo };
         if (!process.Start())
         {
-            Form1.AddLine("ERROR", "unable start process");
+            readOutput("ERROR", "unable start process");
             readExitCode(prefix, -1);
             return -1;
         }
-        prefix = $"{prefix}[{process.Id:x}]";
+        var outputPrefix = $"{prefix}[{process.Id:x}]";
         var errorPrefix = $"ERROR[{process.Id:x}]";
         var standardOutput = new AsyncStreamReader(
-            process.StandardOutput, data => { readOutput(prefix, data); }, process.StandardInput);
+            process.StandardOutput, data => { readOutput(outputPrefix, data); }, process.StandardInput);
         var standardError = new AsyncStreamReader(
             process.StandardError, data => { readOutput(errorPrefix!, data); }, null);
         standardOutput.Start();
         standardError.Start();
 
-        Form1.AddLine(".cmd", $"{prefix} started");
-        Form1.AddLine(".cmd", $"{prefix} wait");
+        readOutput(".cmd", $"{outputPrefix} started");
         Thread.Yield();
+        await process.WaitForExitAsync();
         process.WaitForExit();
-        Form1.AddLine(".cmd", $"{prefix} ended");
-        readExitCode(prefix, process.ExitCode);
-        Form1.AddLine(".cmd", $"{prefix} done");
+        readOutput(".cmd", $"{outputPrefix} ended");
+        while (!standardOutput.IsEndOfStream)
+        {
+            Thread.Yield();
+        }
+        readExitCode(outputPrefix, process.ExitCode);
         return process.ExitCode;
     }
 
@@ -64,7 +67,7 @@ public static class RunCommand
     {
         if (!Directory.Exists(workingDirectory))
         {
-            Form1.AddLine("ERROR", $"working directory not found: {workingDirectory}");
+            readOutput("ERROR", $"working directory not found: {workingDirectory}");
             readExitCode(prefix, -1);
             finished.Invoke();
             return;
@@ -83,15 +86,15 @@ public static class RunCommand
         var process = new Process { StartInfo = startInfo };
         if (!process.Start())
         {
-            Form1.AddLine("ERROR", "unable start process");
+            readOutput("ERROR", "unable start process");
             readExitCode(prefix, -1);
             finished.Invoke();
             return;
         }
-        prefix = $"{prefix}[{process.Id:x}]";
+        var outputPrefix = $"{prefix}[{process.Id:x}]";
         var errorPrefix = $"ERROR[{process.Id:x}]";
         var standardOutput = new AsyncStreamReader(
-            process.StandardOutput, data => { readOutput(prefix, data); }, process.StandardInput);
+            process.StandardOutput, data => { readOutput(outputPrefix, data); }, process.StandardInput);
         var standardError = new AsyncStreamReader(
             process.StandardError, data => { readOutput(errorPrefix, data); }, null);
         standardOutput.Start();
@@ -99,16 +102,16 @@ public static class RunCommand
 
         Task.Run(() =>
         {
-            Form1.AddLine(".cmd", $"{prefix} wait");
+            readOutput(".cmd", $"{outputPrefix} wait");
             // Let first output (if nay) to arrive first.
             Thread.Sleep(100);
             process.WaitForExit();
-            Form1.AddLine(".cmd", $"{prefix} ended");
-            readExitCode(prefix, process.ExitCode);
+            readOutput(".cmd", $"{outputPrefix} ended");
+            readExitCode(outputPrefix, process.ExitCode);
             finished.Invoke();
-            Form1.AddLine(".cmd", $"{prefix} done");
+            readOutput(".cmd", $"{outputPrefix} done");
         });
-        Form1.AddLine(".cmd", $"{prefix} started");
+        readOutput(".cmd", $"{outputPrefix} started");
     }
 
     /// <summary>
@@ -120,7 +123,9 @@ public static class RunCommand
         private static readonly char[] Separators = ['\r', '\n'];
 
         private readonly byte[] _buffer = new byte[4096];
-        private readonly StringBuilder _builder = new StringBuilder();
+        private readonly StringBuilder _builder = new();
+
+        public bool IsEndOfStream;
 
         public void Start()
         {
@@ -152,6 +157,7 @@ public static class RunCommand
                     }
                 }
                 callback.Invoke(null!);
+                IsEndOfStream = true;
                 return;
             }
             _builder.Append(readerToBypass.CurrentEncoding.GetString(_buffer, 0, bytesRead));
