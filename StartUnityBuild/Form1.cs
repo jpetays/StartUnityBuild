@@ -17,6 +17,7 @@ public partial class Form1 : Form
     private readonly List<string> _buildTargets = new();
     private string? _unityPath;
     private string? _unityExecutable;
+    private long _totalFileSize;
 
     public Form1()
     {
@@ -32,10 +33,19 @@ public partial class Form1 : Form
         //listView1.GridLines = true;
         listView1.View = View.Details;
         label1.Text = "";
+        label2.Text = "";
+        timer1.Interval = 1000;
 
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
         var isCommandExecuting = false;
+        var startTime = DateTime.Now;
+        var timerLabel = "";
+        timer1.Tick += (_, _) =>
+        {
+            var duration = DateTime.Now - startTime;
+            SetStatus($"{timerLabel} {duration:mm':'ss}", Color.Green);
+        };
         gitStatusToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
         {
             if (isCommandExecuting)
@@ -44,12 +54,18 @@ public partial class Form1 : Form
                     MessageBoxIcon.Exclamation);
                 return;
             }
-            SetStatus("Executing 00:00", Color.Green);
+            timerLabel = "Executing";
+            startTime = DateTime.Now;
+            timer1.Start();
             ClearLines();
+            label2.Text = "";
+            _totalFileSize = 0;
             isCommandExecuting = true;
             Commands.GitStatus(_currentDirectory, () =>
             {
-                SetStatus("Done", Color.Blue);
+                timer1.Stop();
+                var duration = DateTime.Now - startTime;
+                SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
                 isCommandExecuting = false;
             });
         });
@@ -67,16 +83,20 @@ public partial class Form1 : Form
                     MessageBoxIcon.Exclamation);
                 return;
             }
-            SetStatus("Building 00:00", Color.Green);
+            timerLabel = "Building";
+            startTime = DateTime.Now;
+            timer1.Start();
             ClearLines();
+            label2.Text = "";
+            _totalFileSize = 0;
             isCommandExecuting = true;
-            var startTime = DateTime.Now;
             Commands.UnityBuild(_currentDirectory, _unityExecutable!, _buildTargets, () =>
             {
+                timer1.Stop();
                 var duration = DateTime.Now - startTime;
                 SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
                 isCommandExecuting = false;
-            });
+            }, fileSystemWatcher1, SetFileSizeProgress);
         });
     }
 
@@ -132,6 +152,17 @@ public partial class Form1 : Form
         }
         label1.Text = statusText;
         label1.ForeColor = color;
+    }
+
+    private void SetFileSizeProgress(long fileSize)
+    {
+        if (InvokeRequired)
+        {
+            Invoke(() => SetFileSizeProgress(fileSize));
+            return;
+        }
+        _totalFileSize = fileSize;
+        label2.Text = $"bytes {_totalFileSize:N0}";
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)

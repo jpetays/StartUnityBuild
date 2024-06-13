@@ -28,6 +28,7 @@ partial class Form1
     /// </summary>
     private void InitializeComponent()
     {
+        components = new System.ComponentModel.Container();
         menuStrip1 = new MenuStrip();
         fileToolStripMenuItem = new ToolStripMenuItem();
         copyOutputToClipboardToolStripMenuItem = new ToolStripMenuItem();
@@ -36,7 +37,11 @@ partial class Form1
         startBuildToolStripMenuItem = new ToolStripMenuItem();
         listView1 = new ListView();
         label1 = new Label();
+        timer1 = new System.Windows.Forms.Timer(components);
+        fileSystemWatcher1 = new FileSystemWatcher();
+        label2 = new Label();
         menuStrip1.SuspendLayout();
+        ((System.ComponentModel.ISupportInitialize) fileSystemWatcher1).BeginInit();
         SuspendLayout();
         // 
         // menuStrip1
@@ -101,11 +106,30 @@ partial class Form1
         label1.Text = "Building 00:00";
         label1.TextAlign = ContentAlignment.MiddleRight;
         // 
+        // fileSystemWatcher1
+        // 
+        fileSystemWatcher1.EnableRaisingEvents = true;
+        fileSystemWatcher1.SynchronizingObject = this;
+        // 
+        // label2
+        // 
+        label2.AutoSize = true;
+        label2.BackColor = SystemColors.ControlLightLight;
+        label2.Dock = DockStyle.Right;
+        label2.Font = new Font("Cascadia Mono", 9.75F, FontStyle.Regular, GraphicsUnit.Point,  0);
+        label2.Location = new Point(815, 24);
+        label2.Name = "label2";
+        label2.Size = new Size(128, 17);
+        label2.TabIndex = 3;
+        label2.Text = "1234567 bytes  ";
+        label2.TextAlign = ContentAlignment.MiddleRight;
+        // 
         // Form1
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(1063, 563);
+        Controls.Add(label2);
         Controls.Add(label1);
         Controls.Add(listView1);
         Controls.Add(menuStrip1);
@@ -114,6 +138,7 @@ partial class Form1
         Text = "Form1";
         menuStrip1.ResumeLayout(false);
         menuStrip1.PerformLayout();
+        ((System.ComponentModel.ISupportInitialize) fileSystemWatcher1).EndInit();
         ResumeLayout(false);
         PerformLayout();
     }
@@ -128,4 +153,7 @@ partial class Form1
     private ToolStripMenuItem startBuildToolStripMenuItem;
     private ToolStripMenuItem copyOutputToClipboardToolStripMenuItem;
     private Label label1;
+    private System.Windows.Forms.Timer timer1;
+    private FileSystemWatcher fileSystemWatcher1;
+    private Label label2;
 }

@@ -9,37 +9,38 @@ public static class Commands
         Task.Run(async () =>
         {
             await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
-                OutputListener, Form1.ExitListener);
+                GitOutputFilter, Form1.ExitListener);
             finished();
         });
-        return;
+    }
 
-        void OutputListener(string prefix, string? line)
+    private static void GitOutputFilter(string prefix, string? line)
+    {
+        if (line == null || line.StartsWith("  (use \"git"))
         {
-            if (line == null || line.StartsWith("  (use \"git"))
-            {
-                return;
-            }
-            line = line.Replace("\t", "    ");
-            if (line.Contains(" new file: "))
-            {
-                line = $"--> {line}";
-            }
-            else if (line.Contains(" modified: "))
-            {
-                line = $"--> {line}";
-            }
-            else if (line.Contains(" deleted: "))
-            {
-                line = $"--> {line}";
-            }
-            Form1.OutputListener(prefix, line);
+            return;
         }
+        line = line.Replace("\t", "    ");
+        if (line.Contains(" new file: "))
+        {
+            line = $"--> {line}";
+        }
+        else if (line.Contains(" modified: "))
+        {
+            line = $"--> {line}";
+        }
+        else if (line.Contains(" deleted: "))
+        {
+            line = $"--> {line}";
+        }
+        Form1.OutputListener(prefix, line);
     }
 
     public static void UnityBuild(string workingDirectory, string unityExecutable,
-        List<string> buildTargets, Action finished)
+        List<string> buildTargets, Action finished, FileSystemWatcher fileSystemWatcher, Action<long> fileSizeProgress)
     {
+        const int delayAfterUnityBuild = 5;
+
         const string outPrefix = "unity";
         const string batchFile = "unityBatchBuild.bat";
         var batchBuildFolder = Path.Combine(".", "etc", "batchBuild");
@@ -60,6 +61,8 @@ public static class Commands
             }
             environmentVariables.Add("UNITY_EXE_OVERRIDE", unityExecutable);
         }
+        string cachedFilename = null;
+        FileInfo cachedFileInfo = null;
         Task.Run(async () =>
         {
             for (var i = 0; i < buildTargets.Count; ++i)
@@ -71,12 +74,40 @@ public static class Commands
                     Form1.AddLine($".{outPrefix}", $"delete build output: {buildOutputFolder}");
                     Directory.Delete(buildOutputFolder, true);
                 }
+                fileSystemWatcher.Path = Path.Combine(".", "etc");
+                fileSystemWatcher.Filter = $"_local_Build_{buildTarget}.log";
+                fileSystemWatcher.NotifyFilter = NotifyFilters.Size;
+                fileSystemWatcher.Changed += (_, e) =>
+                {
+                    try
+                    {
+                        if (cachedFilename != e.FullPath)
+                        {
+                            cachedFilename = e.FullPath;
+                            cachedFileInfo = new FileInfo(cachedFilename);
+                        }
+                        else
+                        {
+                            cachedFileInfo!.Refresh();
+                        }
+                        fileSizeProgress(cachedFileInfo.Length);
+                    }
+                    catch (Exception)
+                    {
+                        // Just swallow
+                    }
+                };
                 var arguments = $"""
                                  /C {batchBuildCommand} .\etc\batchBuild\_build_{buildTarget}.env
                                  """.Trim();
                 Form1.AddLine($">{outPrefix}", $"run {batchFile} {buildTarget}");
+                fileSystemWatcher.EnableRaisingEvents = true;
+                var startTime = DateTime.Now;
                 var result = await RunCommand.Execute(outPrefix, "cmd.exe", arguments,
                     workingDirectory, environmentVariables, Form1.OutputListener, Form1.ExitListener);
+                var duration = DateTime.Now - startTime;
+                fileSystemWatcher.EnableRaisingEvents = false;
+                Form1.AddLine($".{outPrefix}", $"build {i}/{buildTargets.Count} took {duration:mm':'ss}");
                 if (result != 0)
                 {
                     Form1.AddLine("ERROR", $"{buildTarget}: unexpected return code: {result}");
@@ -84,16 +115,14 @@ public static class Commands
                 }
                 if (!Directory.Exists(buildOutputFolder))
                 {
-                    Form1.AddLine("ERROR", $"build output not found: {buildOutputFolder}");
+                    Form1.AddLine("ERROR", $"build output folder not found: {buildOutputFolder}");
                     break;
                 }
-                if (i < buildTargets.Count - 1)
-                {
-                    const int delay = 5;
-                    Form1.AddLine($".{outPrefix}", $"wait build shutdown for {delay} sec");
-                    Thread.Sleep(delay * 000);
-                }
+                Thread.Sleep(delayAfterUnityBuild * 000);
             }
+            fileSystemWatcher.EnableRaisingEvents = false;
+            await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
+                GitOutputFilter, Form1.ExitListener);
             finished();
         });
     }
