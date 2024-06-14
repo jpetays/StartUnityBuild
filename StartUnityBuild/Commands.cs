@@ -14,28 +14,6 @@ public static class Commands
         });
     }
 
-    private static void GitOutputFilter(string prefix, string? line)
-    {
-        if (line == null || line.StartsWith("  (use \"git"))
-        {
-            return;
-        }
-        line = line.Replace("\t", "    ");
-        if (line.Contains(" new file: "))
-        {
-            line = $"--> {line}";
-        }
-        else if (line.Contains(" modified: "))
-        {
-            line = $"--> {line}";
-        }
-        else if (line.Contains(" deleted: "))
-        {
-            line = $"--> {line}";
-        }
-        Form1.OutputListener(prefix, line);
-    }
-
     public static void UnityUpdate(string workingDirectory, string productVersion, string bundleVersion,
         Action<bool, string, string> finished)
     {
@@ -106,8 +84,8 @@ public static class Commands
             }
             environmentVariables.Add("UNITY_EXE_OVERRIDE", unityExecutable);
         }
-        string cachedFilename = null;
-        FileInfo cachedFileInfo = null;
+        string? cachedFilename = null;
+        FileInfo? cachedFileInfo = null;
         Task.Run(async () =>
         {
             for (var i = 0; i < buildTargets.Count; ++i)
@@ -170,5 +148,27 @@ public static class Commands
                 GitOutputFilter, Form1.ExitListener);
             finished();
         });
+    }
+
+    private static void GitOutputFilter(string prefix, string? line)
+    {
+        if (line == null || line.StartsWith("  (use \"git"))
+        {
+            return;
+        }
+        line = line.Replace("\t", "    ");
+        if (line.Contains(" new file: "))
+        {
+            line = $"--> {line}";
+        }
+        else if (line.Contains(" modified: "))
+        {
+            line = $"--> {line}";
+        }
+        else if (line.Contains(" deleted: "))
+        {
+            line = $"--> {line}";
+        }
+        Form1.OutputListener(prefix, line);
     }
 }
