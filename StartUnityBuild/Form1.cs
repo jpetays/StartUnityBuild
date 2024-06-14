@@ -259,7 +259,7 @@ public partial class Form1 : Form
             : prefix.StartsWith('.') ? Color.Gray
             : prefix.StartsWith('>') ? Color.Blue
             : content.StartsWith('-') ? Color.Magenta
-            : content.Contains("SUCCESSFULLY") ? Color.Green
+            : content.StartsWith('+') || content.Contains("SUCCESSFULLY") ? Color.Green
             : null;
         AddLine($"{prefix,-12}: {content}", color);
     }

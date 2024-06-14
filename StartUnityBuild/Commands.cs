@@ -2,6 +2,8 @@ namespace StartUnityBuild;
 
 public static class Commands
 {
+    private static bool _gitBranchUpToDate;
+
     public static void GitStatus(string workingDirectory, Action finished)
     {
         const string outPrefix = "git";
@@ -189,6 +191,18 @@ public static class Commands
         else if (line.Contains(" deleted: "))
         {
             line = $"--> {line}";
+        }
+        if (line.Contains("Your branch is up to date with 'origin/main'"))
+        {
+            _gitBranchUpToDate = true;
+            Form1.OutputListener(prefix, $"+{line}");
+            return;
+        }
+        if (line.Contains("Your branch is ahead of 'origin/main'"))
+        {
+            _gitBranchUpToDate = false;
+            Form1.OutputListener(prefix, $"-{line}");
+            return;
         }
         Form1.OutputListener(prefix, line);
     }
