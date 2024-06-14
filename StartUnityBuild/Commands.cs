@@ -7,7 +7,7 @@ public static class Commands
     public static void GitStatus(string workingDirectory, Action finished)
     {
         const string outPrefix = "git";
-        Form1.AddLine($">{outPrefix}", "status");
+        Form1.AddLine($">{outPrefix}", "git status");
         Task.Run(async () =>
         {
             await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
@@ -25,6 +25,7 @@ public static class Commands
         var isProjectSettingsClean = false;
         Task.Run(async () =>
         {
+            Form1.AddLine($".{outPrefix}", $"git status");
             await RunCommand.Execute(outPrefix, "git", "status ProjectSettings", workingDirectory, null,
                 MyOutputFilter, Form1.ExitListener);
             if (!isProjectSettingsClean)
@@ -39,6 +40,7 @@ public static class Commands
                 Thread.Yield();
                 isProjectSettingsFound = false;
                 isProjectSettingsClean = false;
+                Form1.AddLine($".{outPrefix}", $"git status");
                 await RunCommand.Execute(outPrefix, "git", "status ProjectSettings", workingDirectory, null,
                     MyOutputFilter, Form1.ExitListener);
                 var gitChanges = isProjectSettingsFound && !isProjectSettingsClean;
@@ -48,12 +50,20 @@ public static class Commands
                     finished(false, string.Empty, string.Empty);
                     return;
                 }
-                // Commit changes in ProjectSettings.asset file.
+                // Commit and push changes (in ProjectSettings.asset file).
                 var message = $"auto update build {bundleVersion}";
+                Form1.AddLine($".{outPrefix}", $"git commit");
                 await RunCommand.Execute(outPrefix, "git",
                     $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""",
                     workingDirectory, null,
                     GitOutputFilter, Form1.ExitListener);
+                // --quiet Suppress all output, including the listing of updated refs, unless an error occurs.
+                // Progress is not reported to the standard error stream.
+                Form1.AddLine($".{outPrefix}", $"git push --quiet");
+                var result = await RunCommand.Execute(outPrefix, "git", "push --quiet",
+                    workingDirectory, null,
+                    GitOutputFilter, Form1.ExitListener);
+                Form1.AddLine($".{outPrefix}", $"git push returns {result}");
             }
             var prefix = updated ? outPrefix : "ERROR";
             Form1.OutputListener($"{prefix}", $"-Version {productVersion}");
@@ -167,8 +177,15 @@ public static class Commands
                 Thread.Sleep(delayAfterUnityBuild * 000);
             }
             fileSystemWatcher.EnableRaisingEvents = false;
+            Form1.AddLine($".{outPrefix}", $"git status");
             await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
                 GitOutputFilter, Form1.ExitListener);
+            if (!_gitBranchUpToDate)
+            {
+                Form1.AddLine(outPrefix, "-");
+                Form1.AddLine(outPrefix, "-You have changes that must be pushed to git!");
+                Form1.AddLine(outPrefix, "-");
+            }
             finished();
         });
     }
