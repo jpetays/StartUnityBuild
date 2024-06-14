@@ -12,6 +12,12 @@ public static class Commands
         {
             await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
                 GitOutputFilter, Form1.ExitListener);
+            if (!_gitBranchUpToDate)
+            {
+                Form1.AddLine(outPrefix, "-");
+                Form1.AddLine(outPrefix, "-You have changes that should/could be pushed to git!");
+                Form1.AddLine(outPrefix, "-");
+            }
             finished();
         });
     }
@@ -41,8 +47,8 @@ public static class Commands
                 isProjectSettingsFound = false;
                 isProjectSettingsClean = false;
                 Form1.AddLine($".{outPrefix}", $"git status");
-                await RunCommand.Execute(outPrefix, "git", "status ProjectSettings", workingDirectory, null,
-                    MyOutputFilter, Form1.ExitListener);
+                await RunCommand.Execute(outPrefix, "git", "status ProjectSettings", workingDirectory,
+                    null, MyOutputFilter, Form1.ExitListener);
                 var gitChanges = isProjectSettingsFound && !isProjectSettingsClean;
                 if (!gitChanges)
                 {
@@ -63,7 +69,18 @@ public static class Commands
                 var result = await RunCommand.Execute(outPrefix, "git", "push --quiet",
                     workingDirectory, null,
                     GitOutputFilter, Form1.ExitListener);
-                Form1.AddLine($".{outPrefix}", $"git push returns {result}");
+                var gitPushPrefix = result == 0 ? $".{outPrefix}" : "ERROR";
+                Form1.AddLine(gitPushPrefix, $"git push returns {result}");
+                // Final git status For Your Information only!
+                Form1.AddLine($".{outPrefix}", $"git status");
+                await RunCommand.Execute(outPrefix, "git", "status", workingDirectory,
+                    null, GitOutputFilter, Form1.ExitListener);
+                if (!_gitBranchUpToDate)
+                {
+                    Form1.AddLine(outPrefix, "-");
+                    Form1.AddLine(outPrefix, "-You have changes that should/could be pushed to git!");
+                    Form1.AddLine(outPrefix, "-");
+                }
             }
             var prefix = updated ? outPrefix : "ERROR";
             Form1.OutputListener($"{prefix}", $"-Version {productVersion}");
@@ -183,7 +200,7 @@ public static class Commands
             if (!_gitBranchUpToDate)
             {
                 Form1.AddLine(outPrefix, "-");
-                Form1.AddLine(outPrefix, "-You have changes that must be pushed to git!");
+                Form1.AddLine(outPrefix, "-You have changes that should/could be pushed to git!");
                 Form1.AddLine(outPrefix, "-");
             }
             finished();
