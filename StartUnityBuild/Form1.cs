@@ -70,6 +70,36 @@ public partial class Form1 : Form
                 isCommandExecuting = false;
             });
         });
+        updateBuildToolStripMenuItem.Text = $"[{updateBuildToolStripMenuItem.Text}]";
+        updateBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
+        {
+            if (isCommandExecuting)
+            {
+                MessageBox.Show("A command is already executing", "UNITY Build", MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+                return;
+            }
+            if (_buildTargets.Count == 0)
+            {
+                MessageBox.Show("No build target found", "UNITY Build", MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+                return;
+            }
+            timerLabel = "Updating";
+            startTime = DateTime.Now;
+            timer1.Start();
+            ClearLines();
+            label2.Text = "";
+            _totalFileSize = 0;
+            isCommandExecuting = true;
+            Commands.UnityUpdate(_currentDirectory, _buildTargets, () =>
+            {
+                timer1.Stop();
+                var duration = DateTime.Now - startTime;
+                SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
+                isCommandExecuting = false;
+            });
+        });
         startBuildToolStripMenuItem.Text = $"[{startBuildToolStripMenuItem.Text}]";
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
         {
@@ -182,9 +212,9 @@ public partial class Form1 : Form
         LoadProjectVersionFile();
         AddLine("Unity", $"{_unityVersion}");
         LoadProjectSettingsFile();
-        AddLine("Product", $"{_productName}");
-        AddLine("Version", $"{_productVersion}");
-        AddLine("Bundle", $"{_bundleVersion}");
+        AddLine(">Product", $"{_productName}");
+        AddLine(">Version", $"{_productVersion}");
+        AddLine(">Bundle", $"{_bundleVersion}");
         LoadAutoBuildTargets();
         AddLine("Builds", $"{string.Join(',', _buildTargets)}");
         var setUnityExecutablePath = !string.IsNullOrEmpty(_unityPath) && !string.IsNullOrEmpty(_unityVersion);

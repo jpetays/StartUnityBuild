@@ -40,13 +40,14 @@ partial class Form1
         timer1 = new System.Windows.Forms.Timer(components);
         fileSystemWatcher1 = new FileSystemWatcher();
         label2 = new Label();
+        updateBuildToolStripMenuItem = new ToolStripMenuItem();
         menuStrip1.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize) fileSystemWatcher1).BeginInit();
         SuspendLayout();
         // 
         // menuStrip1
         // 
-        menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, gitStatusToolStripMenuItem, startBuildToolStripMenuItem });
+        menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, gitStatusToolStripMenuItem, updateBuildToolStripMenuItem, startBuildToolStripMenuItem });
         menuStrip1.Location = new Point(0, 0);
         menuStrip1.Name = "menuStrip1";
         menuStrip1.Size = new Size(1063, 24);
@@ -124,6 +125,12 @@ partial class Form1
         label2.Text = "1234567 bytes  ";
         label2.TextAlign = ContentAlignment.MiddleRight;
         // 
+        // updateBuildToolStripMenuItem
+        // 
+        updateBuildToolStripMenuItem.Name = "updateBuildToolStripMenuItem";
+        updateBuildToolStripMenuItem.Size = new Size(87, 20);
+        updateBuildToolStripMenuItem.Text = "Update Build";
+        // 
         // Form1
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
@@ -156,4 +163,5 @@ partial class Form1
     private System.Windows.Forms.Timer timer1;
     private FileSystemWatcher fileSystemWatcher1;
     private Label label2;
+    private ToolStripMenuItem updateBuildToolStripMenuItem;
 }

@@ -36,6 +36,10 @@ public static class Commands
         Form1.OutputListener(prefix, line);
     }
 
+    public static void UnityUpdate(string workingDirectory, List<string> buildTargets, Action finished)
+    {
+    }
+
     public static void UnityBuild(string workingDirectory, string unityExecutable,
         List<string> buildTargets, Action finished, FileSystemWatcher fileSystemWatcher, Action<long> fileSizeProgress)
     {
