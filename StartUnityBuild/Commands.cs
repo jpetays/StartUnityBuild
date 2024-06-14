@@ -1,12 +1,7 @@
-using System.Text.RegularExpressions;
-
 namespace StartUnityBuild;
 
-public static partial class Commands
+public static class Commands
 {
-    [GeneratedRegex(@"[^\w\s\-]*")]
-    private static partial Regex CleanCommitMessage();
-
     public static void GitStatus(string workingDirectory, Action finished)
     {
         const string outPrefix = "git";
@@ -52,9 +47,9 @@ public static partial class Commands
                     return;
                 }
                 // Commit changes in ProjectSettings.asset file.
-                var message = $"build update ver {productVersion} bundle {bundleVersion}";
-                message = CleanCommitMessage().Replace(message, "_");
-                await RunCommand.Execute(outPrefix, "git", $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""",
+                var message = $"auto update build {bundleVersion}";
+                await RunCommand.Execute(outPrefix, "git",
+                    $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""",
                     workingDirectory, null,
                     GitOutputFilter, Form1.ExitListener);
             }
