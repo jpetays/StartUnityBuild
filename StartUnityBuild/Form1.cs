@@ -92,14 +92,20 @@ public partial class Form1 : Form
             label2.Text = "";
             _totalFileSize = 0;
             isCommandExecuting = true;
-            Commands.UnityUpdate(_currentDirectory, ref _productVersion!, ref _bundleVersion!, (updated) =>
-            {
-                timer1.Stop();
-                var duration = DateTime.Now - startTime;
-                SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
-                UpdateProjectInfo(updated ? Color.Green : Color.Red);
-                isCommandExecuting = false;
-            });
+            Commands.UnityUpdate(_currentDirectory, _productVersion!, _bundleVersion!,
+                (updated, productVersion, bundleVersion) =>
+                {
+                    timer1.Stop();
+                    var duration = DateTime.Now - startTime;
+                    if (updated)
+                    {
+                        _productVersion = productVersion;
+                        _bundleVersion = bundleVersion;
+                    }
+                    SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
+                    UpdateProjectInfo(updated ? Color.Green : Color.Red);
+                    isCommandExecuting = false;
+                });
         });
         startBuildToolStripMenuItem.Text = $"[{startBuildToolStripMenuItem.Text}]";
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>

@@ -36,17 +36,49 @@ public static class Commands
         Form1.OutputListener(prefix, line);
     }
 
-    public static void UnityUpdate(string workingDirectory, ref string productVersion, ref string bundleVersion,
-        Action<bool> finished)
+    public static void UnityUpdate(string workingDirectory, string productVersion, string bundleVersion,
+        Action<bool, string, string> finished)
     {
         const string outPrefix = "update";
         Form1.AddLine($">{outPrefix}", $"ProjectSettings.asset");
-        var updated = true;
-        var prefix = updated ? outPrefix : "ERROR";
-        Form1.OutputListener($"{prefix}", $"-Version {productVersion}");
-        Form1.OutputListener($"{prefix}", $"-Bundle {bundleVersion}");
-        Form1.AddLine($">{outPrefix}", $"done");
-        finished(updated);
+        var isProjectSettingsFound = false;
+        var isProjectSettingsClean = false;
+        Task.Run(async () =>
+        {
+            await RunCommand.Execute(outPrefix, "git", "status ProjectSettings", workingDirectory, null,
+                MyOutputFilter, Form1.ExitListener);
+            if (!isProjectSettingsClean)
+            {
+                Form1.AddLine("ERROR", $"ProjectSettings folder has changed files in it, can not update project");
+                finished(false, string.Empty, string.Empty);
+                return;
+            }
+            var updated = false;
+            var prefix = updated ? outPrefix : "ERROR";
+            Form1.OutputListener($"{prefix}", $"-Version {productVersion}");
+            Form1.OutputListener($"{prefix}", $"-Bundle {bundleVersion}");
+            Form1.AddLine($">{outPrefix}", $"done");
+            finished(updated, productVersion, bundleVersion);
+        });
+        return;
+
+        void MyOutputFilter(string prefix, string? line)
+        {
+            GitOutputFilter(prefix, line);
+            if (line == null || isProjectSettingsFound)
+            {
+                return;
+            }
+            if (line.Contains("nothing to commit, working tree clean"))
+            {
+                isProjectSettingsClean = true;
+            }
+            if (line.Contains("ProjectSettings/ProjectVersion.txt"))
+            {
+                isProjectSettingsFound = true;
+                isProjectSettingsClean = false;
+            }
+        }
     }
 
     public static void UnityBuild(string workingDirectory, string unityExecutable,
