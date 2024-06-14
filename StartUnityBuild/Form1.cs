@@ -46,6 +46,7 @@ public partial class Form1 : Form
             var duration = DateTime.Now - startTime;
             SetStatus($"{timerLabel} {duration:mm':'ss}", Color.Green);
         };
+        gitStatusToolStripMenuItem.Text = $"[{gitStatusToolStripMenuItem.Text}]";
         gitStatusToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
         {
             if (isCommandExecuting)
@@ -69,6 +70,7 @@ public partial class Form1 : Form
                 isCommandExecuting = false;
             });
         });
+        startBuildToolStripMenuItem.Text = $"[{startBuildToolStripMenuItem.Text}]";
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
         {
             if (isCommandExecuting)
