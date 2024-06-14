@@ -1,7 +1,12 @@
+using System.Text.RegularExpressions;
+
 namespace StartUnityBuild;
 
-public static class Commands
+public static partial class Commands
 {
+    [GeneratedRegex(@"[^\w\s\-]*")]
+    private static partial Regex CleanCommitMessage();
+
     public static void GitStatus(string workingDirectory, Action finished)
     {
         const string outPrefix = "git";
@@ -32,6 +37,27 @@ public static class Commands
                 return;
             }
             var updated = Form1.UpdateProjectSettingsFile(workingDirectory, ref productVersion, ref bundleVersion);
+            if (updated)
+            {
+                Thread.Yield();
+                isProjectSettingsFound = false;
+                isProjectSettingsClean = false;
+                await RunCommand.Execute(outPrefix, "git", "status ProjectSettings", workingDirectory, null,
+                    MyOutputFilter, Form1.ExitListener);
+                var gitChanges = isProjectSettingsFound && !isProjectSettingsClean;
+                if (!gitChanges)
+                {
+                    Form1.AddLine("ERROR", $"ProjectSettings.asset was not changed, can not update project");
+                    finished(false, string.Empty, string.Empty);
+                    return;
+                }
+                // Commit changes in ProjectSettings.asset file.
+                var message = $"build update ver {productVersion} bundle {bundleVersion}";
+                message = CleanCommitMessage().Replace(message, "_");
+                await RunCommand.Execute(outPrefix, "git", $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""",
+                    workingDirectory, null,
+                    GitOutputFilter, Form1.ExitListener);
+            }
             var prefix = updated ? outPrefix : "ERROR";
             Form1.OutputListener($"{prefix}", $"-Version {productVersion}");
             Form1.OutputListener($"{prefix}", $"-Bundle {bundleVersion}");
@@ -51,7 +77,7 @@ public static class Commands
             {
                 isProjectSettingsClean = true;
             }
-            if (line.Contains("ProjectSettings/ProjectVersion.txt"))
+            if (line.Contains("ProjectSettings/ProjectSettings.asset"))
             {
                 isProjectSettingsFound = true;
                 isProjectSettingsClean = false;

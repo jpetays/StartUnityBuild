@@ -417,6 +417,29 @@ public partial class Form1 : Form
 
         productVersion = curProductVersion;
         bundleVersion = bundleVersionValue.ToString();
+        var updateCount = 0;
+        for (var i = 0; i < lines.Length; ++i)
+        {
+            var line = lines[i];
+            var tokens = line.Split(':');
+            if (tokens[0] == "  bundleVersion")
+            {
+                lines[i] = $"  bundleVersion: {productVersion}";
+                updateCount += 1;
+            }
+            else if (tokens[0] == "  AndroidBundleVersionCode")
+            {
+                lines[i] = $"  AndroidBundleVersionCode: {bundleVersion}";
+                updateCount += 1;
+            }
+        }
+        if (updateCount != 2)
+        {
+            AddLine("ERROR", $"Unable to update 'version' or 'bundle' in {path}");
+            return false;
+        }
+        var output = string.Join('\n', lines);
+        File.WriteAllText(path, output);
         return true;
     }
 }
