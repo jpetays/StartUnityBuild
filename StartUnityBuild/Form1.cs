@@ -328,29 +328,6 @@ public partial class Form1 : Form
         }
     }
 
-    private void LoadProjectSettingsFile()
-    {
-        var path = Path.Combine(_currentDirectory, "ProjectSettings", "ProjectSettings.asset");
-        AddLine(".file", $"{path}");
-        var lines = File.ReadAllLines(path);
-        foreach (var line in lines)
-        {
-            var tokens = line.Split(':');
-            if (tokens[0] == "  productName")
-            {
-                _productName = tokens[1].Trim();
-            }
-            else if (tokens[0] == "  bundleVersion")
-            {
-                _productVersion = tokens[1].Trim();
-            }
-            else if (tokens[0] == "  AndroidBundleVersionCode")
-            {
-                _bundleVersion = tokens[1].Trim();
-            }
-        }
-    }
-
     private void LoadAutoBuildTargets()
     {
         var path = Path.Combine(_currentDirectory, "etc", "batchBuild", "_auto_build.env");
@@ -375,5 +352,71 @@ public partial class Form1 : Form
                     break;
             }
         }
+    }
+
+    private void LoadProjectSettingsFile()
+    {
+        var path = Path.Combine(_currentDirectory, "ProjectSettings", "ProjectSettings.asset");
+        AddLine(".file", $"{path}");
+        var lines = File.ReadAllLines(path);
+        foreach (var line in lines)
+        {
+            var tokens = line.Split(':');
+            if (tokens[0] == "  productName")
+            {
+                _productName = tokens[1].Trim();
+            }
+            else if (tokens[0] == "  bundleVersion")
+            {
+                _productVersion = tokens[1].Trim();
+            }
+            else if (tokens[0] == "  AndroidBundleVersionCode")
+            {
+                _bundleVersion = tokens[1].Trim();
+            }
+        }
+    }
+
+    public static bool UpdateProjectSettingsFile(string workingDirectory,
+        ref string productVersion, ref string bundleVersion, bool versionIsDate = true)
+
+    {
+        var path = Path.Combine(workingDirectory, "ProjectSettings", "ProjectSettings.asset");
+        var lines = File.ReadAllLines(path);
+        var curProductVersion = "";
+        var curBundleVersion = "";
+        foreach (var line in lines)
+        {
+            var tokens = line.Split(':');
+            if (tokens[0] == "  bundleVersion")
+            {
+                curProductVersion = tokens[1].Trim();
+            }
+            else if (tokens[0] == "  AndroidBundleVersionCode")
+            {
+                curBundleVersion = tokens[1].Trim();
+            }
+        }
+        if (curProductVersion == "" || curBundleVersion == "")
+        {
+            AddLine("ERROR", $"Could not find 'version' or 'bundle' from {path}");
+            return false;
+        }
+        if (curProductVersion != productVersion || curBundleVersion != bundleVersion)
+        {
+            AddLine("ERROR",
+                $"ProjectSettings.asset does not have 'version' {productVersion} or 'bundle' {bundleVersion}");
+            AddLine(".ERROR", $"Current values are 'version' {curProductVersion} or 'bundle' {curBundleVersion}");
+            return false;
+        }
+        if (versionIsDate)
+        {
+            curProductVersion = $"{DateTime.Today:dd.MM.yyyy}";
+        }
+        var bundleVersionValue = int.Parse(curBundleVersion) + 1;
+
+        productVersion = curProductVersion;
+        bundleVersion = bundleVersionValue.ToString();
+        return true;
     }
 }

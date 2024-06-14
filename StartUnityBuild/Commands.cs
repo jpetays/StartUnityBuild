@@ -31,7 +31,7 @@ public static class Commands
                 finished(false, string.Empty, string.Empty);
                 return;
             }
-            var updated = false;
+            var updated = Form1.UpdateProjectSettingsFile(workingDirectory, ref productVersion, ref bundleVersion);
             var prefix = updated ? outPrefix : "ERROR";
             Form1.OutputListener($"{prefix}", $"-Version {productVersion}");
             Form1.OutputListener($"{prefix}", $"-Bundle {bundleVersion}");
