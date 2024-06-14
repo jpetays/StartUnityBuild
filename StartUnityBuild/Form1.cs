@@ -6,6 +6,8 @@ namespace StartUnityBuild;
 [SuppressMessage("ReSharper", "LocalizableElement")]
 public partial class Form1 : Form
 {
+    private const string AppVersion = "1.0";
+
     private static readonly char[] Separators = ['\r', '\n'];
 
     private static Form1 _instance = null!;
@@ -142,7 +144,7 @@ public partial class Form1 : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-        Text = "UNITY Build";
+        Text = $"Build {AppVersion} UNITY";
         try
         {
             LoadEnvironment();

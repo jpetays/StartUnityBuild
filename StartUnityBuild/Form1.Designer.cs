@@ -36,12 +36,12 @@ partial class Form1
         gitStatusToolStripMenuItem = new ToolStripMenuItem();
         updateBuildToolStripMenuItem = new ToolStripMenuItem();
         startBuildToolStripMenuItem = new ToolStripMenuItem();
+        projectInfoToolStripMenuItem = new ToolStripMenuItem();
         listView1 = new ListView();
         label1 = new Label();
         timer1 = new System.Windows.Forms.Timer(components);
         fileSystemWatcher1 = new FileSystemWatcher();
         label2 = new Label();
-        projectInfoToolStripMenuItem = new ToolStripMenuItem();
         menuStrip1.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize) fileSystemWatcher1).BeginInit();
         SuspendLayout();
@@ -92,6 +92,12 @@ partial class Form1
         startBuildToolStripMenuItem.Size = new Size(73, 20);
         startBuildToolStripMenuItem.Text = "Start Build";
         // 
+        // projectInfoToolStripMenuItem
+        // 
+        projectInfoToolStripMenuItem.Name = "projectInfoToolStripMenuItem";
+        projectInfoToolStripMenuItem.Size = new Size(80, 20);
+        projectInfoToolStripMenuItem.Text = "Project Info";
+        // 
         // listView1
         // 
         listView1.Dock = DockStyle.Fill;
@@ -131,12 +137,6 @@ partial class Form1
         label2.TabIndex = 3;
         label2.Text = "1234567 bytes  ";
         label2.TextAlign = ContentAlignment.MiddleRight;
-        // 
-        // projectInfoToolStripMenuItem
-        // 
-        projectInfoToolStripMenuItem.Name = "projectInfoToolStripMenuItem";
-        projectInfoToolStripMenuItem.Size = new Size(80, 20);
-        projectInfoToolStripMenuItem.Text = "Project Info";
         // 
         // Form1
         // 
