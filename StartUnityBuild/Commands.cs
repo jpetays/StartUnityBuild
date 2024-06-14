@@ -36,8 +36,17 @@ public static class Commands
         Form1.OutputListener(prefix, line);
     }
 
-    public static void UnityUpdate(string workingDirectory, List<string> buildTargets, Action finished)
+    public static void UnityUpdate(string workingDirectory, ref string productVersion, ref string bundleVersion,
+        Action<bool> finished)
     {
+        const string outPrefix = "update";
+        Form1.AddLine($">{outPrefix}", $"ProjectSettings.asset");
+        var updated = true;
+        var prefix = updated ? outPrefix : "ERROR";
+        Form1.OutputListener($"{prefix}", $"-Version {productVersion}");
+        Form1.OutputListener($"{prefix}", $"-Bundle {bundleVersion}");
+        Form1.AddLine($">{outPrefix}", $"done");
+        finished(updated);
     }
 
     public static void UnityBuild(string workingDirectory, string unityExecutable,

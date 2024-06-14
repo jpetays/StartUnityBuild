@@ -92,11 +92,12 @@ public partial class Form1 : Form
             label2.Text = "";
             _totalFileSize = 0;
             isCommandExecuting = true;
-            Commands.UnityUpdate(_currentDirectory, _buildTargets, () =>
+            Commands.UnityUpdate(_currentDirectory, ref _productVersion!, ref _bundleVersion!, (updated) =>
             {
                 timer1.Stop();
                 var duration = DateTime.Now - startTime;
                 SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
+                UpdateProjectInfo(updated ? Color.Green : Color.Red);
                 isCommandExecuting = false;
             });
         });
@@ -139,8 +140,8 @@ public partial class Form1 : Form
         try
         {
             LoadEnvironment();
-            Text = $"UNITY {_unityVersion} Build : " +
-                   $"{_productName} Version {_productVersion} Bundle {_bundleVersion} Targets: {string.Join(',', _buildTargets)}";
+            Text = $"Build UNITY {_unityVersion} - App {_productName} Targets {string.Join(',', _buildTargets)}";
+            UpdateProjectInfo(Color.Magenta);
             StartupCommand();
         }
         catch (Exception x)
@@ -155,6 +156,12 @@ public partial class Form1 : Form
                 }
             }
         }
+    }
+
+    private void UpdateProjectInfo(Color color)
+    {
+        projectInfoToolStripMenuItem.Text = $"Version {_productVersion} Bundle {_bundleVersion}";
+        projectInfoToolStripMenuItem.ForeColor = color;
     }
 
     private void StartupCommand()

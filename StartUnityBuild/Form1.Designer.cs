@@ -34,20 +34,21 @@ partial class Form1
         copyOutputToClipboardToolStripMenuItem = new ToolStripMenuItem();
         exitToolStripMenuItem = new ToolStripMenuItem();
         gitStatusToolStripMenuItem = new ToolStripMenuItem();
+        updateBuildToolStripMenuItem = new ToolStripMenuItem();
         startBuildToolStripMenuItem = new ToolStripMenuItem();
         listView1 = new ListView();
         label1 = new Label();
         timer1 = new System.Windows.Forms.Timer(components);
         fileSystemWatcher1 = new FileSystemWatcher();
         label2 = new Label();
-        updateBuildToolStripMenuItem = new ToolStripMenuItem();
+        projectInfoToolStripMenuItem = new ToolStripMenuItem();
         menuStrip1.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize) fileSystemWatcher1).BeginInit();
         SuspendLayout();
         // 
         // menuStrip1
         // 
-        menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, gitStatusToolStripMenuItem, updateBuildToolStripMenuItem, startBuildToolStripMenuItem });
+        menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, gitStatusToolStripMenuItem, updateBuildToolStripMenuItem, startBuildToolStripMenuItem, projectInfoToolStripMenuItem });
         menuStrip1.Location = new Point(0, 0);
         menuStrip1.Name = "menuStrip1";
         menuStrip1.Size = new Size(1063, 24);
@@ -78,6 +79,12 @@ partial class Form1
         gitStatusToolStripMenuItem.Name = "gitStatusToolStripMenuItem";
         gitStatusToolStripMenuItem.Size = new Size(69, 20);
         gitStatusToolStripMenuItem.Text = "Git Status";
+        // 
+        // updateBuildToolStripMenuItem
+        // 
+        updateBuildToolStripMenuItem.Name = "updateBuildToolStripMenuItem";
+        updateBuildToolStripMenuItem.Size = new Size(87, 20);
+        updateBuildToolStripMenuItem.Text = "Update Build";
         // 
         // startBuildToolStripMenuItem
         // 
@@ -125,11 +132,11 @@ partial class Form1
         label2.Text = "1234567 bytes  ";
         label2.TextAlign = ContentAlignment.MiddleRight;
         // 
-        // updateBuildToolStripMenuItem
+        // projectInfoToolStripMenuItem
         // 
-        updateBuildToolStripMenuItem.Name = "updateBuildToolStripMenuItem";
-        updateBuildToolStripMenuItem.Size = new Size(87, 20);
-        updateBuildToolStripMenuItem.Text = "Update Build";
+        projectInfoToolStripMenuItem.Name = "projectInfoToolStripMenuItem";
+        projectInfoToolStripMenuItem.Size = new Size(80, 20);
+        projectInfoToolStripMenuItem.Text = "Project Info";
         // 
         // Form1
         // 
@@ -164,4 +171,5 @@ partial class Form1
     private FileSystemWatcher fileSystemWatcher1;
     private Label label2;
     private ToolStripMenuItem updateBuildToolStripMenuItem;
+    private ToolStripMenuItem projectInfoToolStripMenuItem;
 }
