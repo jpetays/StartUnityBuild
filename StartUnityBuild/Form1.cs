@@ -155,7 +155,11 @@ public partial class Form1 : Form
         catch (Exception x)
         {
             AddLine($"Failed to LoadEnvironment");
-            AddLine("Error", $"{x.Message}");
+            AddLine("ERROR", $"{x.GetType().Name}: {x.Message}");
+            if (x is ApplicationException)
+            {
+                return;
+            }
             if (x.StackTrace != null)
             {
                 foreach (var line in x.StackTrace.Split(Separators, StringSplitOptions.RemoveEmptyEntries))
@@ -186,7 +190,7 @@ public partial class Form1 : Form
         }
         catch (Exception x)
         {
-            AddLine("Error", $"{x.Message}");
+            AddLine("ERROR", $"{x.Message}");
         }
     }
 
@@ -224,7 +228,14 @@ public partial class Form1 : Form
     private void LoadEnvironment()
     {
         AddLine("CWD", $"{_currentDirectory}");
-        LoadProjectVersionFile();
+        try
+        {
+            LoadProjectVersionFile();
+        }
+        catch (DirectoryNotFoundException)
+        {
+            throw new ApplicationException($"ProjectVersion.txt not found, is this UNITY project folder?");
+        }
         AddLine("Unity", $"{_unityVersion}");
         LoadProjectSettingsFile();
         AddLine(">Product", $"{_productName}");
