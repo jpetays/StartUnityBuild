@@ -57,8 +57,8 @@ public static class Commands
                     return;
                 }
                 // Commit and push changes (in ProjectSettings.asset file).
-                var message = $"auto update build {bundleVersion}";
-                Form1.AddLine($".{outPrefix}", $"git commit");
+                var message = $"auto update build version and bundle {bundleVersion}";
+                Form1.AddLine($".{outPrefix}", $"git commit: {message}");
                 await RunCommand.Execute(outPrefix, "git",
                     $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""",
                     workingDirectory, null,
@@ -136,8 +136,11 @@ public static class Commands
         }
         string? cachedFilename = null;
         FileInfo? cachedFileInfo = null;
+        var isBuildInfoModified = false;
+        var buildInfoPath = "";
         Task.Run(async () =>
         {
+            var abortBuild = false;
             for (var i = 0; i < buildTargets.Count; ++i)
             {
                 var buildTarget = buildTargets[i];
@@ -189,11 +192,38 @@ public static class Commands
                 if (!Directory.Exists(buildOutputFolder))
                 {
                     Form1.AddLine("ERROR", $"build output folder not found: {buildOutputFolder}");
+                    abortBuild = true;
                     break;
                 }
                 Thread.Sleep(delayAfterUnityBuild * 000);
             }
             fileSystemWatcher.EnableRaisingEvents = false;
+            if (!abortBuild)
+            {
+                // Check that BuildInfo was updated.
+                Form1.AddLine($".{outPrefix}", $"git status Assets");
+                await RunCommand.Execute(outPrefix, "git", "status Assets", workingDirectory, null,
+                    MyOutputFilter, Form1.ExitListener);
+                if (isBuildInfoModified)
+                {
+                    // Commit and push changes (in ProjectSettings.asset file).
+                    var message = $"auto update BuildInfo.cs";
+                    Form1.AddLine($".{outPrefix}", $"git commit: {message}");
+                    await RunCommand.Execute(outPrefix, "git",
+                        $"""commit -m "{message}" {buildInfoPath}""",
+                        workingDirectory, null,
+                        GitOutputFilter, Form1.ExitListener);
+                    // --quiet Suppress all output, including the listing of updated refs, unless an error occurs.
+                    // Progress is not reported to the standard error stream.
+                    Form1.AddLine($".{outPrefix}", $"git push --quiet");
+                    var result = await RunCommand.Execute(outPrefix, "git", "push --quiet",
+                        workingDirectory, null,
+                        GitOutputFilter, Form1.ExitListener);
+                    var gitPushPrefix = result == 0 ? $".{outPrefix}" : "ERROR";
+                    Form1.AddLine(gitPushPrefix, $"git push returns {result}");
+                }
+            }
+            // Final git status For Your Information only!
             Form1.AddLine($".{outPrefix}", $"git status");
             await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
                 GitOutputFilter, Form1.ExitListener);
@@ -203,8 +233,29 @@ public static class Commands
                 Form1.AddLine(outPrefix, "-You have changes that should/could be pushed to git!");
                 Form1.AddLine(outPrefix, "-");
             }
+            if (abortBuild)
+            {
+                Form1.AddLine("ERROR", "*");
+                Form1.AddLine("ERROR", "* Build was aborted!");
+                Form1.AddLine("ERROR", "*");
+            }
             finished();
         });
+
+        void MyOutputFilter(string prefix, string? line)
+        {
+            GitOutputFilter(prefix, line);
+            if (line == null)
+            {
+                return;
+            }
+            if (line.Contains("modified:") && line.Contains("BuildInfo.cs"))
+            {
+                isBuildInfoModified = true;
+                buildInfoPath =
+                    line.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1];
+            }
+        }
     }
 
     private static void GitOutputFilter(string prefix, string? line)
