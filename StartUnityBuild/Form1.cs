@@ -148,7 +148,7 @@ public partial class Form1 : Form
         try
         {
             LoadEnvironment();
-            Text = $"Build UNITY {_unityVersion} - App {_productName} Targets {string.Join(',', _buildTargets)}";
+            Text = $"{Text} {_unityVersion} - App {_productName} Targets {string.Join(',', _buildTargets)}";
             UpdateProjectInfo(Color.Magenta);
             StartupCommand();
         }
