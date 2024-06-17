@@ -6,6 +6,24 @@
         <Nullable>enable</Nullable>
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Copyright>Jari Petays</Copyright>
+        <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+        <Version>$(VersionPrefix)1.1</Version>
+        <Title>Start UNITY Build</Title>
+        <Description>Starts UNITY Build using associated batch files</Description>
+        <ApplicationIcon>Tpdkdesign.net-Refresh-Cl-Windows-Download.ico</ApplicationIcon>
     </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <Deterministic>False</Deterministic>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+      <Deterministic>False</Deterministic>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="Tpdkdesign.net-Refresh-Cl-Windows-Download.ico" />
+    </ItemGroup>
 
 </Project>

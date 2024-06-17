@@ -29,6 +29,7 @@ partial class Form1
     private void InitializeComponent()
     {
         components = new System.ComponentModel.Container();
+        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
         menuStrip1 = new MenuStrip();
         fileToolStripMenuItem = new ToolStripMenuItem();
         copyOutputToClipboardToolStripMenuItem = new ToolStripMenuItem();
@@ -147,6 +148,7 @@ partial class Form1
         Controls.Add(label1);
         Controls.Add(listView1);
         Controls.Add(menuStrip1);
+        Icon = (Icon) resources.GetObject("$this.Icon");
         MainMenuStrip = menuStrip1;
         Name = "Form1";
         Text = "Form1";
