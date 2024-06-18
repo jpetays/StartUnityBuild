@@ -8,18 +8,23 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Copyright>Jari Petays</Copyright>
         <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-        <Version>$(VersionPrefix)1.1</Version>
+        <Version>$(VersionPrefix)1.1.1</Version>
         <Title>Start UNITY Build</Title>
         <Description>Starts UNITY Build using associated batch files</Description>
         <ApplicationIcon>Tpdkdesign.net-Refresh-Cl-Windows-Download.ico</ApplicationIcon>
+        <SignAssembly>False</SignAssembly>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
       <Deterministic>False</Deterministic>
+      <IsPublishable>False</IsPublishable>
+      <DebugType>none</DebugType>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
       <Deterministic>False</Deterministic>
+      <IsPublishable>False</IsPublishable>
+      <DebugType>none</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
