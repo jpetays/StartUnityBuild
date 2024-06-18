@@ -131,7 +131,7 @@ public partial class Form1 : Form
             label2.Text = "";
             _totalFileSize = 0;
             isCommandExecuting = true;
-            Commands.UnityBuild(_currentDirectory, _unityExecutable!,_bundleVersion!, _buildTargets, () =>
+            Commands.UnityBuild(_currentDirectory, _unityExecutable!, _bundleVersion!, _buildTargets, () =>
             {
                 isCommandExecuting = false;
                 timer1.Stop();
@@ -151,9 +151,13 @@ public partial class Form1 : Form
         try
         {
             LoadEnvironment();
-            Text = $"{Text} {_unityVersion} - App {_productName} Targets {string.Join(',', _buildTargets)}";
+            Text = $"{Text} {_unityVersion} - App {_productName} - Targets {string.Join(',', _buildTargets)}";
             UpdateProjectInfo(Color.Magenta);
             StartupCommand();
+            if (_buildTargets.Count == 0)
+            {
+                AddLine("ERROR", "Could not find any build targets");
+            }
         }
         catch (Exception x)
         {
