@@ -18,13 +18,13 @@
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
       <Deterministic>False</Deterministic>
       <IsPublishable>False</IsPublishable>
-      <DebugType>none</DebugType>
+      <DebugType>embedded</DebugType>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
       <Deterministic>False</Deterministic>
       <IsPublishable>False</IsPublishable>
-      <DebugType>none</DebugType>
+      <DebugType>embedded</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
