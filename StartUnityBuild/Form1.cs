@@ -6,7 +6,7 @@ namespace StartUnityBuild;
 [SuppressMessage("ReSharper", "LocalizableElement")]
 public partial class Form1 : Form
 {
-    private const string AppVersion = "1.1";
+    private const string AppVersion = "1.1.1";
 
     private static readonly char[] Separators = ['\r', '\n'];
 
