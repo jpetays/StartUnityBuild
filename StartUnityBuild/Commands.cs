@@ -1,8 +1,26 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace StartUnityBuild;
 
+[SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible")]
 public static class Commands
 {
+    /*
+        https://git-scm.com/docs/git-push
+        --quiet
+            Suppress all output, including the listing of updated refs, unless an error occurs.
+            Progress is not reported to the standard error stream.
+        --dry-run
+            Do everything except actually send the updates.
+        --porcelain
+            Produce machine-readable output.
+            The output status line for each ref will be tab-separated and sent to stdout instead of stderr.
+            The full symbolic names of the refs will be given.
+*/
+    public static bool IsDryRun;
     private static bool _gitBranchUpToDate;
+
+    private static string PushOptions => $"--quiet {(IsDryRun ? "--dry-run" : "")}";
 
     public static void GitStatus(string workingDirectory, Action finished)
     {
@@ -27,16 +45,25 @@ public static class Commands
     {
         const string outPrefix = "update";
         Form1.AddLine($">{outPrefix}", $"ProjectSettings.asset");
-        var isProjectSettingsFound = false;
-        var isProjectSettingsClean = false;
+        Form1.AddLine($">{outPrefix}", $"BuildInfo.cs");
+        var isProjectSettingsDirty = false;
+        var isBuildInfoDirty = false;
         Task.Run(async () =>
         {
             Form1.AddLine($".{outPrefix}", $"git status");
-            await RunCommand.Execute(outPrefix, "git", "status ProjectSettings", workingDirectory, null,
+            await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
                 MyOutputFilter, Form1.ExitListener);
-            if (!isProjectSettingsClean)
+            if (isProjectSettingsDirty || isBuildInfoDirty)
             {
-                Form1.AddLine("ERROR", $"ProjectSettings folder has changed files in it, can not update project");
+                Form1.AddLine("ERROR", $"Project folder has changed files in it, can not update project");
+                if (isProjectSettingsDirty)
+                {
+                    Form1.AddLine($"-{outPrefix}", $"ProjectSettings.asset");
+                }
+                if (isBuildInfoDirty)
+                {
+                    Form1.AddLine($"-{outPrefix}", $"BuildInfo.cs");
+                }
                 finished(false, string.Empty, string.Empty);
                 return;
             }
@@ -44,12 +71,10 @@ public static class Commands
             if (updated)
             {
                 Thread.Yield();
-                isProjectSettingsFound = false;
-                isProjectSettingsClean = false;
                 Form1.AddLine($".{outPrefix}", $"git status");
-                await RunCommand.Execute(outPrefix, "git", "status ProjectSettings", workingDirectory,
+                await RunCommand.Execute(outPrefix, "git", "status", workingDirectory,
                     null, MyOutputFilter, Form1.ExitListener);
-                var gitChanges = isProjectSettingsFound && !isProjectSettingsClean;
+                var gitChanges = isProjectSettingsDirty;
                 if (!gitChanges)
                 {
                     Form1.AddLine("ERROR", $"ProjectSettings.asset was not changed, can not update project");
@@ -63,14 +88,16 @@ public static class Commands
                     $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""",
                     workingDirectory, null,
                     GitOutputFilter, Form1.ExitListener);
-                // --quiet Suppress all output, including the listing of updated refs, unless an error occurs.
-                // Progress is not reported to the standard error stream.
-                Form1.AddLine($".{outPrefix}", $"git push --quiet");
-                var result = await RunCommand.Execute(outPrefix, "git", "push --quiet",
+                Form1.AddLine($".{outPrefix}", $"git push {PushOptions}");
+                var result = await RunCommand.Execute(outPrefix, "git", $"push {PushOptions}",
                     workingDirectory, null,
                     GitOutputFilter, Form1.ExitListener);
                 var gitPushPrefix = result == 0 ? $".{outPrefix}" : "ERROR";
                 Form1.AddLine(gitPushPrefix, $"git push returns {result}");
+                if (IsDryRun)
+                {
+                    Form1.AddLine($"-{outPrefix}", $"this was --dry-run");
+                }
                 // Final git status For Your Information only!
                 Form1.AddLine($".{outPrefix}", $"git status");
                 await RunCommand.Execute(outPrefix, "git", "status", workingDirectory,
@@ -81,11 +108,11 @@ public static class Commands
                     Form1.AddLine(outPrefix, "-You have changes that should/could be pushed to git!");
                     Form1.AddLine(outPrefix, "-");
                 }
+                var prefix = updated ? outPrefix : "ERROR";
+                Form1.OutputListener($"{prefix}", $"-Version {productVersion}");
+                Form1.OutputListener($"{prefix}", $"-Bundle {bundleVersion}");
+                Form1.AddLine($">{outPrefix}", $"done");
             }
-            var prefix = updated ? outPrefix : "ERROR";
-            Form1.OutputListener($"{prefix}", $"-Version {productVersion}");
-            Form1.OutputListener($"{prefix}", $"-Bundle {bundleVersion}");
-            Form1.AddLine($">{outPrefix}", $"done");
             finished(updated, productVersion, bundleVersion);
         });
         return;
@@ -93,23 +120,23 @@ public static class Commands
         void MyOutputFilter(string prefix, string? line)
         {
             GitOutputFilter(prefix, line);
-            if (line == null || isProjectSettingsFound)
+            if (line == null)
             {
                 return;
             }
-            if (line.Contains("nothing to commit, working tree clean"))
+            if (line.Contains("modified:") && line.Contains("ProjectSettings/ProjectSettings.asset"))
             {
-                isProjectSettingsClean = true;
+                isProjectSettingsDirty = true;
             }
-            if (line.Contains("ProjectSettings/ProjectSettings.asset"))
+            // BuildInfo can be located anywhere!
+            if (line.Contains("modified:") && line.Contains("BuildInfo.cs"))
             {
-                isProjectSettingsFound = true;
-                isProjectSettingsClean = false;
+                isBuildInfoDirty = true;
             }
         }
     }
 
-    public static void UnityBuild(string workingDirectory, string unityExecutable,
+    public static void UnityBuild(string workingDirectory, string unityExecutable, string bundleVersion,
         List<string> buildTargets, Action finished, FileSystemWatcher fileSystemWatcher, Action<long> fileSizeProgress)
     {
         const int delayAfterUnityBuild = 5;
@@ -121,6 +148,7 @@ public static class Commands
         if (!File.Exists(batchBuildCommand))
         {
             Form1.AddLine(outPrefix, $"build command not found: {batchBuildCommand}");
+            finished();
             return;
         }
         Form1.AddLine($">{outPrefix}", $"build targets: {string.Join(", ", buildTargets)}");
@@ -130,6 +158,7 @@ public static class Commands
             if (!File.Exists(unityExecutable))
             {
                 Form1.AddLine(outPrefix, $"Unity Executable not found: {unityExecutable}");
+                finished();
                 return;
             }
             environmentVariables.Add("UNITY_EXE_OVERRIDE", unityExecutable);
@@ -206,21 +235,27 @@ public static class Commands
                     MyOutputFilter, Form1.ExitListener);
                 if (isBuildInfoModified)
                 {
+                    // Create a lightweight commit tag.
+                    var tagName = $"build_{bundleVersion}_{DateTime.Today:yyyy-MM-dd}";
+                    Form1.AddLine($".{outPrefix}", $"git tag {tagName}");
+                    await RunCommand.Execute(outPrefix, "git", $"tag {tagName}",
+                        workingDirectory, null, GitOutputFilter, Form1.ExitListener);
+
                     // Commit and push changes (in ProjectSettings.asset file).
                     var message = $"auto update BuildInfo.cs";
                     Form1.AddLine($".{outPrefix}", $"git commit: {message}");
                     await RunCommand.Execute(outPrefix, "git",
                         $"""commit -m "{message}" {buildInfoPath}""",
-                        workingDirectory, null,
-                        GitOutputFilter, Form1.ExitListener);
-                    // --quiet Suppress all output, including the listing of updated refs, unless an error occurs.
-                    // Progress is not reported to the standard error stream.
-                    Form1.AddLine($".{outPrefix}", $"git push --quiet");
-                    var result = await RunCommand.Execute(outPrefix, "git", "push --quiet",
-                        workingDirectory, null,
-                        GitOutputFilter, Form1.ExitListener);
+                        workingDirectory, null, GitOutputFilter, Form1.ExitListener);
+                    Form1.AddLine($".{outPrefix}", $"git push {PushOptions}");
+                    var result = await RunCommand.Execute(outPrefix, "git", $"push {PushOptions}",
+                        workingDirectory, null, GitOutputFilter, Form1.ExitListener);
                     var gitPushPrefix = result == 0 ? $".{outPrefix}" : "ERROR";
                     Form1.AddLine(gitPushPrefix, $"git push returns {result}");
+                    if (IsDryRun)
+                    {
+                        Form1.AddLine($"-{outPrefix}", $"this was --dry-run");
+                    }
                 }
             }
             // Final git status For Your Information only!
@@ -241,6 +276,7 @@ public static class Commands
             }
             finished();
         });
+        return;
 
         void MyOutputFilter(string prefix, string? line)
         {

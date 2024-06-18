@@ -66,10 +66,10 @@ public partial class Form1 : Form
             isCommandExecuting = true;
             Commands.GitStatus(_currentDirectory, () =>
             {
+                isCommandExecuting = false;
                 timer1.Stop();
                 var duration = DateTime.Now - startTime;
                 SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
-                isCommandExecuting = false;
             });
         });
         updateBuildToolStripMenuItem.Text = $"[{updateBuildToolStripMenuItem.Text}]";
@@ -97,6 +97,7 @@ public partial class Form1 : Form
             Commands.UnityUpdate(_currentDirectory, _productVersion!, _bundleVersion!,
                 (updated, productVersion, bundleVersion) =>
                 {
+                    isCommandExecuting = false;
                     timer1.Stop();
                     var duration = DateTime.Now - startTime;
                     if (updated)
@@ -106,7 +107,6 @@ public partial class Form1 : Form
                     }
                     SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
                     UpdateProjectInfo(updated ? Color.Green : Color.Red);
-                    isCommandExecuting = false;
                 });
         });
         startBuildToolStripMenuItem.Text = $"[{startBuildToolStripMenuItem.Text}]";
@@ -131,12 +131,12 @@ public partial class Form1 : Form
             label2.Text = "";
             _totalFileSize = 0;
             isCommandExecuting = true;
-            Commands.UnityBuild(_currentDirectory, _unityExecutable!, _buildTargets, () =>
+            Commands.UnityBuild(_currentDirectory, _unityExecutable!,_bundleVersion!, _buildTargets, () =>
             {
+                isCommandExecuting = false;
                 timer1.Stop();
                 var duration = DateTime.Now - startTime;
                 SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
-                isCommandExecuting = false;
             }, fileSystemWatcher1, SetFileSizeProgress);
         });
     }
@@ -144,7 +144,10 @@ public partial class Form1 : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-        Text = $"Build {AppVersion} UNITY";
+#if DEBUG
+        Commands.IsDryRun = true;
+#endif
+        Text = $"{(Commands.IsDryRun ? "TEST " : "")}Build {AppVersion} UNITY";
         try
         {
             LoadEnvironment();
