@@ -20,7 +20,7 @@ public static class Commands
     public static bool IsDryRun;
     private static bool _gitBranchUpToDate;
 
-    private static string PushOptions => $"--quiet {(IsDryRun ? "--dry-run" : "")}";
+    private static string PushOptions => $"--tags --quiet {(IsDryRun ? "--dry-run" : "")}";
 
     public static void GitStatus(string workingDirectory, Action finished)
     {
