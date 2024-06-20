@@ -3,7 +3,7 @@ set SOURCE=.\StartUnityBuild\bin\Release\net8.0-windows
 set TARGET=..\..\StartUnityBuild\net8.0-windows
 set RELEASE=.\StartUnityBuild\release\StartUnityBuild.zip
 
-robocopy %SOURCE% %TARGET% *.* /S /E /V
+robocopy %SOURCE% %TARGET% *.* /V
 if exist %RELEASE% (
 	del /Q %RELEASE%
 )

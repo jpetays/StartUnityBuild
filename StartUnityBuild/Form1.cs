@@ -8,7 +8,7 @@ namespace StartUnityBuild;
 public partial class Form1 : Form
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private const string AppVersion = "1.1.1";
+    private readonly string _appVersion;
 
     private static readonly char[] Separators = ['\r', '\n'];
 
@@ -25,6 +25,7 @@ public partial class Form1 : Form
 
     public Form1()
     {
+        _appVersion = Application.ProductVersion.Split('+')[0];
         _instance = this;
         _currentDirectory = Directory.GetCurrentDirectory();
         InitializeComponent();
@@ -149,7 +150,7 @@ public partial class Form1 : Form
 #if DEBUG
         Commands.IsDryRun = true;
 #endif
-        Text = $"{(Commands.IsDryRun ? "TEST " : "")}Build {AppVersion} UNITY";
+        Text = $"{(Commands.IsDryRun ? "TEST " : "")}Build {_appVersion} UNITY";
         try
         {
             LoadEnvironment();
