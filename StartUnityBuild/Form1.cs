@@ -1,11 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using NLog;
 
 namespace StartUnityBuild;
 
 [SuppressMessage("ReSharper", "LocalizableElement")]
 public partial class Form1 : Form
 {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private const string AppVersion = "1.1.1";
 
     private static readonly char[] Separators = ['\r', '\n'];
@@ -291,6 +293,7 @@ public partial class Form1 : Form
             Invoke(() => ClearLines);
             return;
         }
+        Logger.Trace("*");
         listView1.BeginUpdate();
         listView1.Items.Clear();
         listView1.EndUpdate();
@@ -304,6 +307,7 @@ public partial class Form1 : Form
             return;
         }
         line = $"{DateTime.Now:hh:mm:ss} {line}";
+        Logger.Trace(line);
         var listView = _instance.listView1;
         listView.BeginUpdate();
         if (color == null)

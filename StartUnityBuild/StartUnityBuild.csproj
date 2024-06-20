@@ -8,7 +8,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Copyright>Jari Petays</Copyright>
         <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-        <Version>$(VersionPrefix)1.1.1</Version>
+        <Version>$(VersionPrefix)1.1.2</Version>
         <Title>Start UNITY Build</Title>
         <Description>Starts UNITY Build using associated batch files</Description>
         <ApplicationIcon>Tpdkdesign.net-Refresh-Cl-Windows-Download.ico</ApplicationIcon>
@@ -29,6 +29,16 @@
 
     <ItemGroup>
       <Content Include="Tpdkdesign.net-Refresh-Cl-Windows-Download.ico" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="NLog" Version="5.3.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="NLog.config">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
