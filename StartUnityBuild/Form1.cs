@@ -40,6 +40,11 @@ public partial class Form1 : Form
         label2.Text = "";
         timer1.Interval = 1000;
 
+        SetupMenuCommands();
+    }
+
+    private void SetupMenuCommands()
+    {
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
         var isCommandExecuting = false;
@@ -239,7 +244,7 @@ public partial class Form1 : Form
 
     private void LoadEnvironment()
     {
-        AddLine("CWD", $"{_settings.WorkingDirectory}");
+        AddLine(">Project", $"{_settings.WorkingDirectory}");
         try
         {
             Files.LoadProjectVersionFile(_settings.WorkingDirectory, out var unityVersion);

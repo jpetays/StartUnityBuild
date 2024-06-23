@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace StartUnityBuild;
 
@@ -7,10 +8,18 @@ namespace StartUnityBuild;
 /// </summary>
 public static class Files
 {
+    public static readonly Encoding Encoding = new UTF8Encoding(false, false);
+
     public const string ProjectSettingsFolderName = "ProjectSettings";
     public const string ProjectSettingsFileName = "ProjectSettings.asset";
-    private const string ProjectVersionFileName = "ProjectVersion.txt";
+    public const string ProjectVersionFileName = "ProjectVersion.txt";
     private static readonly string AutoBuildEnvironmentFilePath = Path.Combine("etc", "batchBuild", "_auto_build.env");
+
+    public static bool HasProjectVersionFile(string workingDirectory)
+    {
+        var path = Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectVersionFileName);
+        return File.Exists(path);
+    }
 
     [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
     public static void LoadProjectVersionFile(string workingDirectory, out string unityVersion)
@@ -18,7 +27,7 @@ public static class Files
         unityVersion = null!;
         var path = Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectVersionFileName);
         Form1.AddLine(".file", $"{path}");
-        var lines = File.ReadAllLines(path);
+        var lines = File.ReadAllLines(path, Encoding);
         foreach (var line in lines)
         {
             var tokens = line.Split(':');
@@ -40,7 +49,7 @@ public static class Files
         unityPath = null!;
         var path = Path.Combine(workingDirectory, AutoBuildEnvironmentFilePath);
         Form1.AddLine(".file", $"{path}");
-        var lines = File.ReadAllLines(path);
+        var lines = File.ReadAllLines(path, Encoding);
         foreach (var line in lines)
         {
             var tokens = line.Split('=');
@@ -78,7 +87,7 @@ public static class ProjectSettings
         bundleVersion = null!;
         var path = Path.Combine(workingDirectory, Files.ProjectSettingsFolderName, Files.ProjectSettingsFileName);
         Form1.AddLine(".file", $"{path}");
-        var lines = File.ReadAllLines(path);
+        var lines = File.ReadAllLines(path, Files.Encoding);
         foreach (var line in lines)
         {
             var tokens = line.Split(':');
@@ -106,7 +115,7 @@ public static class ProjectSettings
 
     {
         var path = Path.Combine(workingDirectory, Files.ProjectSettingsFolderName, Files.ProjectSettingsFileName);
-        var lines = File.ReadAllLines(path);
+        var lines = File.ReadAllLines(path,Files.Encoding);
         var curProductVersion = "";
         var curBundleVersion = "";
         foreach (var line in lines)
@@ -163,7 +172,7 @@ public static class ProjectSettings
             return false;
         }
         var output = string.Join('\n', lines);
-        File.WriteAllText(path, output);
+        File.WriteAllText(path, output,Files.Encoding);
         return true;
     }
 }
