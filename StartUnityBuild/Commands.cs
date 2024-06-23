@@ -67,7 +67,7 @@ public static class Commands
                 finished(false, string.Empty, string.Empty);
                 return;
             }
-            var updated = Form1.UpdateProjectSettingsFile(workingDirectory, ref productVersion, ref bundleVersion);
+            var updated = ProjectSettings.UpdateProjectSettingsFile(workingDirectory, ref productVersion, ref bundleVersion);
             if (updated)
             {
                 Thread.Yield();

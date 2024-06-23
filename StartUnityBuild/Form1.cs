@@ -240,18 +240,19 @@ public partial class Form1 : Form
         AddLine("CWD", $"{_currentDirectory}");
         try
         {
-            LoadProjectVersionFile();
+            Files.LoadProjectVersionFile(_currentDirectory, ref _unityVersion!);
         }
         catch (DirectoryNotFoundException)
         {
             throw new ApplicationException($"ProjectVersion.txt not found, is this UNITY project folder?");
         }
         AddLine("Unity", $"{_unityVersion}");
-        LoadProjectSettingsFile();
+        ProjectSettings.LoadProjectSettingsFile(_currentDirectory,
+            ref _productName!, ref _productVersion!, ref _bundleVersion!);
         AddLine(">Product", $"{_productName}");
         AddLine(">Version", $"{_productVersion}");
         AddLine(">Bundle", $"{_bundleVersion}");
-        LoadAutoBuildTargets();
+        Files.LoadAutoBuildTargets(_currentDirectory, ref _unityPath!, _buildTargets);
         AddLine("Builds", $"{string.Join(',', _buildTargets)}");
         var setUnityExecutablePath = !string.IsNullOrEmpty(_unityPath) && !string.IsNullOrEmpty(_unityVersion);
         if (setUnityExecutablePath)
@@ -335,136 +336,5 @@ public partial class Form1 : Form
             builder.AppendLine(item is ListViewItem listViewItem ? listViewItem.Text : item.ToString());
         }
         Clipboard.SetText(builder.ToString());
-    }
-
-    private void LoadProjectVersionFile()
-    {
-        var path = Path.Combine(_currentDirectory, "ProjectSettings", "ProjectVersion.txt");
-        AddLine(".file", $"{path}");
-        var lines = File.ReadAllLines(path);
-        foreach (var line in lines)
-        {
-            var tokens = line.Split(':');
-            if (tokens[0].Trim() == "m_EditorVersion")
-            {
-                _unityVersion = tokens[1].Trim();
-                return;
-            }
-        }
-    }
-
-    private void LoadAutoBuildTargets()
-    {
-        var path = Path.Combine(_currentDirectory, "etc", "batchBuild", "_auto_build.env");
-        AddLine(".file", $"{path}");
-        var lines = File.ReadAllLines(path);
-        foreach (var line in lines)
-        {
-            var tokens = line.Split('=');
-            switch (tokens[0].Trim())
-            {
-                case "buildTargets":
-                {
-                    var targets = tokens[1].Split(',');
-                    foreach (var target in targets)
-                    {
-                        _buildTargets.Add(target.Trim());
-                    }
-                    break;
-                }
-                case "unityPath":
-                    _unityPath = tokens[1].Trim();
-                    break;
-            }
-        }
-    }
-
-    private void LoadProjectSettingsFile()
-    {
-        var path = Path.Combine(_currentDirectory, "ProjectSettings", "ProjectSettings.asset");
-        AddLine(".file", $"{path}");
-        var lines = File.ReadAllLines(path);
-        foreach (var line in lines)
-        {
-            var tokens = line.Split(':');
-            if (tokens[0] == "  productName")
-            {
-                _productName = tokens[1].Trim();
-            }
-            else if (tokens[0] == "  bundleVersion")
-            {
-                _productVersion = tokens[1].Trim();
-            }
-            else if (tokens[0] == "  AndroidBundleVersionCode")
-            {
-                _bundleVersion = tokens[1].Trim();
-            }
-        }
-    }
-
-    public static bool UpdateProjectSettingsFile(string workingDirectory,
-        ref string productVersion, ref string bundleVersion, bool versionIsDate = true)
-
-    {
-        var path = Path.Combine(workingDirectory, "ProjectSettings", "ProjectSettings.asset");
-        var lines = File.ReadAllLines(path);
-        var curProductVersion = "";
-        var curBundleVersion = "";
-        foreach (var line in lines)
-        {
-            var tokens = line.Split(':');
-            if (tokens[0] == "  bundleVersion")
-            {
-                curProductVersion = tokens[1].Trim();
-            }
-            else if (tokens[0] == "  AndroidBundleVersionCode")
-            {
-                curBundleVersion = tokens[1].Trim();
-            }
-        }
-        if (curProductVersion == "" || curBundleVersion == "")
-        {
-            AddLine("ERROR", $"Could not find 'version' or 'bundle' from {path}");
-            return false;
-        }
-        if (curProductVersion != productVersion || curBundleVersion != bundleVersion)
-        {
-            AddLine("ERROR",
-                $"ProjectSettings.asset does not have 'version' {productVersion} or 'bundle' {bundleVersion}");
-            AddLine(".ERROR", $"Current values are 'version' {curProductVersion} or 'bundle' {curBundleVersion}");
-            return false;
-        }
-        if (versionIsDate)
-        {
-            curProductVersion = $"{DateTime.Today:dd.MM.yyyy}";
-        }
-        var bundleVersionValue = int.Parse(curBundleVersion) + 1;
-
-        productVersion = curProductVersion;
-        bundleVersion = bundleVersionValue.ToString();
-        var updateCount = 0;
-        for (var i = 0; i < lines.Length; ++i)
-        {
-            var line = lines[i];
-            var tokens = line.Split(':');
-            if (tokens[0] == "  bundleVersion")
-            {
-                lines[i] = $"  bundleVersion: {productVersion}";
-                updateCount += 1;
-            }
-            else if (tokens[0] == "  AndroidBundleVersionCode")
-            {
-                lines[i] = $"  AndroidBundleVersionCode: {bundleVersion}";
-                updateCount += 1;
-            }
-        }
-        if (updateCount != 2)
-        {
-            AddLine("ERROR", $"Unable to update 'version' or 'bundle' in {path}");
-            return false;
-        }
-        var output = string.Join('\n', lines);
-        File.WriteAllText(path, output);
-        return true;
     }
 }
