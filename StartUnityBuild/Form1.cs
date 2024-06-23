@@ -47,6 +47,11 @@ public partial class Form1 : Form
     {
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
+        resetFolderAndExitToolStripMenuItem.Click += (_, _) =>
+        {
+            Program.DeleteAppPropertiesFile();
+            Application.Exit();
+        };
         var isCommandExecuting = false;
         var startTime = DateTime.Now;
         var timerLabel = "";

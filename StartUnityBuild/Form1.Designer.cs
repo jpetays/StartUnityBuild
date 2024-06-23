@@ -43,6 +43,7 @@ partial class Form1
         timer1 = new System.Windows.Forms.Timer(components);
         fileSystemWatcher1 = new FileSystemWatcher();
         label2 = new Label();
+        resetFolderAndExitToolStripMenuItem = new ToolStripMenuItem();
         menuStrip1.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize) fileSystemWatcher1).BeginInit();
         SuspendLayout();
@@ -58,7 +59,7 @@ partial class Form1
         // 
         // fileToolStripMenuItem
         // 
-        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { copyOutputToClipboardToolStripMenuItem, exitToolStripMenuItem });
+        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { copyOutputToClipboardToolStripMenuItem, exitToolStripMenuItem, resetFolderAndExitToolStripMenuItem });
         fileToolStripMenuItem.Name = "fileToolStripMenuItem";
         fileToolStripMenuItem.Size = new Size(37, 20);
         fileToolStripMenuItem.Text = "File";
@@ -139,6 +140,12 @@ partial class Form1
         label2.Text = "1234567 bytes  ";
         label2.TextAlign = ContentAlignment.MiddleRight;
         // 
+        // resetFolderAndExitToolStripMenuItem
+        // 
+        resetFolderAndExitToolStripMenuItem.Name = "resetFolderAndExitToolStripMenuItem";
+        resetFolderAndExitToolStripMenuItem.Size = new Size(212, 22);
+        resetFolderAndExitToolStripMenuItem.Text = "Reset Folder And Exit";
+        // 
         // Form1
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
@@ -174,4 +181,5 @@ partial class Form1
     private Label label2;
     private ToolStripMenuItem updateBuildToolStripMenuItem;
     private ToolStripMenuItem projectInfoToolStripMenuItem;
+    private ToolStripMenuItem resetFolderAndExitToolStripMenuItem;
 }

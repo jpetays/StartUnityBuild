@@ -16,10 +16,7 @@ static class Program
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
         var initialDirectory = Directory.GetCurrentDirectory();
-        var appPropertiesName = $"{Application.ProductName!}.properties";
-        var appPropertiesFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Application.ProductName!);
-        var appPropertiesFile = Path.Combine(appPropertiesFolder, appPropertiesName);
+        var appPropertiesFile = GetAppPropertiesFilename();
         var currentDirectory = File.Exists(appPropertiesFile)
             ? File.ReadAllText(appPropertiesFile, Files.Encoding)
             : initialDirectory;
@@ -27,9 +24,10 @@ static class Program
         {
             if (GetProjectSettingsFolderName(initialDirectory, out currentDirectory))
             {
+                var appPropertiesFolder = Path.GetDirectoryName(appPropertiesFile);
                 if (!Directory.Exists(appPropertiesFolder))
                 {
-                    Directory.CreateDirectory(appPropertiesFolder);
+                    Directory.CreateDirectory(appPropertiesFolder!);
                 }
                 File.WriteAllText(appPropertiesFile, currentDirectory, Files.Encoding);
             }
@@ -39,6 +37,24 @@ static class Program
             Directory.SetCurrentDirectory(currentDirectory);
         }
         Application.Run(new Form1());
+    }
+
+    private static string GetAppPropertiesFilename()
+    {
+        var appPropertiesName = $"{Application.ProductName!}.properties";
+        var appPropertiesFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Application.ProductName!);
+        var appPropertiesFile = Path.Combine(appPropertiesFolder, appPropertiesName);
+        return appPropertiesFile;
+    }
+
+    public static void DeleteAppPropertiesFile()
+    {
+        var appPropertiesFile = GetAppPropertiesFilename();
+        if (File.Exists(appPropertiesFile))
+        {
+            File.Delete(appPropertiesFile);
+        }
     }
 
     private static bool GetProjectSettingsFolderName(string initialDirectory, out string folderName)
