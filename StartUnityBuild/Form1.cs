@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text;
 using NLog;
 
@@ -29,6 +30,9 @@ public partial class Form1 : Form
         _instance = this;
         _currentDirectory = Directory.GetCurrentDirectory();
         InitializeComponent();
+        // Reduce Graphics Flicker with Double Buffering for Forms and Controls
+        // https://learn.microsoft.com/en-us/dotnet/desktop/winforms/advanced/how-to-reduce-graphics-flicker-with-double-buffering-for-forms-and-controls?view=netframeworkdesktop-4.8
+        listView1.DoubleBuffered(true);
         KeyPreview = true;
         KeyDown += OnKeyDown!;
 
@@ -336,5 +340,14 @@ public partial class Form1 : Form
             builder.AppendLine(item is ListViewItem listViewItem ? listViewItem.Text : item.ToString());
         }
         Clipboard.SetText(builder.ToString());
+    }
+}
+
+public static class Extensions
+{
+    public static void DoubleBuffered(this Control control, bool enabled)
+    {
+        var propertyInfo = control.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+        propertyInfo!.SetValue(control, enabled, null);
     }
 }
