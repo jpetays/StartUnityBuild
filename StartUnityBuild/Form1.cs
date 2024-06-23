@@ -13,28 +13,23 @@ public partial class Form1 : Form
 
     private static readonly char[] Separators = ['\r', '\n'];
 
-    private static Form1 _instance = null!;
-    private readonly string _currentDirectory;
-    private string? _unityVersion;
-    private string? _productName;
-    private string? _productVersion;
-    private string? _bundleVersion;
-    private readonly List<string> _buildTargets = new();
-    private string? _unityPath;
-    private string? _unityExecutable;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private static Form1 _instance;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    private readonly BuildSettings _settings;
     private long _totalFileSize;
 
     public Form1()
     {
         _appVersion = Application.ProductVersion.Split('+')[0];
         _instance = this;
-        _currentDirectory = Directory.GetCurrentDirectory();
+        _settings = new BuildSettings(Directory.GetCurrentDirectory());
         InitializeComponent();
         // Reduce Graphics Flicker with Double Buffering for Forms and Controls
         // https://learn.microsoft.com/en-us/dotnet/desktop/winforms/advanced/how-to-reduce-graphics-flicker-with-double-buffering-for-forms-and-controls?view=netframeworkdesktop-4.8
         listView1.DoubleBuffered(true);
         KeyPreview = true;
-        KeyDown += OnKeyDown!;
+        KeyDown += OnKeyDown;
 
         listView1.Font = new Font("Cascadia Mono", 10);
         listView1.Columns.Add("Output", 1920, HorizontalAlignment.Left);
@@ -71,7 +66,7 @@ public partial class Form1 : Form
             label2.Text = "";
             _totalFileSize = 0;
             isCommandExecuting = true;
-            Commands.GitStatus(_currentDirectory, () =>
+            Commands.GitStatus(_settings.WorkingDirectory, () =>
             {
                 isCommandExecuting = false;
                 timer1.Stop();
@@ -88,7 +83,7 @@ public partial class Form1 : Form
                     MessageBoxIcon.Exclamation);
                 return;
             }
-            if (_buildTargets.Count == 0)
+            if (_settings.BuildTargets.Count == 0)
             {
                 MessageBox.Show("No build target found", "UNITY Build", MessageBoxButtons.OK,
                     MessageBoxIcon.Exclamation);
@@ -101,7 +96,7 @@ public partial class Form1 : Form
             label2.Text = "";
             _totalFileSize = 0;
             isCommandExecuting = true;
-            Commands.UnityUpdate(_currentDirectory, _productVersion!, _bundleVersion!,
+            Commands.UnityUpdate(_settings.WorkingDirectory, _settings.ProductVersion, _settings.BundleVersion,
                 (updated, productVersion, bundleVersion) =>
                 {
                     isCommandExecuting = false;
@@ -109,8 +104,8 @@ public partial class Form1 : Form
                     var duration = DateTime.Now - startTime;
                     if (updated)
                     {
-                        _productVersion = productVersion;
-                        _bundleVersion = bundleVersion;
+                        _settings.ProductVersion = productVersion;
+                        _settings.BundleVersion = bundleVersion;
                     }
                     SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
                     UpdateProjectInfo(updated ? Color.Green : Color.Red);
@@ -125,7 +120,7 @@ public partial class Form1 : Form
                     MessageBoxIcon.Exclamation);
                 return;
             }
-            if (_buildTargets.Count == 0)
+            if (_settings.BuildTargets.Count == 0)
             {
                 MessageBox.Show("No build target found", "UNITY Build", MessageBoxButtons.OK,
                     MessageBoxIcon.Exclamation);
@@ -138,13 +133,14 @@ public partial class Form1 : Form
             label2.Text = "";
             _totalFileSize = 0;
             isCommandExecuting = true;
-            Commands.UnityBuild(_currentDirectory, _unityExecutable!, _bundleVersion!, _buildTargets, () =>
-            {
-                isCommandExecuting = false;
-                timer1.Stop();
-                var duration = DateTime.Now - startTime;
-                SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
-            }, fileSystemWatcher1, SetFileSizeProgress);
+            Commands.UnityBuild(_settings.WorkingDirectory, _settings.UnityExecutable, _settings.BundleVersion,
+                _settings.BuildTargets, () =>
+                {
+                    isCommandExecuting = false;
+                    timer1.Stop();
+                    var duration = DateTime.Now - startTime;
+                    SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
+                }, fileSystemWatcher1, SetFileSizeProgress);
         });
     }
 
@@ -158,10 +154,11 @@ public partial class Form1 : Form
         try
         {
             LoadEnvironment();
-            Text = $"{Text} {_unityVersion} - App {_productName} - Targets {string.Join(',', _buildTargets)}";
+            Text =
+                $"{Text} {_settings.UnityVersion} - App {_settings.ProductVersion} - Targets {string.Join(',', _settings.BuildTargets)}";
             UpdateProjectInfo(Color.Magenta);
             StartupCommand();
-            if (_buildTargets.Count == 0)
+            if (_settings.BuildTargets.Count == 0)
             {
                 AddLine("ERROR", "Could not find any build targets");
             }
@@ -186,14 +183,15 @@ public partial class Form1 : Form
 
     private void UpdateProjectInfo(Color color)
     {
-        projectInfoToolStripMenuItem.Text = $"Version {_productVersion} Bundle {_bundleVersion}";
+        projectInfoToolStripMenuItem.Text = $"Version {_settings.ProductVersion} Bundle {_settings.BundleVersion}";
         projectInfoToolStripMenuItem.ForeColor = color;
     }
 
     private void StartupCommand()
     {
         Thread.Yield();
-        ExecuteMenuCommand(() => Commands.GitStatus(_currentDirectory, () => { SetStatus("Ready", Color.Blue); }));
+        ExecuteMenuCommand(() =>
+            Commands.GitStatus(_settings.WorkingDirectory, () => { SetStatus("Ready", Color.Blue); }));
     }
 
     private void ExecuteMenuCommand(Action command)
@@ -230,7 +228,7 @@ public partial class Form1 : Form
         label2.Text = $"bytes {_totalFileSize:N0}";
     }
 
-    private void OnKeyDown(object sender, KeyEventArgs e)
+    private static void OnKeyDown(object? sender, KeyEventArgs? e)
     {
         if (e is { Control: true, KeyCode: Keys.C })
         {
@@ -241,28 +239,37 @@ public partial class Form1 : Form
 
     private void LoadEnvironment()
     {
-        AddLine("CWD", $"{_currentDirectory}");
+        AddLine("CWD", $"{_settings.WorkingDirectory}");
         try
         {
-            Files.LoadProjectVersionFile(_currentDirectory, ref _unityVersion!);
+            Files.LoadProjectVersionFile(_settings.WorkingDirectory, out var unityVersion);
+            _settings.UnityVersion = unityVersion;
         }
         catch (DirectoryNotFoundException)
         {
             throw new ApplicationException($"ProjectVersion.txt not found, is this UNITY project folder?");
         }
-        AddLine("Unity", $"{_unityVersion}");
-        ProjectSettings.LoadProjectSettingsFile(_currentDirectory,
-            ref _productName!, ref _productVersion!, ref _bundleVersion!);
-        AddLine(">Product", $"{_productName}");
-        AddLine(">Version", $"{_productVersion}");
-        AddLine(">Bundle", $"{_bundleVersion}");
-        Files.LoadAutoBuildTargets(_currentDirectory, ref _unityPath!, _buildTargets);
-        AddLine("Builds", $"{string.Join(',', _buildTargets)}");
-        var setUnityExecutablePath = !string.IsNullOrEmpty(_unityPath) && !string.IsNullOrEmpty(_unityVersion);
+        AddLine("Unity", $"{_settings.UnityVersion}");
+        ProjectSettings.LoadProjectSettingsFile(_settings.WorkingDirectory,
+            out var productName, out var productVersion, out var bundleVersion);
+        _settings.ProductName = productName;
+        _settings.ProductVersion = productVersion;
+        _settings.BundleVersion = bundleVersion;
+        AddLine(">Product", $"{_settings.ProductName}");
+        AddLine(">Version", $"{_settings.ProductVersion}");
+        AddLine(">Bundle", $"{_settings.BundleVersion}");
+        var buildTargets = new List<string>();
+        Files.LoadAutoBuildTargets(_settings.WorkingDirectory, out var unityPath, buildTargets);
+        _settings.UnityPath = unityPath;
+        _settings.BuildTargets.AddRange(buildTargets);
+        AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
+        var setUnityExecutablePath =
+            !string.IsNullOrEmpty(_settings.UnityPath) && !string.IsNullOrEmpty(_settings.UnityVersion);
         if (setUnityExecutablePath)
         {
-            _unityExecutable = _unityPath!.Replace("$VERSION$", _unityVersion);
-            AddLine("Executable", $"{_unityExecutable}");
+            _settings.UnityExecutable = _settings.UnityPath.Replace("$VERSION$", _settings.UnityVersion);
+            AddLine("Executable",
+                $"{_settings.UnityExecutable} {(File.Exists(_settings.UnityExecutable) ? "ok" : "NOT FOUND")}");
         }
     }
 
@@ -345,9 +352,11 @@ public partial class Form1 : Form
 
 public static class Extensions
 {
+    [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
     public static void DoubleBuffered(this Control control, bool enabled)
     {
-        var propertyInfo = control.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+        var propertyInfo = control.GetType()
+            .GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
         propertyInfo!.SetValue(control, enabled, null);
     }
 }

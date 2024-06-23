@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace StartUnityBuild;
 
 /// <summary>
@@ -10,8 +12,10 @@ public static class Files
     private const string ProjectVersionFileName = "ProjectVersion.txt";
     private static readonly string AutoBuildEnvironmentFilePath = Path.Combine("etc", "batchBuild", "_auto_build.env");
 
-    public static void LoadProjectVersionFile(string workingDirectory, ref string unityVersion)
+    [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
+    public static void LoadProjectVersionFile(string workingDirectory, out string unityVersion)
     {
+        unityVersion = null!;
         var path = Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectVersionFileName);
         Form1.AddLine(".file", $"{path}");
         var lines = File.ReadAllLines(path);
@@ -24,10 +28,16 @@ public static class Files
                 return;
             }
         }
+        if (unityVersion == null)
+        {
+            throw new InvalidOperationException($"unable to find 'unityVersion' from {path}");
+        }
     }
 
-    public static void LoadAutoBuildTargets(string workingDirectory, ref string unityPath, List<string> buildTargets)
+    [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
+    public static void LoadAutoBuildTargets(string workingDirectory, out string unityPath, List<string> buildTargets)
     {
+        unityPath = null!;
         var path = Path.Combine(workingDirectory, AutoBuildEnvironmentFilePath);
         Form1.AddLine(".file", $"{path}");
         var lines = File.ReadAllLines(path);
@@ -50,14 +60,22 @@ public static class Files
                     break;
             }
         }
+        if (unityPath == null)
+        {
+            throw new InvalidOperationException($"unable to find 'unityPath' from {path}");
+        }
     }
 }
 
 public static class ProjectSettings
 {
+    [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
     public static void LoadProjectSettingsFile(string workingDirectory,
-        ref string productName, ref string productVersion, ref string bundleVersion)
+        out string productName, out string productVersion, out string bundleVersion)
     {
+        productName = null!;
+        productVersion = null!;
+        bundleVersion = null!;
         var path = Path.Combine(workingDirectory, Files.ProjectSettingsFolderName, Files.ProjectSettingsFileName);
         Form1.AddLine(".file", $"{path}");
         var lines = File.ReadAllLines(path);
@@ -76,6 +94,10 @@ public static class ProjectSettings
             {
                 bundleVersion = tokens[1].Trim();
             }
+        }
+        if (productName == null || productVersion == null || bundleVersion == null)
+        {
+            throw new InvalidOperationException($"unable to find required field values from {path}");
         }
     }
 
