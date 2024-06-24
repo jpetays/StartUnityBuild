@@ -15,10 +15,12 @@ static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        var initialDirectory = Directory.GetCurrentDirectory();
         var appPropertiesFile = GetAppPropertiesFilename();
-        var currentDirectory = File.Exists(appPropertiesFile)
-            ? File.ReadAllText(appPropertiesFile, Files.Encoding)
+        var cmdLineDirectory = ParseArgs();
+        var initialDirectory = Directory.GetCurrentDirectory();
+        var currentDirectory =
+            !string.IsNullOrWhiteSpace(cmdLineDirectory) && File.Exists(cmdLineDirectory) ? cmdLineDirectory
+            : File.Exists(appPropertiesFile) ? File.ReadAllText(appPropertiesFile, Files.Encoding)
             : initialDirectory;
         if (!Files.HasProjectVersionFile(currentDirectory))
         {
@@ -37,6 +39,37 @@ static class Program
             Directory.SetCurrentDirectory(currentDirectory);
         }
         Application.Run(new Form1());
+    }
+
+    private static string ParseArgs()
+    {
+        var args = Environment.GetCommandLineArgs().ToList();
+        args.RemoveAt(0);
+        var currentDirectory = Directory.GetCurrentDirectory();
+        using var enumerator = args.GetEnumerator();
+        while (enumerator.MoveNext())
+        {
+            var value = enumerator.Current;
+            switch (value)
+            {
+                case "--dryRun":
+                    Commands.IsDryRun = true;
+                    continue;
+                case "--project":
+                {
+                    if (enumerator.MoveNext())
+                    {
+                        value = enumerator.Current;
+                        if (File.Exists(value))
+                        {
+                            currentDirectory = value;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return currentDirectory;
     }
 
     private static string GetAppPropertiesFilename()

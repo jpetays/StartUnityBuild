@@ -46,9 +46,6 @@ public partial class Form1 : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-#if DEBUG
-        Commands.IsDryRun = true;
-#endif
         Text = $"{(Commands.IsDryRun ? "TEST " : "")}Build {_appVersion} UNITY";
         try
         {
