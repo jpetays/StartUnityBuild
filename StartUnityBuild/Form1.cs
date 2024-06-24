@@ -18,7 +18,6 @@ public partial class Form1 : Form
     private static Form1 _instance;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private readonly BuildSettings _settings;
-    private long _totalFileSize;
 
     public Form1()
     {
@@ -111,8 +110,6 @@ public partial class Form1 : Form
             startTime = DateTime.Now;
             timer1.Start();
             ClearLines();
-            label2.Text = "";
-            _totalFileSize = 0;
             isCommandExecuting = true;
             Commands.GitStatus(_settings.WorkingDirectory, () =>
             {
@@ -141,10 +138,8 @@ public partial class Form1 : Form
             startTime = DateTime.Now;
             timer1.Start();
             ClearLines();
-            label2.Text = "";
-            _totalFileSize = 0;
             isCommandExecuting = true;
-            Commands.UnityUpdate(_settings.WorkingDirectory, _settings.ProductVersion, _settings.BundleVersion,
+            Commands.UnityUpdate(_settings,
                 (updated, productVersion, bundleVersion) =>
                 {
                     isCommandExecuting = false;
@@ -178,17 +173,15 @@ public partial class Form1 : Form
             startTime = DateTime.Now;
             timer1.Start();
             ClearLines();
-            label2.Text = "";
-            _totalFileSize = 0;
             isCommandExecuting = true;
-            Commands.UnityBuild(_settings.WorkingDirectory, _settings.UnityExecutable, _settings.BundleVersion,
-                _settings.BuildTargets, () =>
+            Commands.UnityBuild(_settings,
+                () =>
                 {
                     isCommandExecuting = false;
                     timer1.Stop();
                     var duration = DateTime.Now - startTime;
                     SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
-                }, fileSystemWatcher1, SetFileSizeProgress);
+                });
         });
     }
 
@@ -226,17 +219,6 @@ public partial class Form1 : Form
         }
         label1.Text = statusText;
         label1.ForeColor = color;
-    }
-
-    private void SetFileSizeProgress(long fileSize)
-    {
-        if (InvokeRequired)
-        {
-            Invoke(() => SetFileSizeProgress(fileSize));
-            return;
-        }
-        _totalFileSize = fileSize;
-        label2.Text = $"bytes {_totalFileSize:N0}";
     }
 
     private static void OnKeyDown(object? sender, KeyEventArgs? e)
@@ -303,17 +285,6 @@ public partial class Form1 : Form
         AddLine($">{prefix}", $"exit: {exitCode}");
     }
 
-    public static void AddLine(string prefix, string content)
-    {
-        Color? color = prefix.StartsWith("ERROR") ? Color.Red
-            : prefix.StartsWith('.') ? Color.Gray
-            : prefix.StartsWith('>') ? Color.Blue
-            : content.StartsWith('-') ? Color.Magenta
-            : content.StartsWith('+') || content.Contains("SUCCESSFULLY") ? Color.Green
-            : null;
-        AddLine($"{prefix,-12}: {content}", color);
-    }
-
     private void ClearLines()
     {
         if (InvokeRequired)
@@ -362,6 +333,17 @@ public partial class Form1 : Form
             builder.AppendLine(item is ListViewItem listViewItem ? listViewItem.Text : item.ToString());
         }
         Clipboard.SetText(builder.ToString());
+    }
+
+    public static void AddLine(string prefix, string content)
+    {
+        Color? color = prefix.StartsWith("ERROR") ? Color.Red
+            : prefix.StartsWith('.') ? Color.Gray
+            : prefix.StartsWith('>') ? Color.Blue
+            : content.StartsWith('-') ? Color.Magenta
+            : content.StartsWith('+') || content.Contains("SUCCESSFULLY") ? Color.Green
+            : null;
+        AddLine($"{prefix,-12}: {content}", color);
     }
 }
 

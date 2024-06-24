@@ -40,9 +40,11 @@ public static class Commands
         });
     }
 
-    public static void UnityUpdate(string workingDirectory, string productVersion, string bundleVersion,
-        Action<bool, string, string> finished)
+    public static void UnityUpdate(BuildSettings settings, Action<bool, string, string> finished)
     {
+        var workingDirectory = settings.WorkingDirectory;
+        var productVersion = settings.ProductVersion;
+        var bundleVersion = settings.BundleVersion;
         const string outPrefix = "update";
         Form1.AddLine($">{outPrefix}", $"ProjectSettings.asset");
         Form1.AddLine($">{outPrefix}", $"BuildInfo.cs");
@@ -67,7 +69,8 @@ public static class Commands
                 finished(false, string.Empty, string.Empty);
                 return;
             }
-            var updated = ProjectSettings.UpdateProjectSettingsFile(workingDirectory, ref productVersion, ref bundleVersion);
+            var updated =
+                ProjectSettings.UpdateProjectSettingsFile(workingDirectory, ref productVersion, ref bundleVersion);
             if (updated)
             {
                 Thread.Yield();
@@ -96,7 +99,7 @@ public static class Commands
                 Form1.AddLine(gitPushPrefix, $"git push returns {result}");
                 if (IsDryRun)
                 {
-                    Form1.AddLine($"-{outPrefix}", $"this was --dry-run");
+                    AddDryRunNotice(outPrefix);
                 }
                 // Final git status For Your Information only!
                 Form1.AddLine($".{outPrefix}", $"git status");
@@ -136,13 +139,13 @@ public static class Commands
         }
     }
 
-    public static void UnityBuild(string workingDirectory, string unityExecutable, string bundleVersion,
-        List<string> buildTargets, Action finished, FileSystemWatcher fileSystemWatcher, Action<long> fileSizeProgress)
+    public static void UnityBuild(BuildSettings settings, Action finished)
     {
         const int delayAfterUnityBuild = 5;
-
         const string outPrefix = "unity";
         const string batchFile = "unityBatchBuild.bat";
+
+        var workingDirectory = settings.WorkingDirectory;
         var batchBuildFolder = Path.Combine(".", "etc", "batchBuild");
         var batchBuildCommand = Path.Combine(batchBuildFolder, batchFile);
         if (!File.Exists(batchBuildCommand))
@@ -151,8 +154,10 @@ public static class Commands
             finished();
             return;
         }
+        var buildTargets = settings.BuildTargets;
         Form1.AddLine($">{outPrefix}", $"build targets: {string.Join(", ", buildTargets)}");
         var environmentVariables = new Dictionary<string, string>();
+        var unityExecutable = settings.UnityExecutable;
         if (!string.IsNullOrEmpty(unityExecutable))
         {
             if (!File.Exists(unityExecutable))
@@ -163,8 +168,6 @@ public static class Commands
             }
             environmentVariables.Add("UNITY_EXE_OVERRIDE", unityExecutable);
         }
-        string? cachedFilename = null;
-        FileInfo? cachedFileInfo = null;
         var isBuildInfoModified = false;
         var buildInfoPath = "";
         Task.Run(async () =>
@@ -179,39 +182,14 @@ public static class Commands
                     Form1.AddLine($".{outPrefix}", $"delete build output: {buildOutputFolder}");
                     Directory.Delete(buildOutputFolder, true);
                 }
-                fileSystemWatcher.Path = Path.Combine(".", "etc");
-                fileSystemWatcher.Filter = $"_local_Build_{buildTarget}.log";
-                fileSystemWatcher.NotifyFilter = NotifyFilters.Size;
-                fileSystemWatcher.Changed += (_, e) =>
-                {
-                    try
-                    {
-                        if (cachedFilename != e.FullPath)
-                        {
-                            cachedFilename = e.FullPath;
-                            cachedFileInfo = new FileInfo(cachedFilename);
-                        }
-                        else
-                        {
-                            cachedFileInfo!.Refresh();
-                        }
-                        fileSizeProgress(cachedFileInfo.Length);
-                    }
-                    catch (Exception)
-                    {
-                        // Just swallow
-                    }
-                };
                 var arguments = $"""
                                  /C {batchBuildCommand} .\etc\batchBuild\_build_{buildTarget}.env
                                  """.Trim();
                 Form1.AddLine($">{outPrefix}", $"run {batchFile} {buildTarget}");
-                fileSystemWatcher.EnableRaisingEvents = true;
                 var startTime = DateTime.Now;
                 var result = await RunCommand.Execute(outPrefix, "cmd.exe", arguments,
                     workingDirectory, environmentVariables, Form1.OutputListener, Form1.ExitListener);
                 var duration = DateTime.Now - startTime;
-                fileSystemWatcher.EnableRaisingEvents = false;
                 Form1.AddLine($".{outPrefix}", $"build {i}/{buildTargets.Count} took {duration:mm':'ss}");
                 if (result != 0)
                 {
@@ -226,7 +204,6 @@ public static class Commands
                 }
                 Thread.Sleep(delayAfterUnityBuild * 000);
             }
-            fileSystemWatcher.EnableRaisingEvents = false;
             if (!abortBuild)
             {
                 // Check that BuildInfo was updated.
@@ -236,6 +213,7 @@ public static class Commands
                 if (isBuildInfoModified)
                 {
                     // Create a lightweight commit tag.
+                    var bundleVersion = settings.BundleVersion;
                     var tagName = $"build_{bundleVersion}_{DateTime.Today:yyyy-MM-dd}";
                     Form1.AddLine($".{outPrefix}", $"git tag {tagName}");
                     await RunCommand.Execute(outPrefix, "git", $"tag {tagName}",
@@ -254,7 +232,7 @@ public static class Commands
                     Form1.AddLine(gitPushPrefix, $"git push returns {result}");
                     if (IsDryRun)
                     {
-                        Form1.AddLine($"-{outPrefix}", $"this was --dry-run");
+                        AddDryRunNotice(outPrefix);
                     }
                 }
             }
@@ -294,6 +272,13 @@ public static class Commands
         }
     }
 
+    private static void AddDryRunNotice(string outPrefix)
+    {
+        Form1.AddLine($"-{outPrefix}", $"this was --dry-run");
+        Form1.AddLine($".{outPrefix}", $"");
+        Form1.AddLine($"+{outPrefix}", $"remember to revert committed changes: git reset HEAD~1");
+        Form1.AddLine($".{outPrefix}", $"");
+    }
     private static void GitOutputFilter(string prefix, string? line)
     {
         if (line == null || line.StartsWith("  (use \"git"))
