@@ -23,6 +23,11 @@ public class BuildSettings(string workingDirectory)
     public string BundleVersion { get; set; } = "";
 
     /// <summary>
+    /// BuildInfo Filename for updating C# BuildInfoDataPart.cs.
+    /// </summary>
+    public string BuildInfoFilename { get; set; } = "";
+
+    /// <summary>
     /// Build targets from _auto_build.env.
     /// </summary>
     public List<string> BuildTargets { get; private set; } = [];

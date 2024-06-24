@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
+using Editor.Prg.BatchBuild;
 using NLog;
 
 namespace StartUnityBuild;
@@ -273,13 +274,17 @@ public partial class Form1 : Form
         _settings.UnityPath = unityPath;
         _settings.BuildTargets.AddRange(buildTargets);
         AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
+        var assetFolder = Path.Combine(_settings.WorkingDirectory, "Assets");
+        _settings.BuildInfoFilename = BuildInfoUpdater.BuildInfoFilename(assetFolder);
+        var exists = File.Exists(_settings.BuildInfoFilename);
+        AddLine($"{(exists ? ".BuildInfo" : "ERROR")}", $"{(exists ? "" : "-")}{_settings.BuildInfoFilename}");
         var setUnityExecutablePath =
             !string.IsNullOrEmpty(_settings.UnityPath) && !string.IsNullOrEmpty(_settings.UnityEditorVersion);
         if (setUnityExecutablePath)
         {
             _settings.UnityExecutable = _settings.UnityPath.Replace("$VERSION$", _settings.UnityEditorVersion);
-            AddLine("Executable",
-                $"{_settings.UnityExecutable} {(File.Exists(_settings.UnityExecutable) ? "ok" : "NOT FOUND")}");
+            exists = File.Exists(_settings.UnityExecutable);
+            AddLine($"{(exists ? "." : "")}Executable", $"{(exists ? "" : "-")}{_settings.UnityExecutable}");
         }
     }
 
