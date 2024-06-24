@@ -19,7 +19,7 @@ namespace Editor.Prg.BatchBuild
     {
         private static readonly Encoding Encoding = new UTF8Encoding(false, false);
 
-        private const string BuildInfoFilename = "BuildInfoDataPart.cs";
+        private const string BuildInfoFilenameName = "BuildInfoDataPart.cs";
 
         private static string Timestamp(DateTime dateTime) =>
             ((FormattableString)$"{dateTime:yyyy-MM-dd HH:mm}").ToString(CultureInfo.InvariantCulture);
@@ -53,11 +53,14 @@ namespace Editor.Prg.BatchBuild
             string GetRandomGuidString() => Guid.NewGuid().ToString("N")[..12];
         }
 
-        public static int GetPatchValue(string fromFolder)
+        public static int GetPatchValue(string buildInfoFilename)
         {
+            if (!File.Exists(buildInfoFilename))
+            {
+                throw new InvalidOperationException($"BuildInfoFile not found {buildInfoFilename}");
+            }
             var patchValue = 0;
-            var path = FindSourceFile(fromFolder);
-            foreach (var line in File.ReadAllLines(path, Encoding))
+            foreach (var line in File.ReadAllLines(buildInfoFilename, Encoding))
             {
                 if (string.IsNullOrWhiteSpace(line))
                 {
@@ -77,19 +80,14 @@ namespace Editor.Prg.BatchBuild
             return patchValue;
         }
 
-        public static void UpdateBuildInfo(string fromFolder, int bundleVersionCode, int patchValue,
+        public static void UpdateBuildInfo(string buildInfoFilename, int bundleVersionCode, int patchValue,
             bool isMuteOtherAudioSourcesValue)
         {
-            var path = FindSourceFile(fromFolder);
-            if (path == null)
+            if (!File.Exists(buildInfoFilename))
             {
-                throw new InvalidOperationException($"unable to find {BuildInfoFilename} from {fromFolder}");
+                throw new InvalidOperationException($"BuildInfoFile not found {buildInfoFilename}");
             }
-            var namespaceName = FindNamespace(path);
-            if (namespaceName == null)
-            {
-                throw new InvalidOperationException($"unable to C# namespace declaration from {path}");
-            }
+            var namespaceName = GetNamespace();
             var machineGeneratedBuildInfo = @"namespace $namespace$
 {
     internal static class MachineGeneratedBuildInfo
@@ -106,32 +104,33 @@ namespace Editor.Prg.BatchBuild
                     .Replace("$PatchValue$", patchValue.ToString())
                     .Replace("$IsMuteOtherAudioSourcesValue$", isMuteOtherAudioSourcesValue.ToString().ToLower())
                 ;
-            File.WriteAllText(path, machineGeneratedBuildInfo, Encoding);
+            File.WriteAllText(buildInfoFilename, machineGeneratedBuildInfo, Encoding);
+            return;
+
+            string GetNamespace()
+            {
+                try
+                {
+                    var line = File.ReadAllLines(buildInfoFilename, Encoding)[0];
+                    var tokens = line.Split(' ');
+                    return tokens[1].Trim();
+                }
+                catch (Exception)
+                {
+                    throw new InvalidOperationException($"unable to C# namespace declaration from {buildInfoFilename}");
+                }
+            }
         }
 
-        private static string FindNamespace(string filename)
-        {
-            try
-            {
-                var line = File.ReadAllLines(filename, Encoding)[0];
-                var tokens = line.Split(' ');
-                return tokens[1].Trim();
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        private static string FindSourceFile(string fromFolder)
+        public static string BuildInfoFilename(string fromFolder)
         {
             // Try to find 'build info' file in the project by its filename.
             string filePath = null;
-            var files = Directory.GetFiles(fromFolder, BuildInfoFilename,
+            var files = Directory.GetFiles(fromFolder, BuildInfoFilenameName,
                 SearchOption.AllDirectories);
             foreach (var file in files)
             {
-                if (file.EndsWith(BuildInfoFilename))
+                if (file.EndsWith(BuildInfoFilenameName))
                 {
                     filePath = ConvertToWindowsPath(file);
                     break;
