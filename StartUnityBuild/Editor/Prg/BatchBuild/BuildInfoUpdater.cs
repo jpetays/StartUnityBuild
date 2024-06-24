@@ -24,6 +24,36 @@ namespace Editor.Prg.BatchBuild
         private static string Timestamp(DateTime dateTime) =>
             ((FormattableString)$"{dateTime:yyyy-MM-dd HH:mm}").ToString(CultureInfo.InvariantCulture);
 
+        public static string GetGFitPath(string workingDirectory, string filename)
+        {
+            const string assetFolderName = "Assets";
+            var assetFolderNameLen = assetFolderName.Length;
+
+            workingDirectory = workingDirectory.Replace('\\', '/');
+            if (workingDirectory.EndsWith('/'))
+            {
+                workingDirectory = workingDirectory[..^1];
+            }
+            if (workingDirectory.EndsWith(assetFolderName))
+            {
+                workingDirectory = workingDirectory[..^assetFolderNameLen];
+            }
+            if (workingDirectory.EndsWith('/'))
+            {
+                workingDirectory = workingDirectory[..^1];
+            }
+            filename = filename[workingDirectory.Length..].Replace('\\', '/');
+            if (filename.StartsWith('/'))
+            {
+                filename = filename[1..];
+            }
+            if (!filename.StartsWith(assetFolderName))
+            {
+                throw new InvalidOperationException($"Unable to get git path from: {filename}");
+            }
+            return filename;
+        }
+
         /// <summary>
         /// Utility to create build.properties file content for different batch files used in build system.
         /// </summary>
@@ -80,7 +110,7 @@ namespace Editor.Prg.BatchBuild
             return patchValue;
         }
 
-        public static void UpdateBuildInfo(string buildInfoFilename, int bundleVersionCode, int patchValue,
+        public static bool UpdateBuildInfo(string buildInfoFilename, int bundleVersionCode, int patchValue,
             bool isMuteOtherAudioSourcesValue)
         {
             if (!File.Exists(buildInfoFilename))
@@ -104,8 +134,13 @@ namespace Editor.Prg.BatchBuild
                     .Replace("$PatchValue$", patchValue.ToString())
                     .Replace("$IsMuteOtherAudioSourcesValue$", isMuteOtherAudioSourcesValue.ToString().ToLower())
                 ;
+            var original = File.ReadAllText(buildInfoFilename, Encoding);
+            if (original == machineGeneratedBuildInfo)
+            {
+                return false;
+            }
             File.WriteAllText(buildInfoFilename, machineGeneratedBuildInfo, Encoding);
-            return;
+            return true;
 
             string GetNamespace()
             {
@@ -125,7 +160,6 @@ namespace Editor.Prg.BatchBuild
         public static string BuildInfoFilename(string fromFolder)
         {
             // Try to find 'build info' file in the project by its filename.
-            string filePath = null;
             var files = Directory.GetFiles(fromFolder, BuildInfoFilenameName,
                 SearchOption.AllDirectories);
             foreach (var file in files)

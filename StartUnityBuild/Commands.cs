@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Editor.Prg.BatchBuild;
 
 namespace StartUnityBuild;
 
@@ -47,7 +48,7 @@ public static class Commands
         var bundleVersion = settings.BundleVersion;
         const string outPrefix = "update";
         Form1.AddLine($">{outPrefix}", $"ProjectSettings.asset");
-        Form1.AddLine($">{outPrefix}", $"BuildInfo.cs");
+        Form1.AddLine($">{outPrefix}", $"BuildInfoDataPart.cs");
         var isProjectSettingsDirty = false;
         var isBuildInfoDirty = false;
         Task.Run(async () =>
@@ -64,35 +65,60 @@ public static class Commands
                 }
                 if (isBuildInfoDirty)
                 {
-                    Form1.AddLine($"-{outPrefix}", $"BuildInfo.cs");
+                    Form1.AddLine($"-{outPrefix}", $"BuildInfoDataPart.cs");
                 }
                 finished(false, string.Empty, string.Empty);
                 return;
             }
-            var updated =
+            var updatedProjectSettings =
                 ProjectSettings.UpdateProjectSettingsFile(workingDirectory, ref productVersion, ref bundleVersion);
-            if (updated)
+            if (updatedProjectSettings)
+            {
+                settings.ProductVersion = productVersion;
+                settings.BundleVersion = bundleVersion;
+            }
+            var bundleVersionCode = int.Parse(settings.BundleVersion);
+            var patchValue = 0;
+            var isMuteOtherAudioSourcesValue = false;
+            var updatedBuildInfo = BuildInfoUpdater.UpdateBuildInfo(settings.BuildInfoFilename, bundleVersionCode,
+                patchValue,
+                isMuteOtherAudioSourcesValue);
+            var updated = updatedProjectSettings || updatedBuildInfo;
+            if (updatedProjectSettings || updatedBuildInfo)
             {
                 Thread.Yield();
                 Form1.AddLine($".{outPrefix}", $"git status");
                 await RunCommand.Execute(outPrefix, "git", "status", workingDirectory,
                     null, MyOutputFilter, Form1.ExitListener);
-                var gitChanges = isProjectSettingsDirty;
-                if (!gitChanges)
+                if (!isProjectSettingsDirty)
                 {
-                    Form1.AddLine("ERROR", $"ProjectSettings.asset was not changed, can not update project");
+                    Form1.AddLine("ERROR", $"ProjectSettings.asset was not changed, did not update project");
                     finished(false, string.Empty, string.Empty);
                     return;
                 }
-                // Commit and push changes (in ProjectSettings.asset file).
-                var message = $"auto update build version and bundle {bundleVersion}";
+                // Commit changes (in ProjectSettings.asset file).
+                var message = $"auto update build version {productVersion} and bundle {bundleVersion}";
                 Form1.AddLine($".{outPrefix}", $"git commit: {message}");
-                await RunCommand.Execute(outPrefix, "git",
-                    $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""",
+                var commitCommand = $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""";
+                if (updatedBuildInfo)
+                {
+                    var buildInfoFilename = BuildInfoUpdater.GetGFitPath(workingDirectory, settings.BuildInfoFilename);
+                    commitCommand = $"{commitCommand} {buildInfoFilename}";
+                }
+                await RunCommand.Execute(outPrefix, "git", commitCommand,
                     workingDirectory, null,
                     GitOutputFilter, Form1.ExitListener);
-                Form1.AddLine($".{outPrefix}", $"git push {PushOptions}");
-                var result = await RunCommand.Execute(outPrefix, "git", $"push {PushOptions}",
+
+                // Create a lightweight commit tag.
+                var tagName = $"build_{bundleVersion}_{DateTime.Today:yyyy-MM-dd}";
+                Form1.AddLine($".{outPrefix}", $"git tag {tagName}");
+                await RunCommand.Execute(outPrefix, "git", $"tag {tagName}",
+                    workingDirectory, null, GitOutputFilter, Form1.ExitListener);
+
+                // Push changes.
+                var pushCommand = $"push {PushOptions} origin main";
+                Form1.AddLine($".{outPrefix}", $"git {pushCommand}");
+                var result = await RunCommand.Execute(outPrefix, "git", pushCommand,
                     workingDirectory, null,
                     GitOutputFilter, Form1.ExitListener);
                 var gitPushPrefix = result == 0 ? $".{outPrefix}" : "ERROR";
@@ -132,7 +158,7 @@ public static class Commands
                 isProjectSettingsDirty = true;
             }
             // BuildInfo can be located anywhere!
-            if (line.Contains("modified:") && line.Contains("BuildInfo.cs"))
+            if (line.Contains("modified:") && line.Contains("BuildInfoDataPart.cs"))
             {
                 isBuildInfoDirty = true;
             }
@@ -168,8 +194,6 @@ public static class Commands
             }
             environmentVariables.Add("UNITY_EXE_OVERRIDE", unityExecutable);
         }
-        var isBuildInfoModified = false;
-        var buildInfoPath = "";
         Task.Run(async () =>
         {
             var abortBuild = false;
@@ -204,38 +228,6 @@ public static class Commands
                 }
                 Thread.Sleep(delayAfterUnityBuild * 000);
             }
-            if (!abortBuild)
-            {
-                // Check that BuildInfo was updated.
-                Form1.AddLine($".{outPrefix}", $"git status Assets");
-                await RunCommand.Execute(outPrefix, "git", "status Assets", workingDirectory, null,
-                    MyOutputFilter, Form1.ExitListener);
-                if (isBuildInfoModified)
-                {
-                    // Create a lightweight commit tag.
-                    var bundleVersion = settings.BundleVersion;
-                    var tagName = $"build_{bundleVersion}_{DateTime.Today:yyyy-MM-dd}";
-                    Form1.AddLine($".{outPrefix}", $"git tag {tagName}");
-                    await RunCommand.Execute(outPrefix, "git", $"tag {tagName}",
-                        workingDirectory, null, GitOutputFilter, Form1.ExitListener);
-
-                    // Commit and push changes (in ProjectSettings.asset file).
-                    var message = $"auto update BuildInfo.cs";
-                    Form1.AddLine($".{outPrefix}", $"git commit: {message}");
-                    await RunCommand.Execute(outPrefix, "git",
-                        $"""commit -m "{message}" {buildInfoPath}""",
-                        workingDirectory, null, GitOutputFilter, Form1.ExitListener);
-                    Form1.AddLine($".{outPrefix}", $"git push {PushOptions}");
-                    var result = await RunCommand.Execute(outPrefix, "git", $"push {PushOptions}",
-                        workingDirectory, null, GitOutputFilter, Form1.ExitListener);
-                    var gitPushPrefix = result == 0 ? $".{outPrefix}" : "ERROR";
-                    Form1.AddLine(gitPushPrefix, $"git push returns {result}");
-                    if (IsDryRun)
-                    {
-                        AddDryRunNotice(outPrefix);
-                    }
-                }
-            }
             // Final git status For Your Information only!
             Form1.AddLine($".{outPrefix}", $"git status");
             await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
@@ -254,31 +246,16 @@ public static class Commands
             }
             finished();
         });
-        return;
-
-        void MyOutputFilter(string prefix, string? line)
-        {
-            GitOutputFilter(prefix, line);
-            if (line == null)
-            {
-                return;
-            }
-            if (line.Contains("modified:") && line.Contains("BuildInfo.cs"))
-            {
-                isBuildInfoModified = true;
-                buildInfoPath =
-                    line.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[1];
-            }
-        }
     }
 
     private static void AddDryRunNotice(string outPrefix)
     {
-        Form1.AddLine($"-{outPrefix}", $"this was --dry-run");
+        Form1.AddLine($".{outPrefix}", $"this was --dry-run");
         Form1.AddLine($".{outPrefix}", $"");
-        Form1.AddLine($"+{outPrefix}", $"remember to revert committed changes: git reset HEAD~1");
+        Form1.AddLine(outPrefix, $"-remember to revert committed changes: git reset HEAD~1");
         Form1.AddLine($".{outPrefix}", $"");
     }
+
     private static void GitOutputFilter(string prefix, string? line)
     {
         if (line == null || line.StartsWith("  (use \"git"))
