@@ -132,11 +132,11 @@ namespace Editor.Prg.BatchBuild
             {
                 if (file.EndsWith(BuildInfoFilenameName))
                 {
-                    filePath = ConvertToWindowsPath(file);
-                    break;
+                    return ConvertToWindowsPath(file);
                 }
             }
-            return filePath;
+            // This will be error but we set filename so caller can know what is was looking for!
+            return BuildInfoFilenameName;
 
             string ConvertToWindowsPath(string path)
             {
