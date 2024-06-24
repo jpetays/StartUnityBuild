@@ -43,6 +43,43 @@ public partial class Form1 : Form
         SetupMenuCommands();
     }
 
+    protected override void OnLoad(EventArgs e)
+    {
+        base.OnLoad(e);
+#if DEBUG
+        Commands.IsDryRun = true;
+#endif
+        Text = $"{(Commands.IsDryRun ? "TEST " : "")}Build {_appVersion} UNITY";
+        try
+        {
+            LoadEnvironment();
+            Text =
+                $"{Text} {_settings.UnityEditorVersion} - App {_settings.ProductVersion} - Targets {string.Join(',', _settings.BuildTargets)}";
+            UpdateProjectInfo(Color.Magenta);
+            StartupCommand();
+            if (_settings.BuildTargets.Count == 0)
+            {
+                AddLine("ERROR", "Could not find any build targets");
+            }
+        }
+        catch (Exception x)
+        {
+            AddLine($"Failed to LoadEnvironment");
+            AddLine("ERROR", $"{x.GetType().Name}: {x.Message}");
+            if (x is ApplicationException)
+            {
+                return;
+            }
+            if (x.StackTrace != null)
+            {
+                foreach (var line in x.StackTrace.Split(Separators, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    AddLine(line.Trim());
+                }
+            }
+        }
+    }
+
     private void SetupMenuCommands()
     {
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
@@ -154,43 +191,6 @@ public partial class Form1 : Form
         });
     }
 
-    protected override void OnLoad(EventArgs e)
-    {
-        base.OnLoad(e);
-#if DEBUG
-        Commands.IsDryRun = true;
-#endif
-        Text = $"{(Commands.IsDryRun ? "TEST " : "")}Build {_appVersion} UNITY";
-        try
-        {
-            LoadEnvironment();
-            Text =
-                $"{Text} {_settings.UnityVersion} - App {_settings.ProductVersion} - Targets {string.Join(',', _settings.BuildTargets)}";
-            UpdateProjectInfo(Color.Magenta);
-            StartupCommand();
-            if (_settings.BuildTargets.Count == 0)
-            {
-                AddLine("ERROR", "Could not find any build targets");
-            }
-        }
-        catch (Exception x)
-        {
-            AddLine($"Failed to LoadEnvironment");
-            AddLine("ERROR", $"{x.GetType().Name}: {x.Message}");
-            if (x is ApplicationException)
-            {
-                return;
-            }
-            if (x.StackTrace != null)
-            {
-                foreach (var line in x.StackTrace.Split(Separators, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    AddLine(line.Trim());
-                }
-            }
-        }
-    }
-
     private void UpdateProjectInfo(Color color)
     {
         projectInfoToolStripMenuItem.Text = $"Version {_settings.ProductVersion} Bundle {_settings.BundleVersion}";
@@ -253,13 +253,13 @@ public partial class Form1 : Form
         try
         {
             Files.LoadProjectVersionFile(_settings.WorkingDirectory, out var unityVersion);
-            _settings.UnityVersion = unityVersion;
+            _settings.UnityEditorVersion = unityVersion;
         }
         catch (DirectoryNotFoundException)
         {
             throw new ApplicationException($"ProjectVersion.txt not found, is this UNITY project folder?");
         }
-        AddLine("Unity", $"{_settings.UnityVersion}");
+        AddLine("Unity", $"{_settings.UnityEditorVersion}");
         ProjectSettings.LoadProjectSettingsFile(_settings.WorkingDirectory,
             out var productName, out var productVersion, out var bundleVersion);
         _settings.ProductName = productName;
@@ -274,10 +274,10 @@ public partial class Form1 : Form
         _settings.BuildTargets.AddRange(buildTargets);
         AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
         var setUnityExecutablePath =
-            !string.IsNullOrEmpty(_settings.UnityPath) && !string.IsNullOrEmpty(_settings.UnityVersion);
+            !string.IsNullOrEmpty(_settings.UnityPath) && !string.IsNullOrEmpty(_settings.UnityEditorVersion);
         if (setUnityExecutablePath)
         {
-            _settings.UnityExecutable = _settings.UnityPath.Replace("$VERSION$", _settings.UnityVersion);
+            _settings.UnityExecutable = _settings.UnityPath.Replace("$VERSION$", _settings.UnityEditorVersion);
             AddLine("Executable",
                 $"{_settings.UnityExecutable} {(File.Exists(_settings.UnityExecutable) ? "ok" : "NOT FOUND")}");
         }
