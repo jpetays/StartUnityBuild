@@ -26,9 +26,9 @@ public static class Commands
     public static void GitStatus(string workingDirectory, Action finished)
     {
         const string outPrefix = "git";
-        Form1.AddLine($">{outPrefix}", "git status");
         Task.Run(async () =>
         {
+            Form1.AddLine($">{outPrefix}", "git status");
             await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
                 GitOutputFilter, Form1.ExitListener);
             if (!_gitBranchUpToDate)
@@ -37,6 +37,9 @@ public static class Commands
                 Form1.AddLine(outPrefix, "-You have changes that should/could be pushed to git!");
                 Form1.AddLine(outPrefix, "-");
             }
+            Form1.AddLine($">{outPrefix}", "git log origin/main..HEAD");
+            await RunCommand.Execute(outPrefix, "git", "log origin/main..HEAD", workingDirectory, null,
+                GitOutputFilter, Form1.ExitListener);
             finished();
         });
     }
@@ -110,8 +113,9 @@ public static class Commands
                     GitOutputFilter, Form1.ExitListener);
 
                 // Create a lightweight commit tag.
-                var tagName = $"build_{bundleVersion}_{DateTime.Today:yyyy-MM-dd}";
-                Form1.AddLine($".{outPrefix}", $"git tag {tagName}");
+                // - unless -f is given, the named tag must not yet exist.
+                var tagName = $"build_{DateTime.Today:yyyy-MM-dd}_bundle_{bundleVersion}";
+                Form1.AddLine($".{outPrefix}", $"git tag {tagName} -f");
                 await RunCommand.Execute(outPrefix, "git", $"tag {tagName}",
                     workingDirectory, null, GitOutputFilter, Form1.ExitListener);
 
@@ -252,7 +256,7 @@ public static class Commands
     {
         Form1.AddLine($".{outPrefix}", $"this was --dry-run");
         Form1.AddLine($".{outPrefix}", $"");
-        Form1.AddLine(outPrefix, $"-remember to revert committed changes: git reset HEAD~1");
+        Form1.AddLine(outPrefix, $"+remember to revert committed changes: git reset HEAD~1");
         Form1.AddLine($".{outPrefix}", $"");
     }
 
@@ -274,6 +278,10 @@ public static class Commands
         else if (line.Contains(" deleted: "))
         {
             line = $"--> {line}";
+        }
+        else if (line.StartsWith("commit "))
+        {
+            line = $"+{line}";
         }
         if (line.Contains("Your branch is up to date with 'origin/main'"))
         {
