@@ -43,30 +43,47 @@ static class Program
 
     private static string ParseArgs()
     {
+        var verDate = "--verDate".ToLower();
+        var semVer = "--semVer".ToLower();
+        var dryRun = "--dryRun".ToLower();
+        var projectFolder = "--projectFolder".ToLower();
+
         var args = Environment.GetCommandLineArgs().ToList();
         args.RemoveAt(0);
         var currentDirectory = Directory.GetCurrentDirectory();
         using var enumerator = args.GetEnumerator();
         while (enumerator.MoveNext())
         {
-            var value = enumerator.Current;
-            switch (value)
+            var value = enumerator.Current.ToLower();
+            if (value == verDate)
             {
-                case "--dryRun":
-                    Commands.IsDryRun = true;
-                    continue;
-                case "--project":
+                Commands.IsVersionDate = true;
+                Commands.IsVersionSemantic = false;
+                continue;
+            }
+            if (value == semVer)
+            {
+                Commands.IsVersionDate = false;
+                Commands.IsVersionSemantic = true;
+                continue;
+            }
+            if (value == dryRun)
+            {
+                Commands.IsDryRun = true;
+                continue;
+            }
+            if (value == projectFolder)
+            {
+                if (!enumerator.MoveNext())
                 {
-                    if (enumerator.MoveNext())
-                    {
-                        value = enumerator.Current;
-                        if (File.Exists(value))
-                        {
-                            currentDirectory = value;
-                        }
-                    }
-                    break;
+                    throw new ApplicationException($"required parameter after '{projectFolder}' is missing");
                 }
+                value = enumerator.Current;
+                if (!Directory.Exists(value))
+                {
+                    throw new ApplicationException($"'{projectFolder}' directory not found: {value}");
+                }
+                currentDirectory = value;
             }
         }
         return currentDirectory;

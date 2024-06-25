@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Editor.Prg.BatchBuild;
+using Prg.Util;
 
 namespace StartUnityBuild;
 
@@ -18,6 +19,8 @@ public static class Commands
             The output status line for each ref will be tab-separated and sent to stdout instead of stderr.
             The full symbolic names of the refs will be given.
 */
+    public static bool IsVersionDate = true;
+    public static bool IsVersionSemantic;
     public static bool IsDryRun;
     private static bool _gitBranchUpToDate;
 
@@ -44,11 +47,9 @@ public static class Commands
         });
     }
 
-    public static void UnityUpdate(BuildSettings settings, Action<bool, string, string> finished)
+    public static void UnityUpdate(BuildSettings settings, Action<bool> finished)
     {
         var workingDirectory = settings.WorkingDirectory;
-        var productVersion = settings.ProductVersion;
-        var bundleVersion = settings.BundleVersion;
         const string outPrefix = "update";
         Form1.AddLine($">{outPrefix}", $"ProjectSettings.asset");
         Form1.AddLine($">{outPrefix}", $"BuildInfoDataPart.cs");
@@ -70,23 +71,34 @@ public static class Commands
                 {
                     Form1.AddLine($"-{outPrefix}", $"BuildInfoDataPart.cs");
                 }
-                finished(false, string.Empty, string.Empty);
+                finished(false);
                 return;
             }
-            var updatedProjectSettings =
-                ProjectSettings.UpdateProjectSettingsFile(workingDirectory, ref productVersion, ref bundleVersion);
-            if (updatedProjectSettings)
+            bool updatedProjectSettings;
             {
-                settings.ProductVersion = productVersion;
-                settings.BundleVersion = bundleVersion;
+                // Project settings has: ProductVersion and BundleVersion
+                var productVersion = settings.ProductVersion;
+                var bundleVersion = settings.BundleVersion;
+                updatedProjectSettings =
+                    ProjectSettings.UpdateProjectSettingsFile(workingDirectory,
+                        ref productVersion, ref bundleVersion, IsVersionDate, IsVersionSemantic);
+                if (updatedProjectSettings)
+                {
+                    settings.ProductVersion = productVersion;
+                    settings.BundleVersion = bundleVersion;
+                }
             }
-            var bundleVersionCode = int.Parse(settings.BundleVersion);
-            var patchValue = 0;
-            var isMuteOtherAudioSourcesValue = false;
-            var updatedBuildInfo = BuildInfoUpdater.UpdateBuildInfo(settings.BuildInfoFilename, bundleVersionCode,
-                patchValue,
-                isMuteOtherAudioSourcesValue);
-            var updated = updatedProjectSettings || updatedBuildInfo;
+            bool updatedBuildInfo;
+            int patchValue;
+            {
+                // BuildInfo has: BundleVersionCode, Patch and IsMuteOtherAudioSources
+                patchValue = IsVersionSemantic && SemVer.IsSemantic(settings.ProductVersion)
+                    ? SemVer.GetPatch(settings.ProductVersion)
+                    : 0;
+                var bundleVersionCode = int.Parse(settings.BundleVersion);
+                updatedBuildInfo = BuildInfoUpdater.UpdateBuildInfo(settings.BuildInfoFilename,
+                    bundleVersionCode, patchValue, settings.IsMuteOtherAudioSources);
+            }
             if (updatedProjectSettings || updatedBuildInfo)
             {
                 Thread.Yield();
@@ -96,11 +108,12 @@ public static class Commands
                 if (!isProjectSettingsDirty)
                 {
                     Form1.AddLine("ERROR", $"ProjectSettings.asset was not changed, did not update project");
-                    finished(false, string.Empty, string.Empty);
+                    finished(false);
                     return;
                 }
-                // Commit changes (in ProjectSettings.asset file).
-                var message = $"auto update build version {productVersion} and bundle {bundleVersion}";
+                // Commit changes (in ProjectSettings.asset and BuildInfoDataPart.cs files).
+                var message =
+                    $"auto update build version {settings.ProductVersion} and bundle {settings.BundleVersion}";
                 Form1.AddLine($".{outPrefix}", $"git commit: {message}");
                 var commitCommand = $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""";
                 if (updatedBuildInfo)
@@ -114,7 +127,8 @@ public static class Commands
 
                 // Create a lightweight commit tag.
                 // - unless -f is given, the named tag must not yet exist.
-                var tagName = $"build_{DateTime.Today:yyyy-MM-dd}_bundle_{bundleVersion}";
+                var tagName =
+                    $"auto_build_{DateTime.Today:yyyy-MM-dd}_bundle_{settings.BundleVersion}_patch_{patchValue}";
                 Form1.AddLine($".{outPrefix}", $"git tag {tagName} -f");
                 await RunCommand.Execute(outPrefix, "git", $"tag {tagName}",
                     workingDirectory, null, GitOutputFilter, Form1.ExitListener);
@@ -141,12 +155,11 @@ public static class Commands
                     Form1.AddLine(outPrefix, "-You have changes that should/could be pushed to git!");
                     Form1.AddLine(outPrefix, "-");
                 }
-                var prefix = updated ? outPrefix : "ERROR";
-                Form1.OutputListener($"{prefix}", $"-Version {productVersion}");
-                Form1.OutputListener($"{prefix}", $"-Bundle {bundleVersion}");
+                Form1.OutputListener($"{outPrefix}", $"-Version {settings.ProductVersion}");
+                Form1.OutputListener($"{outPrefix}", $"-Bundle {settings.BundleVersion}");
                 Form1.AddLine($">{outPrefix}", $"done");
             }
-            finished(updated, productVersion, bundleVersion);
+            finished(updatedProjectSettings || updatedBuildInfo);
         });
         return;
 

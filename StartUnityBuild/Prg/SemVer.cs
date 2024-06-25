@@ -67,6 +67,28 @@ namespace Prg.Util
             }
         }
 
+        public static string IncrementPatch(string version)
+        {
+            try
+            {
+                var versionNumbers = Array.ConvertAll(version.Split('.'), int.Parse);
+                switch (versionNumbers.Length)
+                {
+                    case 2:
+                        return $"{version}.0";
+                    case 3:
+                        versionNumbers[^1] += 1;
+                        return string.Join('.', versionNumbers);
+                    default:
+                        return version;
+                }
+            }
+            catch (Exception)
+            {
+                return version;
+            }
+        }
+
         /// <summary>
         /// Checks that version string is in MAJOR.MINOR.PATCH format.
         /// </summary>

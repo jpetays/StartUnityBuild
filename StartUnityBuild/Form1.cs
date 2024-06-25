@@ -137,16 +137,11 @@ public partial class Form1 : Form
             ClearLines();
             isCommandExecuting = true;
             Commands.UnityUpdate(_settings,
-                (updated, productVersion, bundleVersion) =>
+                (updated) =>
                 {
                     isCommandExecuting = false;
                     timer1.Stop();
                     var duration = DateTime.Now - startTime;
-                    if (updated)
-                    {
-                        _settings.ProductVersion = productVersion;
-                        _settings.BundleVersion = bundleVersion;
-                    }
                     SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
                     UpdateProjectInfo(updated ? Color.Green : Color.Red);
                 });
@@ -241,10 +236,11 @@ public partial class Form1 : Form
         }
         AddLine("Unity", $"{_settings.UnityEditorVersion}");
         ProjectSettings.LoadProjectSettingsFile(_settings.WorkingDirectory,
-            out var productName, out var productVersion, out var bundleVersion);
+            out var productName, out var productVersion, out var bundleVersion, out var muteOtherAudioSources);
         _settings.ProductName = productName;
         _settings.ProductVersion = productVersion;
         _settings.BundleVersion = bundleVersion;
+        _settings.IsMuteOtherAudioSources = muteOtherAudioSources;
         AddLine(">Product", $"{_settings.ProductName}");
         AddLine(">Version", $"{_settings.ProductVersion}");
         AddLine(">Bundle", $"{_settings.BundleVersion}");

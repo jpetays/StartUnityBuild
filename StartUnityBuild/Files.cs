@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Prg.Util;
 
 namespace StartUnityBuild;
 
@@ -80,28 +81,32 @@ public static class ProjectSettings
 {
     [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
     public static void LoadProjectSettingsFile(string workingDirectory,
-        out string productName, out string productVersion, out string bundleVersion)
+        out string productName, out string productVersion, out string bundleVersion, out bool muteOtherAudioSources)
     {
         productName = null!;
         productVersion = null!;
         bundleVersion = null!;
+        muteOtherAudioSources = false;
         var path = Path.Combine(workingDirectory, Files.ProjectSettingsFolderName, Files.ProjectSettingsFileName);
         Form1.AddLine(".file", $"{path}");
         var lines = File.ReadAllLines(path, Files.Encoding);
         foreach (var line in lines)
         {
             var tokens = line.Split(':');
-            if (tokens[0] == "  productName")
+            switch (tokens[0])
             {
-                productName = tokens[1].Trim();
-            }
-            else if (tokens[0] == "  bundleVersion")
-            {
-                productVersion = tokens[1].Trim();
-            }
-            else if (tokens[0] == "  AndroidBundleVersionCode")
-            {
-                bundleVersion = tokens[1].Trim();
+                case "  productName":
+                    productName = tokens[1].Trim();
+                    break;
+                case "  bundleVersion":
+                    productVersion = tokens[1].Trim();
+                    break;
+                case "  AndroidBundleVersionCode":
+                    bundleVersion = tokens[1].Trim();
+                    break;
+                case "  muteOtherAudioSources":
+                    muteOtherAudioSources = tokens[1].Trim() != "0";
+                    break;
             }
         }
         if (productName == null || productVersion == null || bundleVersion == null)
@@ -111,11 +116,10 @@ public static class ProjectSettings
     }
 
     public static bool UpdateProjectSettingsFile(string workingDirectory,
-        ref string productVersion, ref string bundleVersion, bool versionIsDate = true)
-
+        ref string productVersion, ref string bundleVersion, bool isVersionDate, bool isVersionSemantic)
     {
         var path = Path.Combine(workingDirectory, Files.ProjectSettingsFolderName, Files.ProjectSettingsFileName);
-        var lines = File.ReadAllLines(path,Files.Encoding);
+        var lines = File.ReadAllLines(path, Files.Encoding);
         var curProductVersion = "";
         var curBundleVersion = "";
         foreach (var line in lines)
@@ -142,12 +146,15 @@ public static class ProjectSettings
             Form1.AddLine(".ERROR", $"Current values are 'version' {curProductVersion} or 'bundle' {curBundleVersion}");
             return false;
         }
-        if (versionIsDate)
+        var bundleVersionValue = int.Parse(curBundleVersion) + 1;
+        if (isVersionDate)
         {
             curProductVersion = $"{DateTime.Today:dd.MM.yyyy}";
         }
-        var bundleVersionValue = int.Parse(curBundleVersion) + 1;
-
+        else if (isVersionSemantic && SemVer.IsSemantic(curProductVersion))
+        {
+            curProductVersion = SemVer.IncrementPatch(curProductVersion);
+        }
         productVersion = curProductVersion;
         bundleVersion = bundleVersionValue.ToString();
         var updateCount = 0;
@@ -172,7 +179,7 @@ public static class ProjectSettings
             return false;
         }
         var output = string.Join('\n', lines);
-        File.WriteAllText(path, output,Files.Encoding);
+        File.WriteAllText(path, output, Files.Encoding);
         return true;
     }
 }
