@@ -50,15 +50,15 @@ namespace Prg.Util
         }
 
         /// <summary>
-        /// Gets patch value from MAJOR.MINOR.PATCH version string.
+        /// Gets patch value from MAJOR.MINOR.PATCH[.x.y] version string.
         /// </summary>
         public static int GetPatch(string version)
         {
             try
             {
                 var versionNumbers = Array.ConvertAll(version.Split('.'), int.Parse);
-                return versionNumbers.Length is 3
-                    ? versionNumbers[^1]
+                return versionNumbers.Length >= 3
+                    ? versionNumbers[2]
                     : 0;
             }
             catch (Exception)
@@ -67,26 +67,29 @@ namespace Prg.Util
             }
         }
 
+        /// <summary>
+        /// Updates patch value in MAJOR.MINOR.PATCH[.x.y] version string.
+        /// </summary>
         public static string IncrementPatch(string version)
         {
             try
             {
                 var versionNumbers = Array.ConvertAll(version.Split('.'), int.Parse);
-                switch (versionNumbers.Length)
+                if (versionNumbers.Length == 2)
                 {
-                    case 2:
-                        return $"{version}.0";
-                    case 3:
-                        versionNumbers[^1] += 1;
-                        return string.Join('.', versionNumbers);
-                    default:
-                        return version;
+                    return $"{version}.0";
+                }
+                if (versionNumbers.Length >= 3)
+                {
+                    versionNumbers[2] += 1;
+                    return string.Join('.', versionNumbers);
                 }
             }
             catch (Exception)
             {
-                return version;
+                // Swallow everything!
             }
+            return version;
         }
 
         /// <summary>
@@ -97,7 +100,7 @@ namespace Prg.Util
             try
             {
                 var versionNumbers = Array.ConvertAll(version.Split('.'), int.Parse);
-                return versionNumbers.Length is 3;
+                return versionNumbers.Length >= 3;
             }
             catch (Exception)
             {
