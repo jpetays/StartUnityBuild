@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using Editor.Prg.BatchBuild;
 using NLog;
+using Prg.Util;
 
 namespace StartUnityBuild;
 
@@ -244,6 +245,20 @@ public partial class Form1 : Form
         AddLine(">Product", $"{_settings.ProductName}");
         AddLine(">Version", $"{_settings.ProductVersion}");
         AddLine(">Bundle", $"{_settings.BundleVersion}");
+        if (Commands.IsVersionDate && SemVer.IsSemantic(_settings.ProductVersion))
+        {
+            // Reverse settings automatically-
+            Commands.IsVersionDate = false;
+            Commands.IsVersionSemantic = true;
+        }
+        if (Commands.IsVersionDate)
+        {
+            AddLine(".update", "Version is Date dd.mm.yyyy");
+        }
+        else if (Commands.IsVersionSemantic)
+        {
+            AddLine(".update", "Version is semantic");
+        }
         var buildTargets = new List<string>();
         Files.LoadAutoBuildTargets(_settings.WorkingDirectory, out var unityPath, buildTargets);
         _settings.UnityPath = unityPath;
