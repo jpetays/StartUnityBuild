@@ -23,6 +23,11 @@ public class BuildSettings(string workingDirectory)
     public string BundleVersion { get; set; } = "";
 
     /// <summary>
+    /// IsMuteOtherAudioSources from ProjectSettings.asset.
+    /// </summary>
+    public bool IsMuteOtherAudioSources { get; set; }
+
+    /// <summary>
     /// BuildInfo Filename for updating C# BuildInfoDataPart.cs.
     /// </summary>
     public string BuildInfoFilename { get; set; } = "";
