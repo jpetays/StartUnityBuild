@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Media;
 using System.Reflection;
 using System.Text;
 using Editor.Prg.BatchBuild;
@@ -144,6 +145,7 @@ public partial class Form1 : Form
                     var duration = DateTime.Now - startTime;
                     SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
                     UpdateProjectInfo(updated ? Color.Green : Color.Red);
+                    PlayNotification();
                 });
         });
         startBuildToolStripMenuItem.Text = $"[{startBuildToolStripMenuItem.Text}]";
@@ -200,6 +202,16 @@ public partial class Form1 : Form
         {
             AddLine("ERROR", $"{x.Message}");
         }
+    }
+
+    private static void PlayNotification()
+    {
+        if (_instance.InvokeRequired)
+        {
+            _instance.Invoke(() => PlayNotification);
+            return;
+        }
+        SystemSounds.Exclamation.Play();
     }
 
     private void SetStatus(string statusText, Color color)
