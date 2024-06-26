@@ -29,6 +29,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Include="..\DemoProject\Assets\Scripts\Prg\Util\SemVer.cs" Link="Prg\SemVer.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Content Include="Tpdkdesign.net-Refresh-Cl-Windows-Download.ico" />
     </ItemGroup>
 
