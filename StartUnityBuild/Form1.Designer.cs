@@ -34,6 +34,7 @@ partial class Form1
         fileToolStripMenuItem = new ToolStripMenuItem();
         copyOutputToClipboardToolStripMenuItem = new ToolStripMenuItem();
         exitToolStripMenuItem = new ToolStripMenuItem();
+        resetFolderAndExitToolStripMenuItem = new ToolStripMenuItem();
         gitStatusToolStripMenuItem = new ToolStripMenuItem();
         updateBuildToolStripMenuItem = new ToolStripMenuItem();
         startBuildToolStripMenuItem = new ToolStripMenuItem();
@@ -42,8 +43,6 @@ partial class Form1
         label1 = new Label();
         timer1 = new System.Windows.Forms.Timer(components);
         fileSystemWatcher1 = new FileSystemWatcher();
-        label2 = new Label();
-        resetFolderAndExitToolStripMenuItem = new ToolStripMenuItem();
         menuStrip1.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize) fileSystemWatcher1).BeginInit();
         SuspendLayout();
@@ -76,6 +75,12 @@ partial class Form1
         exitToolStripMenuItem.Size = new Size(212, 22);
         exitToolStripMenuItem.Text = "Exit";
         // 
+        // resetFolderAndExitToolStripMenuItem
+        // 
+        resetFolderAndExitToolStripMenuItem.Name = "resetFolderAndExitToolStripMenuItem";
+        resetFolderAndExitToolStripMenuItem.Size = new Size(212, 22);
+        resetFolderAndExitToolStripMenuItem.Text = "Reset Folder And Exit";
+        // 
         // gitStatusToolStripMenuItem
         // 
         gitStatusToolStripMenuItem.Name = "gitStatusToolStripMenuItem";
@@ -97,8 +102,8 @@ partial class Form1
         // projectInfoToolStripMenuItem
         // 
         projectInfoToolStripMenuItem.Name = "projectInfoToolStripMenuItem";
-        projectInfoToolStripMenuItem.Size = new Size(80, 20);
-        projectInfoToolStripMenuItem.Text = "Project Info";
+        projectInfoToolStripMenuItem.Size = new Size(83, 20);
+        projectInfoToolStripMenuItem.Text = "Project Info!";
         // 
         // listView1
         // 
@@ -127,31 +132,11 @@ partial class Form1
         fileSystemWatcher1.EnableRaisingEvents = true;
         fileSystemWatcher1.SynchronizingObject = this;
         // 
-        // label2
-        // 
-        label2.AutoSize = true;
-        label2.BackColor = SystemColors.ControlLightLight;
-        label2.Dock = DockStyle.Right;
-        label2.Font = new Font("Cascadia Mono", 9.75F, FontStyle.Regular, GraphicsUnit.Point,  0);
-        label2.Location = new Point(815, 24);
-        label2.Name = "label2";
-        label2.Size = new Size(128, 17);
-        label2.TabIndex = 3;
-        label2.Text = "1234567 bytes  ";
-        label2.TextAlign = ContentAlignment.MiddleRight;
-        // 
-        // resetFolderAndExitToolStripMenuItem
-        // 
-        resetFolderAndExitToolStripMenuItem.Name = "resetFolderAndExitToolStripMenuItem";
-        resetFolderAndExitToolStripMenuItem.Size = new Size(212, 22);
-        resetFolderAndExitToolStripMenuItem.Text = "Reset Folder And Exit";
-        // 
         // Form1
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(1063, 563);
-        Controls.Add(label2);
         Controls.Add(label1);
         Controls.Add(listView1);
         Controls.Add(menuStrip1);
@@ -178,7 +163,6 @@ partial class Form1
     private Label label1;
     private System.Windows.Forms.Timer timer1;
     private FileSystemWatcher fileSystemWatcher1;
-    private Label label2;
     private ToolStripMenuItem updateBuildToolStripMenuItem;
     private ToolStripMenuItem projectInfoToolStripMenuItem;
     private ToolStripMenuItem resetFolderAndExitToolStripMenuItem;

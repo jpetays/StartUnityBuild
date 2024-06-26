@@ -38,7 +38,6 @@ public partial class Form1 : Form
         //listView1.GridLines = true;
         listView1.View = View.Details;
         label1.Text = "";
-        label2.Text = "";
         timer1.Interval = 1000;
 
         SetupMenuCommands();
