@@ -1,15 +1,19 @@
-rem @echo off
+@echo off
+
 set SOURCE=.\StartUnityBuild\bin\Release\net8.0-windows
 set TARGET=.\temp\StartUnityBuild
-set DIST_ZIPPED=.\dist\StartUnityBuild.zip
-
 robocopy %SOURCE% %TARGET% *.* /V /XD logs
 
+set DIST_ZIPPED=.\dist\StartUnityBuild.zip
 if exist %DIST_ZIPPED% (
 	del /Q %DIST_ZIPPED%
 )
-@echo on
 "C:\Program Files\7-Zip\7z.exe" a %DIST_ZIPPED% %TARGET%
-@echo off
-echo.
+
+set DIST_ZIPPED_EXE=.\dist\StartUnityBuild.exe
+if exist %DIST_ZIPPED_EXE% (
+	del /Q %DIST_ZIPPED_EXE%
+)
+"C:\Program Files\7-Zip\7z.exe" a -sfx %DIST_ZIPPED_EXE% %TARGET%
+
 pause

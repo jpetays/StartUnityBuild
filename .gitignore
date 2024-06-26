@@ -6,3 +6,4 @@ riderModule.iml
 .vs
 *.csproj.user
 temp/
+dist/
