@@ -32,18 +32,48 @@ public static class Commands
         Task.Run(async () =>
         {
             Form1.AddLine($">{outPrefix}", "git status");
-            await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
-                GitOutputFilter, Form1.ExitListener);
+            await RunCommand.Execute(outPrefix, "git", "status", workingDirectory,
+                null, GitOutputFilter, Form1.ExitListener);
             if (!_gitBranchUpToDate)
             {
                 Form1.AddLine(outPrefix, "-");
                 Form1.AddLine(outPrefix, "-You have changes that should/could be pushed to git!");
                 Form1.AddLine(outPrefix, "-");
             }
-            Form1.AddLine($">{outPrefix}", "git log origin/main..HEAD");
-            await RunCommand.Execute(outPrefix, "git", "log origin/main..HEAD", workingDirectory, null,
-                GitOutputFilter, Form1.ExitListener);
+            var countUnpushedCommits = 0;
+            const string gitCommand = "log --pretty=oneline origin/main..HEAD";
+            Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
+            await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+                null, MyOutputFilter, Form1.ExitListener);
+            if (countUnpushedCommits > 0)
+            {
+                Form1.AddLine(outPrefix, "-");
+                Form1.AddLine(outPrefix, "-You have commits that have not been pushed yet!");
+                Form1.AddLine(outPrefix, "-");
+            }
             finished();
+            return;
+
+            void MyOutputFilter(string prefix, string? line)
+            {
+                if (line == null)
+                {
+                    return;
+                }
+                var tokens = line.Split(' ');
+                if (tokens.Length >= 2 && IsSha1(tokens[0].Trim()))
+                {
+                    countUnpushedCommits += 1;
+                    tokens[0] = "commit:";
+                    line = $"--> {string.Join(' ', tokens)}";
+                }
+                GitOutputFilter(prefix, line);
+            }
+
+            bool IsSha1(string text)
+            {
+                return text.Length == 40;
+            }
         });
     }
 
@@ -58,8 +88,8 @@ public static class Commands
         Task.Run(async () =>
         {
             Form1.AddLine($".{outPrefix}", $"git status");
-            await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
-                MyOutputFilter, Form1.ExitListener);
+            await RunCommand.Execute(outPrefix, "git", "status", workingDirectory,
+                null, MyOutputFilter, Form1.ExitListener);
             if (isProjectSettingsDirty || isBuildInfoDirty)
             {
                 Form1.AddLine("ERROR", $"Project folder has changed files in it, can not update project");
@@ -115,30 +145,29 @@ public static class Commands
                 var message =
                     $"auto update build version {settings.ProductVersion} and bundle {settings.BundleVersion}";
                 Form1.AddLine($".{outPrefix}", $"git commit: {message}");
-                var commitCommand = $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""";
+                var gitCommand = $"""commit -m "{message}" ProjectSettings/ProjectSettings.asset""";
                 if (updatedBuildInfo)
                 {
                     var buildInfoFilename = BuildInfoUpdater.GetGFitPath(workingDirectory, settings.BuildInfoFilename);
-                    commitCommand = $"{commitCommand} {buildInfoFilename}";
+                    gitCommand = $"{gitCommand} {buildInfoFilename}";
                 }
-                await RunCommand.Execute(outPrefix, "git", commitCommand,
-                    workingDirectory, null,
-                    GitOutputFilter, Form1.ExitListener);
+                await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+                    null, GitOutputFilter, Form1.ExitListener);
 
                 // Create a lightweight commit tag.
                 // - unless -f is given, the named tag must not yet exist.
                 var tagName =
                     $"auto_build_{DateTime.Today:yyyy-MM-dd}_bundle_{settings.BundleVersion}_patch_{patchValue}";
-                Form1.AddLine($".{outPrefix}", $"git tag {tagName} -f");
-                await RunCommand.Execute(outPrefix, "git", $"tag {tagName}",
-                    workingDirectory, null, GitOutputFilter, Form1.ExitListener);
+                gitCommand = $"git tag {tagName} -f";
+                Form1.AddLine($".{outPrefix}", gitCommand);
+                await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+                    null, GitOutputFilter, Form1.ExitListener);
 
                 // Push changes.
-                var pushCommand = $"push {PushOptions} origin main";
-                Form1.AddLine($".{outPrefix}", $"git {pushCommand}");
-                var result = await RunCommand.Execute(outPrefix, "git", pushCommand,
-                    workingDirectory, null,
-                    GitOutputFilter, Form1.ExitListener);
+                gitCommand = $"push {PushOptions} origin main";
+                Form1.AddLine($".{outPrefix}", $"git {gitCommand}");
+                var result = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+                    null, GitOutputFilter, Form1.ExitListener);
                 var gitPushPrefix = result == 0 ? $".{outPrefix}" : "ERROR";
                 Form1.AddLine(gitPushPrefix, $"git push returns {result}");
                 if (IsDryRun)
@@ -245,23 +274,14 @@ public static class Commands
                 }
                 Thread.Sleep(delayAfterUnityBuild * 000);
             }
-            // Final git status For Your Information only!
-            Form1.AddLine($".{outPrefix}", $"git status");
-            await RunCommand.Execute(outPrefix, "git", "status", workingDirectory, null,
-                GitOutputFilter, Form1.ExitListener);
-            if (!_gitBranchUpToDate)
-            {
-                Form1.AddLine(outPrefix, "-");
-                Form1.AddLine(outPrefix, "-You have changes that should/could be pushed to git!");
-                Form1.AddLine(outPrefix, "-");
-            }
             if (abortBuild)
             {
                 Form1.AddLine("ERROR", "*");
                 Form1.AddLine("ERROR", "* Build was aborted!");
                 Form1.AddLine("ERROR", "*");
             }
-            finished();
+            // Final git status For Your Information only!
+            GitStatus(workingDirectory, finished);
         });
     }
 
