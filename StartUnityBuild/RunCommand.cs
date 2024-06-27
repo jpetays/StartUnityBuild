@@ -52,12 +52,26 @@ public static class RunCommand
         readOutput(".cmd", $"{outputPrefix} started");
         Thread.Yield();
         await process.WaitForExitAsync();
+        // We call blocking version to force flush and/or wait for stdout and stderr streams to be fully closed!
+        // ReSharper disable once MethodHasAsyncOverload
         process.WaitForExit();
-        readOutput(".cmd", $"{outputPrefix} ended");
-        while (!standardOutput.IsEndOfStream)
+        if (!standardOutput.IsEndOfStream)
         {
-            Thread.Yield();
+            while (!standardOutput.IsEndOfStream)
+            {
+                Thread.Yield();
+            }
+            readOutput(".cmd", $"standardOutput ended");
         }
+        if (!standardError.IsEndOfStream)
+        {
+            while (!standardError.IsEndOfStream)
+            {
+                Thread.Yield();
+            }
+            readOutput(".cmd", $"standardError ended");
+        }
+        readOutput(".cmd", $"{outputPrefix} ended");
         readExitCode(outputPrefix, process.ExitCode);
         return process.ExitCode;
     }
