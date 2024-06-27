@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Media;
 using System.Reflection;
 using System.Text;
-using Editor.Prg.BatchBuild;
+using Editor.Prg.Build;
 using NLog;
 
 namespace StartUnityBuild;

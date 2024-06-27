@@ -56,6 +56,7 @@ public static class Files
             var tokens = line.Split('=');
             switch (tokens[0].Trim())
             {
+                case "BuildTargets":
                 case "buildTargets":
                 {
                     var targets = tokens[1].Split(',');
@@ -65,6 +66,7 @@ public static class Files
                     }
                     break;
                 }
+                case "UnityPath":
                 case "unityPath":
                     unityPath = tokens[1].Trim();
                     break;

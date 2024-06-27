@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Editor.Prg.BatchBuild;
+using Editor.Prg.Build;
 using Prg.Util;
 
 namespace StartUnityBuild;
