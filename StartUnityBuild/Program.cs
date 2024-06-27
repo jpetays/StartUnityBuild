@@ -15,12 +15,20 @@ static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        var cmdLineDirectory = ParseArgs();
-        if (Directory.Exists(cmdLineDirectory))
+        var projectDirectory = ParseArgs();
+        if (Directory.Exists(projectDirectory) && Files.HasProjectVersionFile(projectDirectory))
         {
-            Directory.SetCurrentDirectory(cmdLineDirectory);
+            Directory.SetCurrentDirectory(projectDirectory);
+            AppSettings.SetUnityProjectFolder(projectDirectory);
         }
-        AppSettings.Load();
+        else
+        {
+            projectDirectory = AppSettings.Get().UnityProjectFolder;
+            if (Directory.Exists(projectDirectory) && Files.HasProjectVersionFile(projectDirectory))
+            {
+                Directory.SetCurrentDirectory(projectDirectory);
+            }
+        }
         Application.Run(new Form1());
     }
 

@@ -268,6 +268,7 @@ public partial class Form1 : Form
         {
             Files.LoadProjectVersionFile(_settings.WorkingDirectory, out var unityVersion);
             _settings.UnityEditorVersion = unityVersion;
+            AppSettings.SetUnityProjectFolder(_settings.WorkingDirectory);
         }
         catch (DirectoryNotFoundException)
         {
