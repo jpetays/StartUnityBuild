@@ -1,12 +1,9 @@
-using System.Globalization;
-using System.Text;
-#if UNITY_EDITOR
 using System;
+using System.Globalization;
 using System.IO;
-#endif
+using System.Text;
 
-// ReSharper disable once CheckNamespace
-namespace Editor.Prg.BatchBuild
+namespace Editor.Prg.Build
 {
     /// <summary>
     /// Utility to read/write <b>BuildInfoDataPart.cs</b> C# source file somewhere in the UNITY project and

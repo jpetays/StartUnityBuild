@@ -17,7 +17,7 @@ using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace Editor.Prg.BatchBuild
+namespace Editor.Prg.Build
 {
     /// <summary>
     /// Utility to build project with given settings (using .enf file) from command line.<br />
@@ -100,17 +100,12 @@ namespace Editor.Prg.BatchBuild
                 BuildInfoUpdater.CreateLocalProperties(
                     Application.version, PlayerSettings.Android.bundleVersionCode,
                     BuildInfoUpdater.GetPatchValue(buildInfoFilename), targetName));
-            if (options.IsTestRun)
-            {
-                Debug.Log("batch_build_ IsTestRun build exit 0");
-                EditorApplication.Exit(0);
-                return;
-            }
             var buildReport = BuildPLayer(options);
             var buildResult = buildReport.summary.result;
-            if (options.IsBuildReport && buildResult == BuildResult.Succeeded)
+            if (buildResult == BuildResult.Succeeded)
             {
-                UnityBuildReport.GetOrCreateLastBuildReport();
+                var assetPath = UnityBuildReport.CreateBuildReport(buildReport.summary.platform);
+                Debug.Log($"batch_build_ Build Report saved: {assetPath}");
             }
             timer.Stop();
             Debug.Log($"batch_build_ start {buildReport.summary.buildStartedAt:yyyy-dd-MM HH:mm}" +
@@ -127,12 +122,6 @@ namespace Editor.Prg.BatchBuild
             Debug.Log($"batch_build_ start POST PROCESS in UNITY {Application.unityVersion}");
             var options = new BatchBuildOptions(Environment.GetCommandLineArgs());
             Debug.Log($"batch_build_ Options {options}");
-            if (options.IsTestRun)
-            {
-                Debug.Log("batch_build_ IsTestRun build exit 0");
-                EditorApplication.Exit(0);
-                return;
-            }
             var timer = new Timer();
             Debug.Log("batch_build_ NOT_IMPLEMENTED_YET");
             timer.Stop();
@@ -150,11 +139,15 @@ namespace Editor.Prg.BatchBuild
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 locationPathName = options.OutputPathName,
-                options = options.BuildOptions,
+                options = BuildOptions.StrictMode | BuildOptions.DetailedBuildReport,
                 scenes = scenes,
                 target = options.BuildTarget,
                 targetGroup = options.BuildTargetGroup,
             };
+            if (EditorUserBuildSettings.development)
+            {
+                buildPlayerOptions.options |= BuildOptions.Development;
+            }
             var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildPlayerOptions.targetGroup).Split(';');
 
             Debug.Log($"batch_build_ build productName: {Application.productName}");
@@ -195,7 +188,7 @@ namespace Editor.Prg.BatchBuild
                     break;
                 }
                 case BuildTarget.WebGL:
-                    PlayerSettings.WebGL.compressionFormat = options.WebGL.compressionFormat;
+                    PlayerSettings.WebGL.compressionFormat = BatchBuildOptions.WebGlOptions.compressionFormat;
                     Debug.Log($"batch_build_ WebGL.compressionFormat: {PlayerSettings.WebGL.compressionFormat}");
                     // No use to show stack trace in browser.
                     Debug.Log($"batch_build_ SetStackTraceLogType: {StackTraceLogType.None}");
@@ -209,11 +202,11 @@ namespace Editor.Prg.BatchBuild
             // This produces multi-line output!
             Debug.Log($"batch_build_ defines:\r\n{string.Join("\r\n", defines)}");
 
-            if (Directory.Exists(options.OutputFolder))
+            if (Directory.Exists(options.BuildOutputFolder))
             {
-                Directory.Delete(options.OutputFolder, recursive: true);
+                Directory.Delete(options.BuildOutputFolder, recursive: true);
             }
-            Directory.CreateDirectory(options.OutputFolder);
+            Directory.CreateDirectory(options.BuildOutputFolder);
             var buildReport = BuildPipeline.BuildPlayer(buildPlayerOptions);
             return buildReport;
         }
@@ -224,15 +217,6 @@ namespace Editor.Prg.BatchBuild
                 .ReadAllLines(Path.Combine("ProjectSettings", "ProjectVersion.txt"))[0]
                 .Split(" ")[1];
             return unityVersion == editorVersion;
-        }
-
-        private static string SafeReplaceFileExtension(string filename, string oldExtension, string newExtension)
-        {
-            Assert.IsTrue(oldExtension.StartsWith('.'));
-            Assert.IsTrue(newExtension.StartsWith('.'));
-            return filename.EndsWith(oldExtension)
-                ? $"{filename.Substring(0, filename.Length - oldExtension.Length)}{newExtension}"
-                : $"{filename}{newExtension}";
         }
 
         public static Dictionary<string, string> LoadSecretKeys(string path, BuildTarget buildTarget)
@@ -301,11 +285,10 @@ namespace Editor.Prg.BatchBuild
             }
 
             [SuppressMessage("ReSharper", "InconsistentNaming")]
-            public class WebGlOptions
+            public static class WebGlOptions
             {
                 // PlayerSettings.WebGL.compressionFormat
-                // ReSharper disable once ConvertToConstant.Local
-                public readonly WebGLCompressionFormat compressionFormat = WebGLCompressionFormat.Brotli;
+                public const WebGLCompressionFormat compressionFormat = WebGLCompressionFormat.Brotli;
             }
 
             [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -320,25 +303,14 @@ namespace Editor.Prg.BatchBuild
             public readonly string ProjectPath;
             public readonly string LogFile;
             public readonly string EnvFile;
+            public readonly string BuildOutputFolder;
 
             // Actual build settings etc.
             public readonly BuildTarget BuildTarget;
             public readonly BuildTargetGroup BuildTargetGroup;
-            public readonly BuildOptions BuildOptions;
             public readonly string OutputPathName;
             public readonly AndroidOptions Android = new();
-            public readonly WebGlOptions WebGL = new();
             public readonly GameAnalyticsOptions GameAnalytics = new();
-
-            // Just for information, if needed.
-            public readonly string OutputFolder;
-            public readonly bool IsDevelopmentBuild;
-            public readonly bool IsBuildReport;
-
-            // Build post processing.
-            public readonly string LogFilePost;
-
-            public readonly bool IsTestRun;
 
             public BatchBuildOptions(string[] args)
             {
@@ -347,7 +319,6 @@ namespace Editor.Prg.BatchBuild
                 // -buildTarget - build target name (for UNITY)
                 // -logFile - log file name (for UNITY)
                 // -envFile - settings file name (for BatchBuild to read actual build options etc)
-                // -rebuild - do not update build info
                 {
                     var buildTargetName = string.Empty;
                     for (var i = 0; i < args.Length; ++i)
@@ -437,15 +408,6 @@ namespace Editor.Prg.BatchBuild
                     var value = tokens[1].Trim();
                     switch (key)
                     {
-                        case "IsTestRun":
-                            IsTestRun = bool.Parse(value);
-                            break;
-                        case "IsDevelopmentBuild":
-                            IsDevelopmentBuild = bool.Parse(value);
-                            break;
-                        case "IsBuildReport":
-                            IsBuildReport = bool.Parse(value);
-                            break;
                         case "SecretKeys":
                             if (!Directory.Exists(value))
                             {
@@ -453,17 +415,7 @@ namespace Editor.Prg.BatchBuild
                             }
                             secretKeys = LoadSecretKeys(value, BuildTarget);
                             break;
-                        case "LOG_FILE_POST":
-                            // Variable is shared with commandline, thus it is in UPPER_CASE.
-                            LogFilePost = value;
-                            break;
                     }
-                }
-                // Create actual build options
-                BuildOptions = BuildOptions.StrictMode | BuildOptions.DetailedBuildReport;
-                if (IsDevelopmentBuild)
-                {
-                    BuildOptions |= BuildOptions.Development;
                 }
                 // Set secret keys etc.
                 if (BuildTarget == BuildTarget.Android)
@@ -480,10 +432,10 @@ namespace Editor.Prg.BatchBuild
                 Assert.IsNotNull(GameAnalytics);
 #endif
                 // Set final output path and name.
-                OutputFolder = Path.Combine(ProjectPath, $"build{BuildPipeline.GetBuildTargetName(BuildTarget)}");
+                BuildOutputFolder = Path.Combine(ProjectPath, $"build{BuildPipeline.GetBuildTargetName(BuildTarget)}");
                 if (BuildTarget == BuildTarget.WebGL)
                 {
-                    OutputPathName = OutputFolder;
+                    OutputPathName = BuildOutputFolder;
                 }
                 else
                 {
@@ -491,7 +443,7 @@ namespace Editor.Prg.BatchBuild
                         SanitizePath(
                             $"{Application.productName}_{Application.version}_{PlayerSettings.Android.bundleVersionCode}");
                     var appExtension = BuildTarget == BuildTarget.Android ? "aab" : "exe";
-                    OutputPathName = Path.Combine(OutputFolder, $"{appName}.{appExtension}");
+                    OutputPathName = Path.Combine(BuildOutputFolder, $"{appName}.{appExtension}");
                 }
             }
 
@@ -500,10 +452,7 @@ namespace Editor.Prg.BatchBuild
                 return
                     $"{nameof(ProjectPath)}: {ProjectPath}, {nameof(LogFile)}: {LogFile}, {nameof(EnvFile)}: {EnvFile}" +
                     $", {nameof(BuildTarget)}: {BuildTarget}, {nameof(BuildTargetGroup)}: {BuildTargetGroup}" +
-                    $", {nameof(BuildOptions)}: [{BuildOptions}]" +
-                    $", {nameof(OutputFolder)}: {OutputFolder}, {nameof(OutputPathName)}: {OutputPathName}" +
-                    $", {nameof(IsDevelopmentBuild)}: {IsDevelopmentBuild}, {nameof(IsTestRun)}: {IsTestRun}" +
-                    $", {nameof(LogFilePost)}: {LogFilePost}";
+                    $", {nameof(BuildOutputFolder)}: {BuildOutputFolder}, {nameof(OutputPathName)}: {OutputPathName}";
             }
 
             // Build target parameter mapping
