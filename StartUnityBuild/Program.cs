@@ -15,29 +15,12 @@ static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        var appPropertiesFile = GetAppPropertiesFilename();
         var cmdLineDirectory = ParseArgs();
-        var initialDirectory = Directory.GetCurrentDirectory();
-        var currentDirectory =
-            !string.IsNullOrWhiteSpace(cmdLineDirectory) && File.Exists(cmdLineDirectory) ? cmdLineDirectory
-            : File.Exists(appPropertiesFile) ? File.ReadAllText(appPropertiesFile, Files.Encoding)
-            : initialDirectory;
-        if (!Files.HasProjectVersionFile(currentDirectory))
+        if (Directory.Exists(cmdLineDirectory))
         {
-            if (GetProjectSettingsFolderName(initialDirectory, out currentDirectory))
-            {
-                var appPropertiesFolder = Path.GetDirectoryName(appPropertiesFile);
-                if (!Directory.Exists(appPropertiesFolder))
-                {
-                    Directory.CreateDirectory(appPropertiesFolder!);
-                }
-                File.WriteAllText(appPropertiesFile, currentDirectory, Files.Encoding);
-            }
+            Directory.SetCurrentDirectory(cmdLineDirectory);
         }
-        if (initialDirectory != currentDirectory)
-        {
-            Directory.SetCurrentDirectory(currentDirectory);
-        }
+        AppSettings.Load();
         Application.Run(new Form1());
     }
 
@@ -87,48 +70,5 @@ static class Program
             }
         }
         return currentDirectory;
-    }
-
-    private static string GetAppPropertiesFilename()
-    {
-        var appPropertiesName = $"{Application.ProductName!}.properties";
-        var appPropertiesFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Application.ProductName!);
-        var appPropertiesFile = Path.Combine(appPropertiesFolder, appPropertiesName);
-        return appPropertiesFile;
-    }
-
-    public static void DeleteAppPropertiesFile()
-    {
-        var appPropertiesFile = GetAppPropertiesFilename();
-        if (File.Exists(appPropertiesFile))
-        {
-            File.Delete(appPropertiesFile);
-        }
-    }
-
-    private static bool GetProjectSettingsFolderName(string initialDirectory, out string folderName)
-    {
-        using (OpenFileDialog openFileDialog = new OpenFileDialog())
-        {
-            openFileDialog.InitialDirectory = initialDirectory;
-            openFileDialog.Filter =
-                $"{Files.ProjectVersionFileName}|{Files.ProjectVersionFileName}|All files (*.*)|*.*";
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                var directoryName = Path.GetDirectoryName(openFileDialog.FileName);
-                if (Directory.Exists(directoryName))
-                {
-                    var parentDirectory = Directory.GetParent(directoryName);
-                    if (parentDirectory != null)
-                    {
-                        folderName = parentDirectory.FullName;
-                        return true;
-                    }
-                }
-            }
-        }
-        folderName = "";
-        return false;
     }
 }

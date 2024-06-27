@@ -11,18 +11,19 @@ namespace StartUnityBuild;
 public partial class Form1 : Form
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private readonly string _appVersion;
+    private readonly string _baseTitle;
 
     private static readonly char[] Separators = ['\r', '\n'];
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private static Form1 _instance;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    private readonly BuildSettings _settings;
+    private BuildSettings _settings;
 
     public Form1()
     {
-        _appVersion = Application.ProductVersion.Split('+')[0];
+        var appVersion = Application.ProductVersion.Split('+')[0];
+        _baseTitle = $"{(Commands.IsDryRun ? "TEST " : "")}Build {appVersion} UNITY";
         _instance = this;
         _settings = new BuildSettings(Directory.GetCurrentDirectory());
         InitializeComponent();
@@ -46,28 +47,37 @@ public partial class Form1 : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-        Text = $"{(Commands.IsDryRun ? "TEST " : "")}Build {_appVersion} UNITY";
+        Text = _baseTitle;
+        if (Files.HasProjectVersionFile(Directory.GetCurrentDirectory()))
+        {
+            LoadProject();
+            return;
+        }
+        AddLine("INFO", "");
+        AddLine("INFO", "-Use menu File->Set Project Folder to set UNITY project location");
+        AddLine("INFO", "");
+    }
+
+    private void LoadProject()
+    {
         try
         {
             LoadEnvironment();
             Text =
-                $"{Text} {_settings.UnityEditorVersion} - App {_settings.ProductVersion} - Targets {string.Join(',', _settings.BuildTargets)}";
-            UpdateProjectInfo(Color.Magenta);
+                $"{_baseTitle} {_settings.UnityEditorVersion} - App {_settings.ProductVersion} - Targets {string.Join(',', _settings.BuildTargets)}";
+            UpdateProjectInfo(_settings.BuildTargets.Count > 0 ? Color.Magenta : Color.Red);
             StartupCommand();
             if (_settings.BuildTargets.Count == 0)
             {
                 AddLine("ERROR", "Could not find any build targets");
             }
+            return;
         }
         catch (Exception x)
         {
             AddLine($"Failed to LoadEnvironment");
             AddLine("ERROR", $"{x.GetType().Name}: {x.Message}");
-            if (x is ApplicationException)
-            {
-                return;
-            }
-            if (x.StackTrace != null)
+            if (x is not ApplicationException && x.StackTrace != null)
             {
                 foreach (var line in x.StackTrace.Split(Separators, StringSplitOptions.RemoveEmptyEntries))
                 {
@@ -75,17 +85,35 @@ public partial class Form1 : Form
                 }
             }
         }
+        AddLine("INFO", "");
+        AddLine("INFO", "-Use menu File->Set Project Folder to set UNITY project location");
+        AddLine("INFO", "");
+    }
+
+    private void SetProjectFolder()
+    {
+        ClearLines();
+        var folderBrowserDialog = new FolderBrowserDialog();
+        if (folderBrowserDialog.ShowDialog() != DialogResult.OK)
+        {
+            return;
+        }
+        var directoryName = folderBrowserDialog.SelectedPath;
+        AddLine(".dir", directoryName);
+        if (!Directory.Exists(directoryName))
+        {
+            return;
+        }
+        Directory.SetCurrentDirectory(directoryName);
+        _settings = new BuildSettings(Directory.GetCurrentDirectory());
+        LoadProject();
     }
 
     private void SetupMenuCommands()
     {
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
-        resetFolderAndExitToolStripMenuItem.Click += (_, _) =>
-        {
-            Program.DeleteAppPropertiesFile();
-            Application.Exit();
-        };
+        setProjectFolderToolStripMenuItem.Click += (_, _) => { SetProjectFolder(); };
         var isCommandExecuting = false;
         var startTime = DateTime.Now;
         var timerLabel = "";

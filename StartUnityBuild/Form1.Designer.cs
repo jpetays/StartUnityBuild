@@ -34,7 +34,6 @@ partial class Form1
         fileToolStripMenuItem = new ToolStripMenuItem();
         copyOutputToClipboardToolStripMenuItem = new ToolStripMenuItem();
         exitToolStripMenuItem = new ToolStripMenuItem();
-        resetFolderAndExitToolStripMenuItem = new ToolStripMenuItem();
         gitStatusToolStripMenuItem = new ToolStripMenuItem();
         updateBuildToolStripMenuItem = new ToolStripMenuItem();
         startBuildToolStripMenuItem = new ToolStripMenuItem();
@@ -43,6 +42,7 @@ partial class Form1
         label1 = new Label();
         timer1 = new System.Windows.Forms.Timer(components);
         fileSystemWatcher1 = new FileSystemWatcher();
+        setProjectFolderToolStripMenuItem = new ToolStripMenuItem();
         menuStrip1.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize) fileSystemWatcher1).BeginInit();
         SuspendLayout();
@@ -58,7 +58,7 @@ partial class Form1
         // 
         // fileToolStripMenuItem
         // 
-        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { copyOutputToClipboardToolStripMenuItem, exitToolStripMenuItem, resetFolderAndExitToolStripMenuItem });
+        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setProjectFolderToolStripMenuItem, copyOutputToClipboardToolStripMenuItem, exitToolStripMenuItem });
         fileToolStripMenuItem.Name = "fileToolStripMenuItem";
         fileToolStripMenuItem.Size = new Size(37, 20);
         fileToolStripMenuItem.Text = "File";
@@ -74,12 +74,6 @@ partial class Form1
         exitToolStripMenuItem.Name = "exitToolStripMenuItem";
         exitToolStripMenuItem.Size = new Size(212, 22);
         exitToolStripMenuItem.Text = "Exit";
-        // 
-        // resetFolderAndExitToolStripMenuItem
-        // 
-        resetFolderAndExitToolStripMenuItem.Name = "resetFolderAndExitToolStripMenuItem";
-        resetFolderAndExitToolStripMenuItem.Size = new Size(212, 22);
-        resetFolderAndExitToolStripMenuItem.Text = "Reset Folder And Exit";
         // 
         // gitStatusToolStripMenuItem
         // 
@@ -132,6 +126,12 @@ partial class Form1
         fileSystemWatcher1.EnableRaisingEvents = true;
         fileSystemWatcher1.SynchronizingObject = this;
         // 
+        // setProjectFolderToolStripMenuItem
+        // 
+        setProjectFolderToolStripMenuItem.Name = "setProjectFolderToolStripMenuItem";
+        setProjectFolderToolStripMenuItem.Size = new Size(212, 22);
+        setProjectFolderToolStripMenuItem.Text = "Set Project Folder";
+        // 
         // Form1
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
@@ -165,5 +165,5 @@ partial class Form1
     private FileSystemWatcher fileSystemWatcher1;
     private ToolStripMenuItem updateBuildToolStripMenuItem;
     private ToolStripMenuItem projectInfoToolStripMenuItem;
-    private ToolStripMenuItem resetFolderAndExitToolStripMenuItem;
+    private ToolStripMenuItem setProjectFolderToolStripMenuItem;
 }
