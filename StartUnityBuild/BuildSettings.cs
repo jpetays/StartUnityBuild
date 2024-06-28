@@ -51,4 +51,9 @@ public class BuildSettings(string workingDirectory)
     /// Path to UNITY executable file.
     /// </summary>
     public string UnityExecutable { get; set; } = "";
+
+    public override string ToString()
+    {
+        return $"Product: {ProductName} Version: {ProductVersion} Bundle: {BundleVersion}";
+    }
 }

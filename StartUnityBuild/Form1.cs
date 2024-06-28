@@ -333,7 +333,6 @@ public partial class Form1 : Form
             Invoke(() => ClearLines);
             return;
         }
-        Logger.Trace("*");
         listView1.BeginUpdate();
         listView1.Items.Clear();
         listView1.EndUpdate();

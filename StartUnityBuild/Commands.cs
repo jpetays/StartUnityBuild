@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Editor.Prg.Build;
+using NLog;
 using Prg.Util;
 
 namespace StartUnityBuild;
@@ -19,6 +20,8 @@ public static class Commands
             The output status line for each ref will be tab-separated and sent to stdout instead of stderr.
             The full symbolic names of the refs will be given.
 */
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public static bool IsVersionDate = true;
     public static bool IsVersionSemantic;
     public static bool IsDryRun;
@@ -79,6 +82,9 @@ public static class Commands
 
     public static void UnityUpdate(BuildSettings settings, Action<bool> finished)
     {
+        Logger.Trace("*");
+        Logger.Trace($"* UnityUpdate {settings} in {settings.WorkingDirectory}");
+        Logger.Trace("*");
         var workingDirectory = settings.WorkingDirectory;
         const string outPrefix = "update";
         Form1.AddLine($">{outPrefix}", $"ProjectSettings.asset");
@@ -217,6 +223,9 @@ public static class Commands
         const string outPrefix = "unity";
         const string batchFile = "unityBatchBuild.bat";
 
+        Logger.Trace("*");
+        Logger.Trace($"* UnityBuild {settings} in {settings.WorkingDirectory}");
+        Logger.Trace("*");
         var workingDirectory = settings.WorkingDirectory;
         var batchBuildFolder = Path.Combine(".", "etc", "batchBuild");
         var batchBuildCommand = Path.Combine(batchBuildFolder, batchFile);
