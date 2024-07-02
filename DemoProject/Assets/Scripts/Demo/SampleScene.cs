@@ -9,6 +9,7 @@ namespace Demo
         [SerializeField] private TextMeshProUGUI _productName;
         [SerializeField] private TextMeshProUGUI _productVersion;
         [SerializeField] private TextMeshProUGUI _bundleVersion;
+        [SerializeField] private TextMeshProUGUI _prgFrameVersion;
 
         private void Awake()
         {
@@ -16,6 +17,7 @@ namespace Demo
             _productName.text = Application.productName;
             _productVersion.text = Application.version;
             _bundleVersion.text = "?";
+            _prgFrameVersion.text = PrgFrame.Info.Version;
         }
     }
 }
