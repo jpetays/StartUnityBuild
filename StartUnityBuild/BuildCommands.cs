@@ -17,7 +17,7 @@ public class BuildCommands
             var executable = settings.UnityExecutable;
             var arguments =
                 $"-executeMethod PrgBuild.Build.BuildPlayer -quit -batchmode" +
-                $"-projectPath .\\ -buildTarget {buildTarget} -logFile \"{logFile}\"";
+                $" -projectPath .\\ -buildTarget {buildTarget} -logFile \"{logFile}\"";
             Form1.AddLine($".{outPrefix}", $"executable: {executable}");
             Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
             var result = await RunCommand.Execute(outPrefix, executable, arguments,
