@@ -54,8 +54,7 @@ namespace PrgBuild
                 using var enumerator = args.GetEnumerator();
                 while (enumerator.MoveNext())
                 {
-                    // ReSharper disable once PossibleNullReferenceException
-                    var value = enumerator.Current.ToLower();
+                    var value = enumerator.Current;
                     switch (value)
                     {
                         case "-buildTarget":
@@ -64,11 +63,11 @@ namespace PrgBuild
                             break;
                         case "-projectPath":
                             enumerator.MoveNext();
-                            ProjectPath = enumerator.Current;
+                            ProjectPath = enumerator.Current ?? "";
                             break;
                         case "-logFile":
                             enumerator.MoveNext();
-                            LogFile = enumerator.Current;
+                            LogFile = enumerator.Current ?? "";
                             break;
                     }
                 }
