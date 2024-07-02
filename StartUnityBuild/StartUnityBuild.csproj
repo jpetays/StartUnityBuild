@@ -30,7 +30,6 @@
 
     <ItemGroup>
       <Compile Include="..\DemoProject\Assets\Scripts\Editor\Prg\Build\BuildInfoUpdater.cs" Link="Prg\BuildInfoUpdater.cs" />
-      <Compile Include="..\DemoProject\Assets\Scripts\Prg\Util\SemVer.cs" Link="Prg\SemVer.cs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -40,6 +39,10 @@
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
       <PackageReference Include="NLog" Version="5.3.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PrgFrame\PrgFrame.csproj" />
     </ItemGroup>
 
     <ItemGroup>
