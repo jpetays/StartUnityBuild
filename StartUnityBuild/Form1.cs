@@ -195,6 +195,15 @@ public partial class Form1 : Form
             timer1.Start();
             ClearLines();
             isCommandExecuting = true;
+            BuildCommands.BuildPlayer(_settings,
+                () =>
+                {
+                    isCommandExecuting = false;
+                    timer1.Stop();
+                    var duration = DateTime.Now - startTime;
+                    SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
+                });
+            return;
             Commands.UnityBuild(_settings,
                 () =>
                 {
