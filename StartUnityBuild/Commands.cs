@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using Editor.Prg.Build;
 using NLog;
 using Prg.Util;
+using PrgBuild;
 
 namespace StartUnityBuild;
 

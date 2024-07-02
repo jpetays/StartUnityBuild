@@ -2,8 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Media;
 using System.Reflection;
 using System.Text;
-using Editor.Prg.Build;
 using NLog;
+using PrgBuild;
 
 namespace StartUnityBuild;
 

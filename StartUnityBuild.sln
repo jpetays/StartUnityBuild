@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StartUnityBuild", "StartUni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrgFrame", "PrgFrame\PrgFrame.csproj", "{4D5CE6DC-DC23-41A5-ACA3-C5D9AC8C9D54}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrgBuild", "PrgBuild\PrgBuild.csproj", "{7FA26979-7457-4ED8-818C-0EAE2938FD70}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{4D5CE6DC-DC23-41A5-ACA3-C5D9AC8C9D54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D5CE6DC-DC23-41A5-ACA3-C5D9AC8C9D54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D5CE6DC-DC23-41A5-ACA3-C5D9AC8C9D54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FA26979-7457-4ED8-818C-0EAE2938FD70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FA26979-7457-4ED8-818C-0EAE2938FD70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FA26979-7457-4ED8-818C-0EAE2938FD70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FA26979-7457-4ED8-818C-0EAE2938FD70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

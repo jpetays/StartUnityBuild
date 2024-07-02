@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PrgFrame\PrgFrame.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2022.3.21f1\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
