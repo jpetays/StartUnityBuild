@@ -20,9 +20,14 @@ namespace PrgBuild
         private const string BuildInfoFilenameName = "BuildInfoDataPart.cs";
 
         private static readonly bool IsWindows =
+#if UNITY_EDITOR
             Application.platform == RuntimePlatform.WindowsEditor
             || Application.platform == RuntimePlatform.WindowsPlayer
-            || Application.platform == RuntimePlatform.WindowsServer;
+            || Application.platform == RuntimePlatform.WindowsServer
+#else
+                true
+#endif
+            ;
 
         private static string Timestamp(DateTime dateTime) =>
             ((FormattableString)$"{dateTime:yyyy-MM-dd HH:mm}").ToString(CultureInfo.InvariantCulture);
