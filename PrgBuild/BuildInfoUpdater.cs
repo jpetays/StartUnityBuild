@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using PrgFrame.Util;
 using UnityEngine;
 
 namespace PrgBuild
@@ -18,16 +19,6 @@ namespace PrgBuild
         private static readonly Encoding Encoding = new UTF8Encoding(false, false);
 
         private const string BuildInfoFilenameName = "BuildInfoDataPart.cs";
-
-        private static readonly bool IsWindows =
-#if UNITY_EDITOR
-            Application.platform == RuntimePlatform.WindowsEditor
-            || Application.platform == RuntimePlatform.WindowsPlayer
-            || Application.platform == RuntimePlatform.WindowsServer
-#else
-                true
-#endif
-            ;
 
         private static string Timestamp(DateTime dateTime) =>
             ((FormattableString)$"{dateTime:yyyy-MM-dd HH:mm}").ToString(CultureInfo.InvariantCulture);
@@ -174,19 +165,11 @@ namespace PrgBuild
             {
                 if (file.EndsWith(BuildInfoFilenameName))
                 {
-                    return ConvertToWindowsPath(file);
+                    return PathUtil.WindowsPath(file);
                 }
             }
             // This will be error but we set filename so caller can know what is was looking for!
             return BuildInfoFilenameName;
-
-            string ConvertToWindowsPath(string path)
-            {
-                // Running in UNITY build.
-                return IsWindows
-                    ? path.Replace(Path.AltDirectorySeparatorChar.ToString(), Path.DirectorySeparatorChar.ToString())
-                    : path;
-            }
         }
     }
 }
