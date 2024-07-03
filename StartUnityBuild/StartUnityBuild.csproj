@@ -29,10 +29,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Include="..\DemoProject\Assets\Scripts\Editor\Prg\Build\BuildInfoUpdater.cs" Link="Prg\BuildInfoUpdater.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="Tpdkdesign.net-Refresh-Cl-Windows-Download.ico" />
     </ItemGroup>
 
