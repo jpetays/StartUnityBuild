@@ -16,7 +16,11 @@ namespace Demo
                 new Tuple<string, string>("version", Application.version),
                 new Tuple<string, string>("bundleVersion", "?"),
                 new Tuple<string, string>("PrgFrame", PrgFrame.Info.Version),
+#if UNITY_EDITOR
                 new Tuple<string, string>("PrgBuild", PrgBuild.Info.Version),
+#else
+                new Tuple<string, string>("PrgBuild", ""),
+#endif
                 new Tuple<string, string>("unityVersion", Application.unityVersion),
             };
             for (int i = 0; i < lines.Length; ++i)
