@@ -32,33 +32,35 @@ namespace PrgBuild
         private const string AssetFileExtension = ".buildreport";
         private const string AssetFilter = "t:BuildReport";
 
-        public static string CreateBuildReport(BuildTarget platform)
+        public static bool CreateBuildReport(BuildTarget platform, out string buildReportAssetPath)
         {
             if (!File.Exists(LastBuildReportFilename))
             {
                 Debug.LogError($"Unable to find UNITY Last Build Report, file NOT FOUND: {LastBuildReportFilename}");
-                return null;
+                buildReportAssetPath = "";
+                return false;
             }
             if (!Directory.Exists(BuildReportAssetFolder))
             {
                 Directory.CreateDirectory(BuildReportAssetFolder);
             }
             var platformName = BuildPipeline.GetBuildTargetName(platform);
-            var assetName = $"{platformName}.build{AssetFileExtension}";
-            var buildReportAssetPath = $"{BuildReportAssetFolder}/{assetName}";
+            var buildReportName = $"{platformName}.build";
+            var assetName = $"{buildReportName}{AssetFileExtension}";
+            buildReportAssetPath = $"{BuildReportAssetFolder}/{assetName}";
 
-            // Copy real last Build Report over our newly create Build Report asset.
+            // Copy last Build Report (created by BuildPipeline.BuildPlayer) over our newly create Build Report (asset).
             File.Copy(LastBuildReportFilename, buildReportAssetPath, true);
             AssetDatabase.ImportAsset(buildReportAssetPath);
             var buildReport = AssetDatabase.LoadAssetAtPath<BuildReport>(buildReportAssetPath);
-            buildReport.name = assetName;
-            AssetDatabase.SaveAssets();
-            if (buildReport != null)
+            if (buildReport == null)
             {
                 Debug.LogError($"Unable to create UNITY Build Report, asset NOT FOUND: {buildReportAssetPath}");
-                return null;
+                return false;
             }
-            return buildReportAssetPath;
+            buildReport.name = buildReportName;
+            AssetDatabase.SaveAssets();
+            return true;
         }
 
         public static BuildReport LoadBuildReport(BuildTarget platform)

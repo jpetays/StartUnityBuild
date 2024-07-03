@@ -45,13 +45,15 @@ namespace PrgBuild
                 var timer = new Timer();
                 var buildReport = BuildPLayer(options);
                 var buildResult = buildReport.summary.result;
-                if (buildResult == BuildResult.Succeeded)
-                {
-                    var assetPath = UnityBuildReport.CreateBuildReport(buildReport.summary.platform);
-                    Util.Trace($"UNITY Build Report saved: {assetPath}");
-                }
                 timer.Stop();
                 Util.Trace($"Build result {buildResult}, build took {timer.ElapsedTime}");
+                if (buildResult == BuildResult.Succeeded)
+                {
+                    timer = new Timer();
+                    var created = UnityBuildReport.CreateBuildReport(buildReport.summary.platform, out var assetPath);
+                    timer.Stop();
+                    Util.Trace($"Build Report {(created ? "created" : "FAILED")} {assetPath} in {timer.ElapsedTime}");
+                }
                 EditorApplication.Exit(buildResult == BuildResult.Succeeded ? 0 : 1);
             }
             catch (Exception x)
@@ -63,6 +65,15 @@ namespace PrgBuild
 
         private static BuildReport BuildPLayer(BuildConfig config)
         {
+            var buildPlayerOptions = CreateBuildPlayerOptions(config);
+            ConfigurePlayerSettings(config);
+            CreateOutput(config);
+            var buildReport = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            return buildReport;
+        }
+
+        private static BuildPlayerOptions CreateBuildPlayerOptions(BuildConfig config)
+        {
             var scenes = EditorBuildSettings.scenes
                 .Where(x => x.enabled && !string.IsNullOrEmpty(x.path))
                 .Select(x => x.path)
@@ -72,7 +83,6 @@ namespace PrgBuild
                 throw new UnityException("NO eligible SCENES FOUND for build in EditorBuildSettings");
             }
             Util.Trace($"scenes {scenes.Length}: {string.Join(',', scenes)}");
-
             var buildPlayerOptions = new BuildPlayerOptions
             {
                 locationPathName = config.OutputPathName,
@@ -85,14 +95,16 @@ namespace PrgBuild
             {
                 buildPlayerOptions.options |= BuildOptions.Development;
             }
+            return buildPlayerOptions;
+        }
+
+        private static void CreateOutput(BuildConfig config)
+        {
             if (Directory.Exists(config.OutputFolderName))
             {
                 Directory.Delete(config.OutputFolderName, recursive: true);
             }
             Directory.CreateDirectory(config.OutputFolderName);
-            ConfigurePlayerSettings(config);
-            var buildReport = BuildPipeline.BuildPlayer(buildPlayerOptions);
-            return buildReport;
         }
 
         private static void ConfigurePlayerSettings(BuildConfig config)

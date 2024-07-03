@@ -10,10 +10,14 @@ namespace PrgBuild
         private const string MenuRoot = "Prg/";
         private const string MenuItem = MenuRoot + "Build/";
 
-        [MenuItem(MenuItem + "MenuTest", false, 10)]
-        private static void MenuTest() => Logged(() =>
+        [MenuItem(MenuItem + "Debug/Create Build Report", false, 20)]
+        private static void CreateBuildReport() => Logged(() =>
         {
-            Debug.Log("here");
+            var timer = new Timer();
+            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
+            var created = UnityBuildReport.CreateBuildReport(buildTarget, out var assetPath);
+            timer.Stop();
+            Debug.Log($"Build Report {(created ? "created" : "FAILED")} {assetPath} in {timer.ElapsedTime}");
         });
 
         private static void Logged(Action action)
