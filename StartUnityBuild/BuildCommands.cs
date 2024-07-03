@@ -20,7 +20,7 @@ public static class BuildCommands
             var logFile = Quoted(@$".\etc\_local_AutoBuild_{buildTarget}.log");
             var arguments =
                 $" -buildTarget {buildTarget} -projectPath {projectPath}" +
-                $" -logFile {logFile} -timestamps" +
+                $" -logFile {logFile}" +
                 $" -executeMethod PrgBuild.Build.BuildPlayer -quit -batchmode";
             Form1.AddLine($".{outPrefix}", $"executable: {executable}");
             Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
