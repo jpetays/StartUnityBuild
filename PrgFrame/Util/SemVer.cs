@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace Prg.Util
 {
     /// <summary>
-    /// Semantic Version check according to Semantic Versioning spec (https://semver.org).<br />
+    /// Semantic Version check and utilities according to Semantic Versioning spec (https://semver.org).<br />
+    /// Version number can be four digit 'date + patch' or three digit MAJOR.MINOR.PATCH.<br />
+    /// UNITY BundleVersionCode is used always to store patch value in both cases.
     /// See: https://stackoverflow.com/questions/49338155/c-sharp-how-can-you-compare-versions
     /// </summary>
     public static class SemVer
@@ -50,61 +54,113 @@ namespace Prg.Util
         }
 
         /// <summary>
-        /// Gets patch value from MAJOR.MINOR.PATCH[.x.y] version string.
+        /// Gets version digit value from MAJOR.MINOR.PATCH[.x.y] version string.
         /// </summary>
-        public static int GetPatch(string version)
+        public static int GetDigit(string version, int digitPos)
         {
             try
             {
                 var versionNumbers = Array.ConvertAll(version.Split('.'), int.Parse);
-                return versionNumbers.Length >= 3
-                    ? versionNumbers[2]
-                    : 0;
+                return versionNumbers[digitPos];
             }
-            catch (Exception)
+            catch (Exception x)
             {
-                return 0;
+                throw new UnityException(
+                    $"Unable to get version digit {digitPos} from '{version}': {x.GetType().Name} {x.Message}");
             }
         }
 
         /// <summary>
-        /// Updates patch value in MAJOR.MINOR.PATCH[.x.y] version string.
+        /// Updates version digit value in MAJOR.MINOR.PATCH[.x.y] version string.
         /// </summary>
-        public static string IncrementPatch(string version)
+        public static string SetDigit(string version, int digitPos, int digitValue)
         {
             try
             {
                 var versionNumbers = Array.ConvertAll(version.Split('.'), int.Parse);
-                if (versionNumbers.Length == 2)
-                {
-                    return $"{version}.0";
-                }
-                if (versionNumbers.Length >= 3)
-                {
-                    versionNumbers[2] += 1;
-                    return string.Join('.', versionNumbers);
-                }
+                versionNumbers[digitPos] = digitValue;
+                return string.Join('.', versionNumbers);
             }
-            catch (Exception)
+            catch (Exception x)
             {
-                // Swallow everything!
+                throw new UnityException(
+                    $"Unable to update version digit {digitPos} in '{version}': {x.GetType().Name} {x.Message}");
             }
-            return version;
         }
 
         /// <summary>
-        /// Checks that version string is in MAJOR.MINOR.PATCH[.x.y] format.
+        /// Checks that version string has given number of digits.
         /// </summary>
-        public static bool IsSemantic(string version)
+        public static bool HasDigits(string version, int digitCount)
         {
             try
             {
                 var versionNumbers = Array.ConvertAll(version.Split('.'), int.Parse);
-                return versionNumbers.Length >= 3;
+                return versionNumbers.Length == digitCount;
             }
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks that version string is in dd.mm.yyyy.patch or yyyy.mm.dd.patch format.
+        /// </summary>
+        public static bool IsVersionDateWithPatch(string version)
+        {
+            try
+            {
+                var n = Array.ConvertAll(version.Split('.'), int.Parse);
+                if (n.Length != 4)
+                {
+                    return false;
+                }
+                var ci = CultureInfo.InvariantCulture;
+                const DateTimeStyles styles = DateTimeStyles.None;
+                var dateString = $"{n[0]}.{n[1]}.{n[2]}";
+                if (DateTime.TryParseExact(dateString, "dd.MM.yyyy", ci, styles, out _)
+                    || DateTime.TryParseExact(dateString, "yyyy.MM.dd", ci, styles, out _))
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public static string CreateVersionDateWithPatch(string version, DateTime date, int patch)
+        {
+            try
+            {
+                var n = Array.ConvertAll(version.Split('.'), int.Parse);
+                if (n.Length != 4)
+                {
+                    throw new UnityException(
+                        $"Unable to set date+patch in '{version}': length must be 4 digits");
+                }
+                if (n[0] <= 31)
+                {
+                    n[0] = date.Day;
+                    n[1] = date.Month;
+                    n[2] = date.Year;
+                }
+                else
+                {
+                    n[0] = date.Year;
+                    n[1] = date.Month;
+                    n[2] = date.Day;
+                }
+                n[3] = patch;
+                return string.Join('.', n);
+            }
+            catch (Exception x)
+            {
+                throw new UnityException(
+                    $"Unable to set date+patch in '{version}': {x.GetType().Name} {x.Message}");
             }
         }
     }
