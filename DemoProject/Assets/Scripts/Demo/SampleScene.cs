@@ -14,7 +14,8 @@ namespace Demo
             {
                 new Tuple<string, string>(" ProductName", Application.productName),
                 new Tuple<string, string>(" Version", Application.version),
-                new Tuple<string, string>(" BundleVersion", "?"),
+                new Tuple<string, string>(" BundleVersion", BuildProperties.BundleVersionCode.ToString()),
+                new Tuple<string, string>(" CompiledOnDate", BuildProperties.CompiledOnDate),
                 new Tuple<string, string>(" PrgFrame", PrgFrame.Info.Version),
 #if UNITY_EDITOR
                 new Tuple<string, string>(" PrgBuild", PrgBuild.Info.Version),
