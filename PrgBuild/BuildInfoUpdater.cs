@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using PrgFrame.Util;
-using UnityEngine;
 
 namespace PrgBuild
 {
@@ -18,7 +17,7 @@ namespace PrgBuild
     {
         private static readonly Encoding Encoding = new UTF8Encoding(false, false);
 
-        private const string BuildInfoFilenameName = "BuildInfoDataPart.cs";
+        private const string BuildPropertiesFilename = "BuildProperties.cs";
 
         private static string Timestamp(DateTime dateTime) =>
             ((FormattableString)$"{dateTime:yyyy-MM-dd HH:mm}").ToString(CultureInfo.InvariantCulture);
@@ -82,56 +81,27 @@ namespace PrgBuild
             string GetRandomGuidString() => Guid.NewGuid().ToString("N")[..12];
         }
 
-        public static int GetPatchValue(string buildInfoFilename)
-        {
-            if (!File.Exists(buildInfoFilename))
-            {
-                throw new InvalidOperationException($"BuildInfoFile not found {buildInfoFilename}");
-            }
-            var patchValue = 0;
-            foreach (var line in File.ReadAllLines(buildInfoFilename, Encoding))
-            {
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    continue;
-                }
-                if (!line.Contains("internal const int PatchValue"))
-                {
-                    continue;
-                }
-                var tokens = line.Split(new[] { '=', ';' }, StringSplitOptions.RemoveEmptyEntries);
-                var lastToken = tokens[^1].Trim();
-                if (!int.TryParse(lastToken, out patchValue))
-                {
-                    patchValue = -1;
-                }
-            }
-            return patchValue;
-        }
-
-        public static bool UpdateBuildInfo(string buildInfoFilename, int bundleVersionCode, int patchValue,
-            bool isMuteOtherAudioSourcesValue)
+        public static bool UpdateBuildInfo(string buildInfoFilename,
+            DateTime date, string bundleVersionCode, bool isMuteOtherAudioSources)
         {
             if (!File.Exists(buildInfoFilename))
             {
                 throw new InvalidOperationException($"BuildInfoFile not found {buildInfoFilename}");
             }
             var namespaceName = GetNamespace();
-            var machineGeneratedBuildInfo = @"namespace $namespace$
+            var machineGeneratedBuildInfo = @"namespace $namespaceValue$
 {
-    internal static class MachineGeneratedBuildInfo
+    internal static class BuildProperties
     {
-        internal const string CompiledOnDateValue = ""$CompiledOnDateValue$"";
-        internal const int BundleVersionCodeValue = $BundleVersionCodeValue$;
-        internal const int PatchValue = $PatchValue$;
-        internal const bool IsMuteOtherAudioSourcesValue = $IsMuteOtherAudioSourcesValue$;
+        internal const string CompiledOnDate = ""$CompiledOnDateValue$"";
+        internal const int BundleVersionCode = $BundleVersionCodeValue$;
+        internal const bool IsMuteOtherAudioSources = $IsMuteOtherAudioSourcesValue$;
     }
 }"
-                    .Replace("$namespace$", namespaceName)
-                    .Replace("$CompiledOnDateValue$", Timestamp(DateTime.Now))
-                    .Replace("$BundleVersionCodeValue$", bundleVersionCode.ToString())
-                    .Replace("$PatchValue$", patchValue.ToString())
-                    .Replace("$IsMuteOtherAudioSourcesValue$", isMuteOtherAudioSourcesValue.ToString().ToLower())
+                    .Replace("$namespaceValue$", namespaceName)
+                    .Replace("$CompiledOnDateValue$", Timestamp(date))
+                    .Replace("$BundleVersionCodeValue$", bundleVersionCode)
+                    .Replace("$IsMuteOtherAudioSourcesValue$", isMuteOtherAudioSources.ToString().ToLower())
                 ;
             var original = File.ReadAllText(buildInfoFilename, Encoding);
             if (original == machineGeneratedBuildInfo)
@@ -156,20 +126,20 @@ namespace PrgBuild
             }
         }
 
-        public static string BuildInfoFilename(string fromFolder)
+        public static string BuildPropertiesPath(string fromFolder)
         {
             // Try to find 'build info' file in the project by its filename.
-            var files = Directory.GetFiles(fromFolder, BuildInfoFilenameName,
+            var files = Directory.GetFiles(fromFolder, BuildPropertiesFilename,
                 SearchOption.AllDirectories);
             foreach (var file in files)
             {
-                if (file.EndsWith(BuildInfoFilenameName))
+                if (file.EndsWith(BuildPropertiesFilename))
                 {
                     return PathUtil.WindowsPath(file);
                 }
             }
             // This will be error but we set filename so caller can know what is was looking for!
-            return BuildInfoFilenameName;
+            return BuildPropertiesFilename;
         }
     }
 }
