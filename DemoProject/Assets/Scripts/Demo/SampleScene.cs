@@ -12,16 +12,16 @@ namespace Demo
         {
             var lines = new[]
             {
-                new Tuple<string, string>("productName", Application.productName),
-                new Tuple<string, string>("version", Application.version),
-                new Tuple<string, string>("bundleVersion", "?"),
-                new Tuple<string, string>("PrgFrame", PrgFrame.Info.Version),
+                new Tuple<string, string>(" ProductName", Application.productName),
+                new Tuple<string, string>(" Version", Application.version),
+                new Tuple<string, string>(" BundleVersion", "?"),
+                new Tuple<string, string>(" PrgFrame", PrgFrame.Info.Version),
 #if UNITY_EDITOR
-                new Tuple<string, string>("PrgBuild", PrgBuild.Info.Version),
+                new Tuple<string, string>(" PrgBuild", PrgBuild.Info.Version),
 #else
-                new Tuple<string, string>("PrgBuild", ""),
+                new Tuple<string, string>(" PrgBuild", "---"),
 #endif
-                new Tuple<string, string>("unityVersion", Application.unityVersion),
+                new Tuple<string, string>(" UnityVersion", Application.unityVersion),
             };
             for (int i = 0; i < lines.Length; ++i)
             {
