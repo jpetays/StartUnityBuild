@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using Prg.Util;
 
 namespace StartUnityBuild;
 
@@ -117,71 +116,53 @@ public static class ProjectSettings
         }
     }
 
-    public static bool UpdateProjectSettingsFile(string workingDirectory,
-        ref string productVersion, ref string bundleVersion, bool isVersionDate, bool isVersionSemantic)
+    public static int UpdateProjectSettingsFile(string workingDirectory, string productVersion, string bundleVersion)
     {
         var path = Path.Combine(workingDirectory, Files.ProjectSettingsFolderName, Files.ProjectSettingsFileName);
         var lines = File.ReadAllLines(path, Files.Encoding);
-        var curProductVersion = "";
-        var curBundleVersion = "";
-        foreach (var line in lines)
-        {
-            var tokens = line.Split(':');
-            if (tokens[0] == "  bundleVersion")
-            {
-                curProductVersion = tokens[1].Trim();
-            }
-            else if (tokens[0] == "  AndroidBundleVersionCode")
-            {
-                curBundleVersion = tokens[1].Trim();
-            }
-        }
-        if (curProductVersion == "" || curBundleVersion == "")
-        {
-            Form1.AddLine("ERROR", $"Could not find 'version' or 'bundle' from {path}");
-            return false;
-        }
-        if (curProductVersion != productVersion || curBundleVersion != bundleVersion)
-        {
-            Form1.AddLine("ERROR",
-                $"ProjectSettings.asset does not have 'version' {productVersion} or 'bundle' {bundleVersion}");
-            Form1.AddLine(".ERROR", $"Current values are 'version' {curProductVersion} or 'bundle' {curBundleVersion}");
-            return false;
-        }
-        var bundleVersionValue = int.Parse(curBundleVersion) + 1;
-        if (isVersionDate)
-        {
-            curProductVersion = $"{DateTime.Today:dd.MM.yyyy}";
-        }
-        else if (isVersionSemantic && SemVer.IsSemantic(curProductVersion))
-        {
-            curProductVersion = SemVer.IncrementPatch(curProductVersion);
-        }
-        productVersion = curProductVersion;
-        bundleVersion = bundleVersionValue.ToString();
         var updateCount = 0;
+        var skipCount = 0;
         for (var i = 0; i < lines.Length; ++i)
         {
             var line = lines[i];
             var tokens = line.Split(':');
             if (tokens[0] == "  bundleVersion")
             {
-                lines[i] = $"  bundleVersion: {productVersion}";
-                updateCount += 1;
+                var curProductVersion = tokens[1].Trim();
+                if (curProductVersion != productVersion)
+                {
+                    lines[i] = $"  bundleVersion: {productVersion}";
+                    updateCount += 1;
+                }
+                else
+                {
+                    skipCount += 1;
+                }
             }
             else if (tokens[0] == "  AndroidBundleVersionCode")
             {
-                lines[i] = $"  AndroidBundleVersionCode: {bundleVersion}";
-                updateCount += 1;
+                var curBundleVersion = tokens[1].Trim();
+                if (curBundleVersion != bundleVersion)
+                {
+                    lines[i] = $"  AndroidBundleVersionCode: {bundleVersion}";
+                    updateCount += 1;
+                }
+                else
+                {
+                    skipCount += 1;
+                }
             }
         }
-        if (updateCount != 2)
+        if (updateCount == 0)
         {
-            Form1.AddLine("ERROR", $"Unable to update 'version' or 'bundle' in {path}");
-            return false;
+            return -1;
+        }
+        if (skipCount == 2)
+        {
+            return 0;
         }
         var output = string.Join('\n', lines);
         File.WriteAllText(path, output, Files.Encoding);
-        return true;
+        return 1;
     }
 }

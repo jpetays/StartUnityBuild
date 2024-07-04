@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using NLog;
-using Prg.Util;
 using PrgBuild;
 
 namespace StartUnityBuild;
@@ -110,30 +109,16 @@ public static class Commands
                 finished(false);
                 return;
             }
-            bool updatedProjectSettings;
+            bool updatedProjectSettings = false;
             {
                 // Project settings has: ProductVersion and BundleVersion
-                var productVersion = settings.ProductVersion;
-                var bundleVersion = settings.BundleVersion;
-                updatedProjectSettings =
-                    ProjectSettings.UpdateProjectSettingsFile(workingDirectory,
-                        ref productVersion, ref bundleVersion, IsVersionDate, IsVersionSemantic);
-                if (updatedProjectSettings)
-                {
-                    settings.ProductVersion = productVersion;
-                    settings.BundleVersion = bundleVersion;
-                }
+                // Old code is obsolete
             }
-            bool updatedBuildInfo;
-            int patchValue;
+            bool updatedBuildInfo = false;
+            int patchValue = 0;
             {
                 // BuildInfo has: BundleVersionCode, Patch and IsMuteOtherAudioSources
-                patchValue = IsVersionSemantic && SemVer.IsSemantic(settings.ProductVersion)
-                    ? SemVer.GetPatch(settings.ProductVersion)
-                    : 0;
-                var bundleVersionCode = int.Parse(settings.BundleVersion);
-                updatedBuildInfo = BuildInfoUpdater.UpdateBuildInfo(settings.BuildInfoFilename,
-                    bundleVersionCode, patchValue, settings.IsMuteOtherAudioSources);
+                // Old code is obsolete
             }
             if (updatedProjectSettings || updatedBuildInfo)
             {

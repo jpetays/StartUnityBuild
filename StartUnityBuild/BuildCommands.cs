@@ -20,65 +20,77 @@ public static class BuildCommands
         const string outPrefix = "build";
         Task.Run(async () =>
         {
-            var buildTarget = settings.BuildTargets[0];
-            Form1.AddLine($">{outPrefix}", $"build {buildTarget}");
-            var executable = settings.UnityExecutable;
-            var projectPath = settings.WorkingDirectory;
-            var prevLogFile = @$".\etc\_local_build_{buildTarget}.prev.log";
-            var buildLogFile = @$".\etc\_local_build_{buildTarget}.temp.log";
-            var outputLogFile = @$".\Assets\BuildReports\{buildTarget}.build.log.txt";
-            var outputLogMetafile = $"{outputLogFile}.meta";
-            PrepareFilesForBuild();
-            var arguments =
-                $" -buildTarget {buildTarget} -projectPath {Quoted(projectPath)}" +
-                $" -logFile {Quoted(buildLogFile)}" +
-                $" -executeMethod PrgBuild.Build.BuildPlayer -quit -batchmode";
-            Form1.AddLine($".{outPrefix}", $"executable: {executable}");
-            Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
-            var result = await RunCommand.Execute(outPrefix, executable, arguments,
-                settings.WorkingDirectory, null, Form1.OutputListener, Form1.ExitListener);
-            Form1.AddLine($">{outPrefix}", $"return code {result}");
-            HandleOutputFiles();
+            foreach (var buildTarget in settings.BuildTargets)
+            {
+                await BuildTarget(buildTarget);
+            }
             finished();
             return;
 
-            void PrepareFilesForBuild()
+            async Task BuildTarget(string buildTarget)
             {
-                if (File.Exists(buildLogFile))
-                {
-                    Logger.Trace($"File.Move({buildLogFile}, {prevLogFile}, overwrite: true);");
-                    File.Move(buildLogFile, prevLogFile, overwrite: true);
-                }
-                if (File.Exists(outputLogFile))
-                {
-                    Logger.Trace($"File.Delete({outputLogFile});");
-                    File.Delete(outputLogFile);
-                    if (File.Exists(outputLogMetafile))
-                    {
-                        File.Delete(outputLogMetafile);
-                    }
-                }
-            }
+                Form1.AddLine($">{outPrefix}", $"build {buildTarget}");
+                var executable = settings.UnityExecutable;
+                var projectPath = settings.WorkingDirectory;
+                var prevLogFile = @$".\etc\_local_build_{buildTarget}.prev.log";
+                var buildLogFile = @$".\etc\_local_build_{buildTarget}.temp.log";
+                var outputLogFile = @$".\Assets\BuildReports\{buildTarget}.build.log.txt";
+                var outputLogMetafile = $"{outputLogFile}.meta";
+                PrepareFilesForBuild();
+                var arguments =
+                    $" -buildTarget {buildTarget} -projectPath {Quoted(projectPath)}" +
+                    $" -logFile {Quoted(buildLogFile)}" +
+                    $" -executeMethod PrgBuild.Build.BuildPlayer -quit -batchmode";
+                Form1.AddLine($".{outPrefix}", $"executable: {executable}");
+                Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
+                var result = await RunCommand.Execute(outPrefix, executable, arguments,
+                    settings.WorkingDirectory, null, Form1.OutputListener, Form1.ExitListener);
+                Form1.AddLine($">{outPrefix}", $"return code {result}");
+                HandleOutputFiles();
+                return;
 
-            void HandleOutputFiles()
-            {
-                if (!File.Exists(buildLogFile))
+                #region File handling
+
+                void PrepareFilesForBuild()
                 {
-                    return;
-                }
-                Logger.Trace($"File.Move({buildLogFile}, {outputLogFile}, overwrite: true);");
-                try
-                {
-                    File.Move(buildLogFile, outputLogFile, overwrite: true);
-                    if (!File.Exists(outputLogMetafile))
+                    if (File.Exists(buildLogFile))
                     {
-                        CreateUnityMetafile(outputLogMetafile);
+                        Logger.Trace($"File.Move({buildLogFile}, {prevLogFile}, overwrite: true);");
+                        File.Move(buildLogFile, prevLogFile, overwrite: true);
+                    }
+                    if (File.Exists(outputLogFile))
+                    {
+                        Logger.Trace($"File.Delete({outputLogFile});");
+                        File.Delete(outputLogFile);
+                        if (File.Exists(outputLogMetafile))
+                        {
+                            File.Delete(outputLogMetafile);
+                        }
                     }
                 }
-                catch (Exception x)
+
+                void HandleOutputFiles()
                 {
-                    Form1.AddLine($">{outPrefix}", $"File.Move failed: {x.GetType().Name} {x.Message}");
+                    if (!File.Exists(buildLogFile))
+                    {
+                        return;
+                    }
+                    Logger.Trace($"File.Move({buildLogFile}, {outputLogFile}, overwrite: true);");
+                    try
+                    {
+                        File.Move(buildLogFile, outputLogFile, overwrite: true);
+                        if (!File.Exists(outputLogMetafile))
+                        {
+                            CreateUnityMetafile(outputLogMetafile);
+                        }
+                    }
+                    catch (Exception x)
+                    {
+                        Form1.AddLine($">{outPrefix}", $"File.Move failed: {x.GetType().Name} {x.Message}");
+                    }
                 }
+
+                #endregion
             }
         });
     }

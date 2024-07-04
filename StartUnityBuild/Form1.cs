@@ -164,7 +164,8 @@ public partial class Form1 : Form
             timer1.Start();
             ClearLines();
             isCommandExecuting = true;
-            Commands.UnityUpdate(_settings,
+            //Commands.UnityUpdate(_settings,
+            ProjectCommands.ModifyProject(_settings,
                 (updated) =>
                 {
                     isCommandExecuting = false;
@@ -299,7 +300,7 @@ public partial class Form1 : Form
         _settings.BuildTargets.AddRange(buildTargets);
         AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
         var assetFolder = Path.Combine(_settings.WorkingDirectory, "Assets");
-        _settings.BuildInfoFilename = BuildInfoUpdater.BuildInfoFilename(assetFolder);
+        _settings.BuildInfoFilename = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
         var exists = File.Exists(_settings.BuildInfoFilename);
         AddLine($"{(exists ? ".BuildInfo" : "ERROR")}", $"{(exists ? "" : "-")}{_settings.BuildInfoFilename}");
         var setUnityExecutablePath =
