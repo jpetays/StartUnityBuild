@@ -13,55 +13,70 @@ public static class ProjectCommands
             Form1.AddLine($">{outPrefix}", $"update {settings.ProductName} in {settings.WorkingDirectory}");
             var today = DateTime.Now;
             Form1.AddLine($">{outPrefix}", $"today is {today:yyyy-MM-dd HH:mm}");
-            // Update Project settings: ProductVersion and BundleVersion
-            var productVersion = settings.ProductVersion;
-            // Always increment bundleVersion.
-            var bundleVersion = $"{int.Parse(settings.BundleVersion) + 1}";
-            if (SemVer.IsVersionDateWithPatch(productVersion))
+            try
             {
-                // Set version as date + patch.
-                productVersion = SemVer.CreateVersionDateWithPatch(productVersion, today, int.Parse(bundleVersion));
+                DoUpdate();
+                finished(true);
             }
-            else if (SemVer.HasDigits(productVersion, 3))
+            catch (Exception x)
             {
-                // Synchronize productVersion with bundleVersion in MAJOR.MINOR.PATCH format.
-                productVersion = SemVer.SetDigit(productVersion, 3, int.Parse(bundleVersion));
+                Form1.AddLine("ERROR", $"Update failed: {x.GetType().Name} {x.Message}");
+                finished(false);
             }
-            var updateCount = ProjectSettings.UpdateProjectSettingsFile(
-                settings.WorkingDirectory, productVersion, bundleVersion);
-            switch (updateCount)
+            return;
+
+            void DoUpdate()
             {
-                case -1:
-                    Form1.AddLine("ERROR", $"Could not update ProjectSettingsFile");
-                    break;
-                case 0:
-                    Form1.AddLine($".{outPrefix}", $"Did not update ProjectSettingsFile, it is same");
-                    break;
-                case 1:
-                    if (settings.ProductVersion != productVersion)
-                    {
+                // Update Project settings: ProductVersion and BundleVersion
+                var productVersion = settings.ProductVersion;
+                // Always increment bundleVersion.
+                var bundleVersion = $"{int.Parse(settings.BundleVersion) + 1}";
+                if (SemVer.IsVersionDateWithPatch(productVersion))
+                {
+                    // Set version as date + patch.
+                    productVersion = SemVer.CreateVersionDateWithPatch(productVersion, today, int.Parse(bundleVersion));
+                }
+                else if (SemVer.HasDigits(productVersion, 3))
+                {
+                    // Synchronize productVersion with bundleVersion in MAJOR.MINOR.PATCH format.
+                    productVersion = SemVer.SetDigit(productVersion, 3, int.Parse(bundleVersion));
+                }
+                var updateCount = ProjectSettings.UpdateProjectSettingsFile(
+                    settings.WorkingDirectory, productVersion, bundleVersion);
+                switch (updateCount)
+                {
+                    case -1:
+                        Form1.AddLine("ERROR", $"Could not update ProjectSettingsFile");
+                        break;
+                    case 0:
+                        Form1.AddLine($".{outPrefix}", $"Did not update ProjectSettingsFile, it is same");
+                        break;
+                    case 1:
+                        if (settings.ProductVersion != productVersion)
+                        {
+                            Form1.AddLine($".{outPrefix}",
+                                $"update ProductVersion {settings.ProductVersion} <- {productVersion}");
+                            settings.ProductVersion = productVersion;
+                        }
                         Form1.AddLine($".{outPrefix}",
-                            $"update ProductVersion {settings.ProductVersion} <- {productVersion}");
-                        settings.ProductVersion = productVersion;
-                    }
-                    Form1.AddLine($".{outPrefix}", $"update BundleVersion {settings.BundleVersion} <- {bundleVersion}");
-                    settings.BundleVersion = bundleVersion;
-                    break;
+                            $"update BundleVersion {settings.BundleVersion} <- {bundleVersion}");
+                        settings.BundleVersion = bundleVersion;
+                        break;
+                }
+                // Update BuildProperties.cs
+                var buildPropertiesPath = BuildInfoUpdater.BuildPropertiesPath(settings.WorkingDirectory);
+                var shortName = buildPropertiesPath[(settings.WorkingDirectory.Length + 1)..];
+                var isMuteOtherAudioSources = settings.IsMuteOtherAudioSources;
+                if (BuildInfoUpdater.UpdateBuildInfo(buildPropertiesPath,
+                        today, settings.BundleVersion, isMuteOtherAudioSources))
+                {
+                    Form1.AddLine($".{outPrefix}", $"update BuildProperties {shortName}");
+                }
+                else
+                {
+                    Form1.AddLine($".{outPrefix}", $"Did not update BuildProperties {shortName}, it is same");
+                }
             }
-            // Update BuildProperties.cs
-            var buildPropertiesPath = BuildInfoUpdater.BuildPropertiesPath(settings.WorkingDirectory);
-            var shortName = buildPropertiesPath[(settings.WorkingDirectory.Length + 1)..];
-            var isMuteOtherAudioSources = settings.IsMuteOtherAudioSources;
-            if (BuildInfoUpdater.UpdateBuildInfo(buildPropertiesPath,
-                    today, settings.BundleVersion, isMuteOtherAudioSources))
-            {
-                Form1.AddLine($".{outPrefix}", $"update BuildProperties {shortName}");
-            }
-            else
-            {
-                Form1.AddLine($".{outPrefix}", $"Did not update BuildProperties {shortName}, it is same");
-            }
-            finished(true);
         });
     }
 }
