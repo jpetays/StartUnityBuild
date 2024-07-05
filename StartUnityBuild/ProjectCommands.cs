@@ -1,3 +1,4 @@
+using NLog;
 using Prg.Util;
 using PrgBuild;
 
@@ -5,6 +6,8 @@ namespace StartUnityBuild;
 
 public static class ProjectCommands
 {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public static void ModifyProject(BuildSettings settings, Action<bool> finished)
     {
         const string outPrefix = "update";
@@ -21,6 +24,7 @@ public static class ProjectCommands
             catch (Exception x)
             {
                 Form1.AddLine("ERROR", $"Update failed: {x.GetType().Name} {x.Message}");
+                Logger.Trace(x.StackTrace);
                 finished(false);
             }
             return;
@@ -39,7 +43,7 @@ public static class ProjectCommands
                 else if (SemVer.HasDigits(productVersion, 3))
                 {
                     // Synchronize productVersion with bundleVersion in MAJOR.MINOR.PATCH format.
-                    productVersion = SemVer.SetDigit(productVersion, 3, int.Parse(bundleVersion));
+                    productVersion = SemVer.SetDigit(productVersion, 2, int.Parse(bundleVersion));
                 }
                 var updateCount = ProjectSettings.UpdateProjectSettingsFile(
                     settings.WorkingDirectory, productVersion, bundleVersion);
@@ -63,18 +67,30 @@ public static class ProjectCommands
                         settings.BundleVersion = bundleVersion;
                         break;
                 }
-                // Update BuildProperties.cs
-                var buildPropertiesPath = BuildInfoUpdater.BuildPropertiesPath(settings.WorkingDirectory);
-                var shortName = buildPropertiesPath[(settings.WorkingDirectory.Length + 1)..];
-                var isMuteOtherAudioSources = settings.IsMuteOtherAudioSources;
-                if (BuildInfoUpdater.UpdateBuildInfo(buildPropertiesPath,
-                        today, settings.BundleVersion, isMuteOtherAudioSources))
+                UpdateBuildProperties();
+                return;
+
+                void UpdateBuildProperties()
                 {
-                    Form1.AddLine($".{outPrefix}", $"update BuildProperties {shortName}");
-                }
-                else
-                {
-                    Form1.AddLine($".{outPrefix}", $"Did not update BuildProperties {shortName}, it is same");
+                    // Update BuildProperties.cs
+                    var assetFolder = Files.GetAssetFolder(settings.WorkingDirectory);
+                    var buildPropertiesPath = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
+                    if (buildPropertiesPath.Length < settings.WorkingDirectory.Length)
+                    {
+                        Form1.AddLine("ERROR", $"File not found '{buildPropertiesPath}' in {assetFolder}");
+                        return;
+                    }
+                    var shortName = buildPropertiesPath[(settings.WorkingDirectory.Length + 1)..];
+                    var isMuteOtherAudioSources = settings.IsMuteOtherAudioSources;
+                    if (BuildInfoUpdater.UpdateBuildInfo(buildPropertiesPath,
+                            today, settings.BundleVersion, isMuteOtherAudioSources))
+                    {
+                        Form1.AddLine($".{outPrefix}", $"update BuildProperties {shortName}");
+                    }
+                    else
+                    {
+                        Form1.AddLine($".{outPrefix}", $"Did not update BuildProperties {shortName}, it is same");
+                    }
                 }
             }
         });

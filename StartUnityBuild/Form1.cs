@@ -291,7 +291,7 @@ public partial class Form1 : Form
         _settings.UnityPath = unityPath;
         _settings.BuildTargets.AddRange(buildTargets);
         AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
-        var assetFolder = Path.Combine(_settings.WorkingDirectory, "Assets");
+        var assetFolder = Files.GetAssetFolder(_settings.WorkingDirectory);
         _settings.BuildInfoFilename = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
         var exists = File.Exists(_settings.BuildInfoFilename);
         AddLine($"{(exists ? ".BuildInfo" : "ERROR")}", $"{(exists ? "" : "-")}{_settings.BuildInfoFilename}");

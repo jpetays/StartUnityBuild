@@ -15,6 +15,8 @@ public static class Files
     public const string ProjectVersionFileName = "ProjectVersion.txt";
     private static readonly string AutoBuildEnvironmentFilePath = Path.Combine("etc", "batchBuild", "_auto_build.env");
 
+    public static string GetAssetFolder(string workingDirectory) => Path.Combine(workingDirectory, "Assets");
+
     public static bool HasProjectVersionFile(string workingDirectory)
     {
         var path = Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectVersionFileName);
@@ -93,6 +95,10 @@ public static class ProjectSettings
         var lines = File.ReadAllLines(path, Files.Encoding);
         foreach (var line in lines)
         {
+            if (!line.Contains(':'))
+            {
+                continue;
+            }
             var tokens = line.Split(':');
             switch (tokens[0])
             {
