@@ -286,14 +286,6 @@ public partial class Form1 : Form
         AddLine(">Product", $"{_settings.ProductName}");
         AddLine(">Version", $"{_settings.ProductVersion}");
         AddLine(">Bundle", $"{_settings.BundleVersion}");
-        if (Commands.IsVersionDate)
-        {
-            AddLine(".update", "Version is Date dd.mm.yyyy");
-        }
-        else if (Commands.IsVersionSemantic)
-        {
-            AddLine(".update", "Version is semantic");
-        }
         var buildTargets = new List<string>();
         Files.LoadAutoBuildTargets(_settings.WorkingDirectory, out var unityPath, buildTargets);
         _settings.UnityPath = unityPath;

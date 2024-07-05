@@ -21,8 +21,8 @@ public static class Commands
 */
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static bool IsVersionDate = true;
-    public static bool IsVersionSemantic;
+    private static bool IsVersionDate = true;
+    private static bool IsVersionSemantic;
     public static bool IsDryRun;
     private static bool _gitBranchUpToDate;
 

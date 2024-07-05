@@ -48,14 +48,10 @@ static class Program
             var value = enumerator.Current.ToLower();
             if (value == verDate)
             {
-                Commands.IsVersionDate = true;
-                Commands.IsVersionSemantic = false;
                 continue;
             }
             if (value == semVer)
             {
-                Commands.IsVersionDate = false;
-                Commands.IsVersionSemantic = true;
                 continue;
             }
             if (value == dryRun)
