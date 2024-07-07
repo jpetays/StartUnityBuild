@@ -1,4 +1,3 @@
-using System.Windows.Forms.VisualStyles;
 using NLog;
 
 namespace StartUnityBuild;
@@ -109,7 +108,7 @@ public static class BuildCommands
 
                                        """;
         var ticks = DateTime.Now.Ticks.ToString()[^6..];
-        var randomGuid = $"{ticks}e6a1509ef46ba1d3ba55c8e8ce";
+        var randomGuid = $"e6a1509ef46ba1d3ba55c8e8ce{ticks}";
         File.WriteAllText(metaFilename, metaFileContent
             .Replace("142774e6a1509ef46ba1d3ba55c8e8ce", randomGuid)
             .Replace('_', ' ')
