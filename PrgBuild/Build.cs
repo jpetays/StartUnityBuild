@@ -307,7 +307,7 @@ namespace PrgBuild
                 var keystorePassword = "";
                 var aliasPassword = "";
                 foreach (var line in File.ReadAllLines(AndroidFile)
-                             .Where(x => !(string.IsNullOrEmpty(x) || x.StartsWith("#")) && x.Contains('=')))
+                             .Where(x => !(string.IsNullOrEmpty(x) || x.StartsWith('#')) && x.Contains('=')))
                 {
                     var tokens = line.Split('=', StringSplitOptions.RemoveEmptyEntries);
                     var key = tokens[0].Trim();
