@@ -45,6 +45,40 @@ public static class Files
         }
     }
 
+    public static void UpdateAutoBuildSettings(BuildSettings settings)
+    {
+        var path = Path.Combine(settings.WorkingDirectory, AutoBuildEnvironmentFilePath);
+        Form1.AddLine(".file", $"{path}");
+        settings.BuildTargets.Clear();
+        settings.CopyFiles.Clear();
+        settings.RevertFiles.Clear();
+        foreach (var line in File.ReadAllLines(path)
+                     .Where(x => !(string.IsNullOrEmpty(x) || x.StartsWith('#')) && x.Contains('=')))
+        {
+            var tokens = line.Split('=', StringSplitOptions.RemoveEmptyEntries);
+            var key = tokens[0].Trim();
+            var value = tokens[1].Trim();
+            if (key == "buildTargets")
+            {
+                var targets = tokens[1].Split(',');
+                foreach (var target in targets)
+                {
+                    settings.BuildTargets.Add(target.Trim());
+                }
+                continue;
+            }
+            if (key.StartsWith("copy.") && (key.EndsWith(".source") || key.EndsWith(".target")))
+            {
+                settings.CopyFiles.Add(key, value);
+                continue;
+            }
+            if (key.StartsWith("revert.") && key.EndsWith(".file"))
+            {
+                settings.RevertFiles.Add(value);
+            }
+        }
+    }
+
     [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
     public static void LoadAutoBuildTargets(string workingDirectory, out string unityPath, List<string> buildTargets)
     {

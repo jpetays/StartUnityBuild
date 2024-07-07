@@ -38,6 +38,16 @@ public class BuildSettings(string workingDirectory)
     public List<string> BuildTargets { get; private set; } = [];
 
     /// <summary>
+    /// Copy files before build (source, target).
+    /// </summary>
+    public Dictionary<string, string> CopyFiles{ get; private set; } = [];
+
+    /// <summary>
+    /// Revert files before build.
+    /// </summary>
+    public List<string> RevertFiles{ get; private set; } = [];
+
+    /// <summary>
     /// UnityEditorVersion from ProjectVersion.txt.
     /// </summary>
     public string UnityEditorVersion { get; set; } = "";

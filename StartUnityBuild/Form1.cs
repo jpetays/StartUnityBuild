@@ -286,11 +286,24 @@ public partial class Form1 : Form
         AddLine(">Product", $"{_settings.ProductName}");
         AddLine(">Version", $"{_settings.ProductVersion}");
         AddLine(">Bundle", $"{_settings.BundleVersion}");
-        var buildTargets = new List<string>();
-        Files.LoadAutoBuildTargets(_settings.WorkingDirectory, out var unityPath, buildTargets);
-        _settings.UnityPath = unityPath;
-        _settings.BuildTargets.AddRange(buildTargets);
+        Files.UpdateAutoBuildSettings(_settings);
         AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
+        if (_settings.CopyFiles.Count > 0)
+        {
+            var keys = _settings.CopyFiles.Keys.ToList();
+            keys.Sort();
+            foreach (var key in keys)
+            {
+                AddLine("copy", $"{key.Replace("copy.", "")}: {_settings.CopyFiles[key]}");
+            }
+        }
+        if (_settings.RevertFiles.Count > 0)
+        {
+            foreach (var file in _settings.RevertFiles)
+            {
+                AddLine("revert", $"{file}");
+            }
+        }
         var assetFolder = Files.GetAssetFolder(_settings.WorkingDirectory);
         _settings.BuildInfoFilename = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
         var exists = File.Exists(_settings.BuildInfoFilename);
