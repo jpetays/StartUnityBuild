@@ -288,26 +288,34 @@ public partial class Form1 : Form
         AddLine(">Bundle", $"{_settings.BundleVersion}");
         Files.UpdateAutoBuildSettings(_settings);
         AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
+        bool exists;
         if (_settings.CopyFiles.Count > 0)
         {
-            var keys = _settings.CopyFiles.Keys.ToList();
-            keys.Sort();
-            foreach (var key in keys)
+            // This checks CopyFiles validity as well.
+            var copyFiles = ProjectCommands.GetCopyFiles(_settings);
+            foreach (var tuple in copyFiles)
             {
-                AddLine("copy", $"{key.Replace("copy.", "")}: {_settings.CopyFiles[key]}");
+                exists = File.Exists(tuple.Item1);
+                AddLine($"copy", $"{(exists ? "" : "-")}copy {tuple.Item1} to {tuple.Item2}");
             }
         }
         if (_settings.RevertFiles.Count > 0)
         {
             foreach (var file in _settings.RevertFiles)
             {
-                AddLine("revert", $"{file}");
+                var path = Path.Combine(".", file);
+                exists = File.Exists(path);
+                AddLine("revert", $"{(exists ? "" : "-")}git revert {path}");
             }
         }
         var assetFolder = Files.GetAssetFolder(_settings.WorkingDirectory);
         _settings.BuildInfoFilename = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
-        var exists = File.Exists(_settings.BuildInfoFilename);
+        exists = File.Exists(_settings.BuildInfoFilename);
         AddLine($"{(exists ? ".BuildInfo" : "ERROR")}", $"{(exists ? "" : "-")}{_settings.BuildInfoFilename}");
+        if (!exists)
+        {
+            AddLine("ERROR", $"assetFolder {assetFolder}");
+        }
         var setUnityExecutablePath =
             !string.IsNullOrEmpty(_settings.UnityPath) && !string.IsNullOrEmpty(_settings.UnityEditorVersion);
         if (setUnityExecutablePath)

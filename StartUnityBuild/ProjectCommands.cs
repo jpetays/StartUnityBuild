@@ -18,7 +18,9 @@ public static class ProjectCommands
             Form1.AddLine($">{outPrefix}", $"today is {today:yyyy-MM-dd HH:mm}");
             try
             {
-                DoUpdate();
+                UpdateProjectSettings();
+                UpdateBuildProperties();
+                CopyFiles();
                 finished(true);
             }
             catch (Exception x)
@@ -29,7 +31,7 @@ public static class ProjectCommands
             }
             return;
 
-            void DoUpdate()
+            void UpdateProjectSettings()
             {
                 // Update Project settings: ProductVersion and BundleVersion
                 var productVersion = settings.ProductVersion;
@@ -67,32 +69,71 @@ public static class ProjectCommands
                         settings.BundleVersion = bundleVersion;
                         break;
                 }
-                UpdateBuildProperties();
-                return;
+            }
 
-                void UpdateBuildProperties()
+            void UpdateBuildProperties()
+            {
+                // Update BuildProperties.cs
+                var assetFolder = Files.GetAssetFolder(settings.WorkingDirectory);
+                var buildPropertiesPath = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
+                if (buildPropertiesPath.Length < settings.WorkingDirectory.Length)
                 {
-                    // Update BuildProperties.cs
-                    var assetFolder = Files.GetAssetFolder(settings.WorkingDirectory);
-                    var buildPropertiesPath = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
-                    if (buildPropertiesPath.Length < settings.WorkingDirectory.Length)
-                    {
-                        Form1.AddLine("ERROR", $"File not found '{buildPropertiesPath}' in {assetFolder}");
-                        return;
-                    }
-                    var shortName = buildPropertiesPath[(settings.WorkingDirectory.Length + 1)..];
-                    var isMuteOtherAudioSources = settings.IsMuteOtherAudioSources;
-                    if (BuildInfoUpdater.UpdateBuildInfo(buildPropertiesPath,
-                            today, settings.BundleVersion, isMuteOtherAudioSources))
-                    {
-                        Form1.AddLine($".{outPrefix}", $"update BuildProperties {shortName}");
-                    }
-                    else
-                    {
-                        Form1.AddLine($".{outPrefix}", $"Did not update BuildProperties {shortName}, it is same");
-                    }
+                    Form1.AddLine("ERROR", $"File not found '{buildPropertiesPath}' in {assetFolder}");
+                    return;
+                }
+                var shortName = buildPropertiesPath[(settings.WorkingDirectory.Length + 1)..];
+                var isMuteOtherAudioSources = settings.IsMuteOtherAudioSources;
+                if (BuildInfoUpdater.UpdateBuildInfo(buildPropertiesPath,
+                        today, settings.BundleVersion, isMuteOtherAudioSources))
+                {
+                    Form1.AddLine($".{outPrefix}", $"update BuildProperties {shortName}");
+                }
+                else
+                {
+                    Form1.AddLine($".{outPrefix}", $"Did not update BuildProperties {shortName}, it is same");
+                }
+            }
+
+            void CopyFiles()
+            {
+                var copyFiles = GetCopyFiles(settings);
+                foreach (var tuple in copyFiles)
+                {
+                    Form1.AddLine($">{outPrefix}", $"copy {tuple.Item1} to {tuple.Item2}");
+                    File.Copy(tuple.Item1, tuple.Item2, overwrite: true);
                 }
             }
         });
+    }
+
+    public static List<Tuple<string, string>> GetCopyFiles(BuildSettings settings)
+    {
+        var keys = settings.CopyFiles.Keys.ToList();
+        keys.Sort();
+        var result = new List<Tuple<string, string>>();
+        for (var i = 0; i < keys.Count; ++i)
+        {
+            var sourceKey = keys[i];
+            if (!sourceKey.EndsWith(".source"))
+            {
+                throw new InvalidOperationException($"invalid format for copy.N.source key: {sourceKey}");
+            }
+            i += 1;
+            var targetKey = keys[i];
+            if (!targetKey.EndsWith(".target"))
+            {
+                throw new InvalidOperationException($"invalid format for copy.N.target key: {targetKey}");
+            }
+            var n1 = sourceKey.Split('.')[1];
+            var n2 = sourceKey.Split('.')[1];
+            if (n1 != n2)
+            {
+                throw new InvalidOperationException($"invalid copy line keys: {sourceKey} vs {targetKey}");
+            }
+            var source = settings.CopyFiles[sourceKey];
+            var target = settings.CopyFiles[targetKey];
+            result.Add(new Tuple<string, string>(source, target));
+        }
+        return result;
     }
 }
