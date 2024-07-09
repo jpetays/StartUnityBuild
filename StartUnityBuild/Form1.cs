@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using NLog;
 using PrgBuild;
+using StartUnityBuild.Commands;
 
 namespace StartUnityBuild;
 
@@ -23,7 +24,7 @@ public partial class Form1 : Form
     public Form1()
     {
         var appVersion = Application.ProductVersion.Split('+')[0];
-        _baseTitle = $"{(Commands.IsDryRun ? "TEST " : "")}Build {appVersion} UNITY";
+        _baseTitle = $"Build {appVersion} UNITY";
         _instance = this;
         _settings = new BuildSettings(Directory.GetCurrentDirectory());
         InitializeComponent();
@@ -136,7 +137,7 @@ public partial class Form1 : Form
             timer1.Start();
             ClearLines();
             isCommandExecuting = true;
-            Commands.GitStatus(_settings.WorkingDirectory, () =>
+            GitCommands.GitStatus(_settings.WorkingDirectory, () =>
             {
                 isCommandExecuting = false;
                 timer1.Stop();
@@ -218,7 +219,7 @@ public partial class Form1 : Form
     {
         Thread.Yield();
         ExecuteMenuCommand(() =>
-            Commands.GitStatus(_settings.WorkingDirectory, () => { SetStatus("Ready", Color.Blue); }));
+            GitCommands.GitStatus(_settings.WorkingDirectory, () => { SetStatus("Ready", Color.Blue); }));
     }
 
     private void ExecuteMenuCommand(Action command)

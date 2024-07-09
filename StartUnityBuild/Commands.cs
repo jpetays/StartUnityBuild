@@ -1,11 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using NLog;
 using PrgBuild;
+using StartUnityBuild.Commands;
 
 namespace StartUnityBuild;
 
 [SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible")]
-public static class Commands
+public static class OldCommands
 {
     /*
         https://git-scm.com/docs/git-push

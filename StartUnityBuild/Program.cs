@@ -4,7 +4,7 @@ namespace StartUnityBuild;
 
 [SuppressMessage("ReSharper", "LocalizableElement")]
 [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
-static class Program
+internal static class Program
 {
     /// <summary>
     ///  The main entry point for the application.
@@ -56,7 +56,6 @@ static class Program
             }
             if (value == dryRun)
             {
-                Commands.IsDryRun = true;
                 continue;
             }
             if (value == projectFolder)

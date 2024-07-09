@@ -2,8 +2,11 @@ using NLog;
 using Prg.Util;
 using PrgBuild;
 
-namespace StartUnityBuild;
+namespace StartUnityBuild.Commands;
 
+/// <summary>
+/// Commands to prepare to build UNITY player.
+/// </summary>
 public static class ProjectCommands
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();

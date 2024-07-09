@@ -1,7 +1,10 @@
 using NLog;
 
-namespace StartUnityBuild;
+namespace StartUnityBuild.Commands;
 
+/// <summary>
+/// Commands to build UNITY player.
+/// </summary>
 public static class BuildCommands
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();

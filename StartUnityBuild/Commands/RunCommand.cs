@@ -1,8 +1,11 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace StartUnityBuild;
+namespace StartUnityBuild.Commands;
 
+/// <summary>
+/// Async task support to execute system commands and wait for their outcome (while listen ing stdout and stderr).
+/// </summary>
 public static class RunCommand
 {
     public static async Task<int> Execute(string prefix, string fileName, string arguments,
