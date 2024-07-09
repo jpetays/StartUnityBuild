@@ -20,29 +20,48 @@ public static class GitCommands
                 null, GitLogFilter, Form1.ExitListener);
             finished();
         });
+        return;
+
+        void GitStatusFilter(string prefix, string? line)
+        {
+            if (line == null)
+            {
+                return;
+            }
+            Form1.OutputListener(prefix, line.StartsWith("   ") ? line : $"-commit: {line}");
+        }
+
+        void GitLogFilter(string prefix, string? line)
+        {
+            if (line == null)
+            {
+                return;
+            }
+            var tokens = line.Split(' ');
+            if (tokens.Length >= 2 && tokens[0].Trim().Length == 40)
+            {
+                tokens[0] = "push:";
+                line = $"-{string.Join(' ', tokens)}";
+            }
+            Form1.OutputListener(prefix, line);
+        }
     }
 
-    private static void GitStatusFilter(string prefix, string? line)
+    public static void GitRevert(string workingDirectory, List<string> files, Action finished)
     {
-        if (line == null)
+        if (files.Count == 0)
         {
+            finished();
             return;
         }
-        Form1.OutputListener(prefix, line.StartsWith("   ") ? line : $"-commit: {line}");
-    }
-
-    private static void GitLogFilter(string prefix, string? line)
-    {
-        if (line == null)
+        const string outPrefix = "revert";
+        Task.Run(async () =>
         {
-            return;
-        }
-        var tokens = line.Split(' ');
-        if (tokens.Length >= 2 && tokens[0].Trim().Length == 40)
-        {
-            tokens[0] = "push:";
-            line = $"-{string.Join(' ', tokens)}";
-        }
-        Form1.OutputListener(prefix, line);
+            var gitCommand = $"checkout --force -- {string.Join(' ', files)}";
+            Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
+            await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+                null, Form1.OutputListener, Form1.ExitListener);
+            finished();
+        });
     }
 }

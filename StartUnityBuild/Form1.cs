@@ -165,7 +165,6 @@ public partial class Form1 : Form
             timer1.Start();
             ClearLines();
             isCommandExecuting = true;
-            //Commands.UnityUpdate(_settings,
             ProjectCommands.ModifyProject(_settings,
                 (updated) =>
                 {
@@ -197,14 +196,16 @@ public partial class Form1 : Form
             timer1.Start();
             ClearLines();
             isCommandExecuting = true;
-            //Commands.UnityBuild(_settings,
             BuildCommands.BuildPlayer(_settings,
                 () =>
                 {
-                    isCommandExecuting = false;
-                    timer1.Stop();
-                    var duration = DateTime.Now - startTime;
-                    SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
+                    GitCommands.GitRevert(_settings.WorkingDirectory, _settings.RevertFiles, () =>
+                    {
+                        isCommandExecuting = false;
+                        timer1.Stop();
+                        var duration = DateTime.Now - startTime;
+                        SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
+                    });
                 });
         });
     }
@@ -312,7 +313,7 @@ public partial class Form1 : Form
         var assetFolder = Files.GetAssetFolder(_settings.WorkingDirectory);
         _settings.BuildInfoFilename = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
         exists = File.Exists(_settings.BuildInfoFilename);
-        AddLine($"{(exists ? ".file" : "ERROR")}", $"{(exists ? "" : "-")}{_settings.BuildInfoFilename}");
+        AddLine($"{(exists ? ".file" : "ERROR")}", $"{_settings.BuildInfoFilename}");
         if (!exists)
         {
             AddLine("ERROR", $"assetFolder {assetFolder}");
