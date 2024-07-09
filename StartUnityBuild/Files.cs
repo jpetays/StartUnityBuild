@@ -12,7 +12,7 @@ public static class Files
 
     public const string ProjectSettingsFolderName = "ProjectSettings";
     public const string ProjectSettingsFileName = "ProjectSettings.asset";
-    public const string ProjectVersionFileName = "ProjectVersion.txt";
+    private const string ProjectVersionFileName = "ProjectVersion.txt";
     private static readonly string AutoBuildEnvironmentFilePath = Path.Combine("etc", "batchBuild", "_auto_build.env");
 
     public static string GetAssetFolder(string workingDirectory) => Path.Combine(workingDirectory, "Assets");
@@ -67,6 +67,11 @@ public static class Files
                 }
                 continue;
             }
+            if (key == "unityPath")
+            {
+                settings.UnityPath = tokens[1].Trim();
+                continue;
+            }
             if (key.StartsWith("copy.") && (key.EndsWith(".source") || key.EndsWith(".target")))
             {
                 settings.CopyFiles.Add(key, value);
@@ -76,40 +81,6 @@ public static class Files
             {
                 settings.RevertFiles.Add(value);
             }
-        }
-    }
-
-    [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
-    public static void LoadAutoBuildTargets(string workingDirectory, out string unityPath, List<string> buildTargets)
-    {
-        unityPath = null!;
-        var path = Path.Combine(workingDirectory, AutoBuildEnvironmentFilePath);
-        Form1.AddLine(".file", $"{path}");
-        var lines = File.ReadAllLines(path, Encoding);
-        foreach (var line in lines)
-        {
-            var tokens = line.Split('=');
-            switch (tokens[0].Trim())
-            {
-                case "BuildTargets":
-                case "buildTargets":
-                {
-                    var targets = tokens[1].Split(',');
-                    foreach (var target in targets)
-                    {
-                        buildTargets.Add(target.Trim());
-                    }
-                    break;
-                }
-                case "UnityPath":
-                case "unityPath":
-                    unityPath = tokens[1].Trim();
-                    break;
-            }
-        }
-        if (unityPath == null)
-        {
-            throw new InvalidOperationException($"unable to find 'unityPath' from {path}");
         }
     }
 }
