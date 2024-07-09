@@ -191,6 +191,13 @@ public partial class Form1 : Form
                     MessageBoxIcon.Exclamation);
                 return;
             }
+            if (!File.Exists(_settings.UnityExecutable))
+            {
+                AddLine("ERROR", $"UnityExecutable not found: '{_settings.UnityExecutable}'");
+                MessageBox.Show("UnityExecutable not found", "UNITY Build", MessageBoxButtons.OK,
+                    MessageBoxIcon.Exclamation);
+                return;
+            }
             timerLabel = "Building";
             startTime = DateTime.Now;
             timer1.Start();
@@ -333,6 +340,11 @@ public partial class Form1 : Form
             _settings.UnityExecutable = _settings.UnityPath.Replace("$VERSION$", _settings.UnityEditorVersion);
             exists = File.Exists(_settings.UnityExecutable);
             AddLine($"{(exists ? "." : "")}Executable", $"{(exists ? "" : "-")}{_settings.UnityExecutable}");
+        }
+        else
+        {
+            AddLine("ERROR",
+                $"UnityExecutable not found for path '{_settings.UnityPath}' and version '{_settings.UnityEditorVersion}'");
         }
     }
 
