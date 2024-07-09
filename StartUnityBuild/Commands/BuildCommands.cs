@@ -19,6 +19,8 @@ public static class BuildCommands
     /// </summary>
     public static void BuildPlayer(BuildSettings settings, Action finished)
     {
+        // For quick testing use: Editor.Demo.BuildTest.TestBuild
+        const string executeMethod = "PrgBuild.Build.BuildPlayer";
         const string outPrefix = "build";
         Task.Run(async () =>
         {
@@ -33,7 +35,9 @@ public static class BuildCommands
             {
                 Form1.AddLine($">{outPrefix}", $"build {buildTarget}");
                 var executable = settings.UnityExecutable;
-                var projectPath = settings.WorkingDirectory;
+                var projectPath = Directory.GetCurrentDirectory() == settings.WorkingDirectory
+                    ? ".\\"
+                    : settings.WorkingDirectory;
                 var prevLogFile = @$".\etc\_local_build_{buildTarget}.prev.log";
                 var buildLogFile = @$".\etc\_local_build_{buildTarget}.build.log";
                 var outputLogFile = @$".\Assets\BuildReports\{buildTarget}.build.log.txt";
@@ -42,12 +46,16 @@ public static class BuildCommands
                 var arguments =
                     $" -buildTarget {buildTarget} -projectPath {Quoted(projectPath)}" +
                     $" -logFile {Quoted(buildLogFile)}" +
-                    $" -executeMethod PrgBuild.Build.BuildPlayer -quit -batchmode";
+                    $" -executeMethod {executeMethod} -quit -batchmode";
                 Form1.AddLine($".{outPrefix}", $"executable: {executable}");
                 Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
                 var result = await RunCommand.Execute(outPrefix, executable, arguments,
                     settings.WorkingDirectory, null, Form1.OutputListener, Form1.ExitListener);
                 Form1.AddLine($">{outPrefix}", $"return code {result}");
+                if (result != 0)
+                {
+                    Form1.AddLine(outPrefix, $"- return code was not zero!");
+                }
                 HandleOutputFiles();
                 return;
 
