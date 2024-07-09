@@ -297,7 +297,7 @@ public partial class Form1 : Form
             foreach (var tuple in copyFiles)
             {
                 exists = File.Exists(tuple.Item1);
-                AddLine($"copy", $"{(exists ? "" : "-")}copy {tuple.Item1} to {tuple.Item2}");
+                AddLine($"{(exists ? ".copy" : "ERROR")}", $"copy {tuple.Item1} to {tuple.Item2}");
             }
         }
         if (_settings.RevertFiles.Count > 0)
@@ -306,13 +306,13 @@ public partial class Form1 : Form
             {
                 var path = Path.Combine(".", file);
                 exists = File.Exists(path);
-                AddLine("revert", $"{(exists ? "" : "-")}git revert {path}");
+                AddLine($"{(exists ? ".revert" : "ERROR")}", $"git revert {path}");
             }
         }
         var assetFolder = Files.GetAssetFolder(_settings.WorkingDirectory);
         _settings.BuildInfoFilename = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
         exists = File.Exists(_settings.BuildInfoFilename);
-        AddLine($"{(exists ? ".BuildInfo" : "ERROR")}", $"{(exists ? "" : "-")}{_settings.BuildInfoFilename}");
+        AddLine($"{(exists ? ".file" : "ERROR")}", $"{(exists ? "" : "-")}{_settings.BuildInfoFilename}");
         if (!exists)
         {
             AddLine("ERROR", $"assetFolder {assetFolder}");
