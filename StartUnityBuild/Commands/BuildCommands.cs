@@ -35,7 +35,7 @@ public static class BuildCommands
                 var executable = settings.UnityExecutable;
                 var projectPath = settings.WorkingDirectory;
                 var prevLogFile = @$".\etc\_local_build_{buildTarget}.prev.log";
-                var buildLogFile = @$".\etc\_local_build_{buildTarget}.temp.log";
+                var buildLogFile = @$".\etc\_local_build_{buildTarget}.build.log";
                 var outputLogFile = @$".\Assets\BuildReports\{buildTarget}.build.log.txt";
                 var outputLogMetafile = $"{outputLogFile}.meta";
                 PrepareFilesForBuild();
@@ -51,7 +51,7 @@ public static class BuildCommands
                 HandleOutputFiles();
                 return;
 
-                #region File handling
+                #region Build Output File handling
 
                 void PrepareFilesForBuild()
                 {
@@ -60,14 +60,14 @@ public static class BuildCommands
                         Logger.Trace($"File.Move({buildLogFile}, {prevLogFile}, overwrite: true);");
                         File.Move(buildLogFile, prevLogFile, overwrite: true);
                     }
-                    if (File.Exists(outputLogFile))
+                    Logger.Trace($"File.Truncate({Path.GetFullPath(buildLogFile)});");
+                    File.WriteAllText(buildLogFile, "");
+
+                    Logger.Trace($"File.Truncate({Path.GetFullPath(outputLogFile)});");
+                    File.WriteAllText(outputLogFile, "");
+                    if (!File.Exists(outputLogMetafile))
                     {
-                        Logger.Trace($"File.Delete({outputLogFile});");
-                        File.Delete(outputLogFile);
-                        if (File.Exists(outputLogMetafile))
-                        {
-                            File.Delete(outputLogMetafile);
-                        }
+                        CreateUnityMetafile(outputLogMetafile);
                     }
                 }
 
@@ -77,18 +77,14 @@ public static class BuildCommands
                     {
                         return;
                     }
-                    Logger.Trace($"File.Move({buildLogFile}, {outputLogFile}, overwrite: true);");
+                    Logger.Trace($"File.Copy({buildLogFile}, {outputLogFile}, overwrite: true);");
                     try
                     {
-                        File.Move(buildLogFile, outputLogFile, overwrite: true);
-                        if (!File.Exists(outputLogMetafile))
-                        {
-                            CreateUnityMetafile(outputLogMetafile);
-                        }
+                        File.Copy(buildLogFile, outputLogFile, overwrite: true);
                     }
                     catch (Exception x)
                     {
-                        Form1.AddLine($">{outPrefix}", $"File.Move failed: {x.GetType().Name} {x.Message}");
+                        Form1.AddLine($">{outPrefix}", $"File.Copy failed: {x.GetType().Name} {x.Message}");
                     }
                 }
 

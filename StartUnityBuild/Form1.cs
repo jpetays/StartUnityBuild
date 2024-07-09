@@ -196,17 +196,25 @@ public partial class Form1 : Form
             timer1.Start();
             ClearLines();
             isCommandExecuting = true;
-            BuildCommands.BuildPlayer(_settings,
-                () =>
-                {
-                    GitCommands.GitRevert(_settings.WorkingDirectory, _settings.RevertFiles, () =>
-                    {
-                        isCommandExecuting = false;
-                        timer1.Stop();
-                        var duration = DateTime.Now - startTime;
-                        SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
-                    });
-                });
+            BuildCommands.BuildPlayer(_settings, BuildPlayerCallback);
+            Logger.Trace("BuildPlayer started");
+            return;
+
+            void BuildPlayerCallback()
+            {
+                Logger.Trace("BuildPlayer done");
+                GitCommands.GitRevert(_settings.WorkingDirectory, _settings.RevertFiles, GitRevertCallback);
+                Logger.Trace("BuildPlayer started");
+            }
+
+            void GitRevertCallback()
+            {
+                Logger.Trace("GitRevert done");
+                isCommandExecuting = false;
+                timer1.Stop();
+                var duration = DateTime.Now - startTime;
+                SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
+            }
         });
     }
 
