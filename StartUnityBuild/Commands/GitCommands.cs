@@ -7,7 +7,7 @@ public static class GitCommands
 {
     public static void GitStatus(string workingDirectory, Action finished)
     {
-        const string outPrefix = "git-status";
+        const string outPrefix = "status";
         Task.Run(async () =>
         {
             var gitCommand = "status --porcelain=v1";
@@ -49,10 +49,10 @@ public static class GitCommands
 
     public static void GitPull(string workingDirectory, Action finished)
     {
-        const string outPrefix = "git-pull";
+        const string outPrefix = "pull";
         Task.Run(async () =>
         {
-            var gitCommand = "pull origin main";
+            var gitCommand = "pull --rebase=true origin main";
             Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
             await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
@@ -62,7 +62,7 @@ public static class GitCommands
 
     public static void GitPush(string workingDirectory, string options, Action finished)
     {
-        const string outPrefix = "git-push";
+        const string outPrefix = "push";
         Task.Run(async () =>
         {
             var gitCommand = $"push {options} origin main";
@@ -80,7 +80,7 @@ public static class GitCommands
             finished();
             return;
         }
-        const string outPrefix = "git-revert";
+        const string outPrefix = "revert";
         Task.Run(async () =>
         {
             var gitCommand = $"checkout --force -- {string.Join(' ', files)}";
