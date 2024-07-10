@@ -14,7 +14,7 @@ public static class RunCommand
     {
         if (!Directory.Exists(workingDirectory))
         {
-            readOutput("ERROR", $"working directory not found: {workingDirectory}");
+            Form1.AddLine("ERROR", $"working directory not found: {workingDirectory}");
             readExitCode(prefix, -1);
             return -1;
         }
@@ -39,20 +39,23 @@ public static class RunCommand
         var process = new Process { StartInfo = startInfo };
         if (!process.Start())
         {
-            readOutput("ERROR", "unable start process");
+            Form1.AddLine("ERROR", "unable start process");
             readExitCode(prefix, -1);
             return -1;
         }
-        var outputPrefix = $"{prefix}[{process.Id:x}]";
-        var errorPrefix = $"ERROR[{process.Id:x}]";
-        var standardOutput = new AsyncStreamReader(
-            process.StandardOutput, data => { readOutput(outputPrefix, data); }, process.StandardInput);
-        var standardError = new AsyncStreamReader(
-            process.StandardError, data => { readOutput(errorPrefix!, data); }, null);
+        var outPrefix = $"{prefix}[{process.Id:x}]";
+        var errPrefix = $".{prefix}[{process.Id:x}]";
+        var outLines = 0;
+        var printOutMessage = true;
+        var errLines = 0;
+        var printErrMessage = false;
+        var standardOutput = new AsyncStreamReader(process.StandardOutput,
+            data => { CountAndFilter(ref outLines, ref printOutMessage, outPrefix, data); });
+        var standardError = new AsyncStreamReader(process.StandardError,
+            data => { CountAndFilter(ref errLines, ref printErrMessage, errPrefix, data); });
         standardOutput.Start();
         standardError.Start();
 
-        readOutput(".cmd", $"{outputPrefix} started");
         Thread.Yield();
         await process.WaitForExitAsync();
         // We call blocking version to force flush and/or wait for stdout and stderr streams to be fully closed!
@@ -64,7 +67,6 @@ public static class RunCommand
             {
                 Thread.Yield();
             }
-            readOutput(".cmd", $"standardOutput ended");
         }
         if (!standardError.IsEndOfStream)
         {
@@ -72,18 +74,35 @@ public static class RunCommand
             {
                 Thread.Yield();
             }
-            readOutput(".cmd", $"standardError ended");
         }
-        readOutput(".cmd", $"{outputPrefix} ended");
-        readExitCode(outputPrefix, process.ExitCode);
+        if (outLines > 0 || errLines > 0)
+        {
+            Form1.AddLine(".cmd", $"{outPrefix} end");
+        }
+        readExitCode(outPrefix, process.ExitCode);
         return process.ExitCode;
+
+        void CountAndFilter(ref int counter, ref bool printStartMessage, string linePrefix, string line)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                return;
+            }
+            if (printStartMessage)
+            {
+                printStartMessage = false;
+                Form1.AddLine(".cmd", $"{outPrefix} start");
+            }
+            counter += 1;
+            readOutput(linePrefix, line);
+        }
     }
 
     /// <summary>
     /// Stream reader for StandardOutput and StandardError stream readers.<br />
     /// Runs an eternal BeginRead loop on the underlying stream bypassing the stream reader as lines.
     /// </summary>
-    private class AsyncStreamReader(StreamReader readerToBypass, Action<string> callback, StreamWriter? writer)
+    private class AsyncStreamReader(StreamReader readerToBypass, Action<string> callback)
     {
         private static readonly char[] Separators = ['\r', '\n'];
 
@@ -115,13 +134,9 @@ public static class RunCommand
                     for (var i = 0; i < lines.Length - 1; ++i)
                     {
                         var line = lines[i];
-                        if (!HandledAnyKey(line))
-                        {
-                            callback.Invoke(line);
-                        }
+                        callback.Invoke(line);
                     }
                 }
-                callback.Invoke(null!);
                 IsEndOfStream = true;
                 return;
             }
@@ -132,10 +147,7 @@ public static class RunCommand
                 var lines = bufferText.Split(Separators, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in lines)
                 {
-                    if (!HandledAnyKey(line))
-                    {
-                        callback.Invoke(line);
-                    }
+                    callback.Invoke(line);
                 }
                 _builder.Clear();
             }
@@ -145,32 +157,15 @@ public static class RunCommand
                 for (var i = 0; i < lines.Length - 1; ++i)
                 {
                     var line = lines[i];
-                    if (!HandledAnyKey(line))
-                    {
-                        callback.Invoke(line);
-                    }
+                    callback.Invoke(line);
                 }
                 _builder.Clear();
                 var lastLine = lines[^1];
-                if (!HandledAnyKey(lastLine))
-                {
-                    _builder.Append(lastLine);
-                }
+                _builder.Append(lastLine);
             }
 
             //Wait for more data from stream
             BeginReadAsync();
-            return;
-
-            bool HandledAnyKey(string text)
-            {
-                if (!text.StartsWith("Press any key to continue"))
-                {
-                    return false;
-                }
-                writer?.Write("Y");
-                return true;
-            }
         }
     }
 }
