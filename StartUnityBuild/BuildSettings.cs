@@ -38,14 +38,19 @@ public class BuildSettings(string workingDirectory)
     public List<string> BuildTargets { get; private set; } = [];
 
     /// <summary>
+    /// Git options for push command.
+    /// </summary>
+    public string PushOptions { get; set; } = "--dry-run";
+
+    /// <summary>
     /// Copy files before build (source, target).
     /// </summary>
-    public Dictionary<string, string> CopyFiles{ get; private set; } = [];
+    public Dictionary<string, string> CopyFiles { get; private set; } = [];
 
     /// <summary>
     /// Revert files before build.
     /// </summary>
-    public List<string> RevertFiles{ get; private set; } = [];
+    public List<string> RevertFiles { get; private set; } = [];
 
     /// <summary>
     /// UnityEditorVersion from ProjectVersion.txt.

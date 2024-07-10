@@ -7,7 +7,7 @@ public static class GitCommands
 {
     public static void GitStatus(string workingDirectory, Action finished)
     {
-        const string outPrefix = "status";
+        const string outPrefix = "git-status";
         Task.Run(async () =>
         {
             var gitCommand = "status --porcelain=v1";
@@ -47,6 +47,32 @@ public static class GitCommands
         }
     }
 
+    public static void GitPull(string workingDirectory, Action finished)
+    {
+        const string outPrefix = "git-pull";
+        Task.Run(async () =>
+        {
+            var gitCommand = "pull origin main";
+            Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
+            await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+                null, Form1.OutputListener, Form1.ExitListener);
+            finished();
+        });
+    }
+
+    public static void GitPush(string workingDirectory, string options, Action finished)
+    {
+        const string outPrefix = "git-push";
+        Task.Run(async () =>
+        {
+            var gitCommand = $"push {options} origin main";
+            Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
+            await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+                null, Form1.OutputListener, Form1.ExitListener);
+            finished();
+        });
+    }
+
     public static void GitRevert(string workingDirectory, List<string> files, Action finished)
     {
         if (files.Count == 0)
@@ -54,7 +80,7 @@ public static class GitCommands
             finished();
             return;
         }
-        const string outPrefix = "revert";
+        const string outPrefix = "git-revert";
         Task.Run(async () =>
         {
             var gitCommand = $"checkout --force -- {string.Join(' ', files)}";

@@ -21,6 +21,10 @@ public partial class Form1 : Form
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private BuildSettings _settings;
 
+    private bool _isCommandExecuting;
+    private string _commandLabel = "";
+    private DateTime _commandStartTime;
+
     public Form1()
     {
         var appVersion = Application.ProductVersion.Split('+')[0];
@@ -65,7 +69,9 @@ public partial class Form1 : Form
         {
             LoadEnvironment();
             Text =
-                $"{_baseTitle} {_settings.UnityEditorVersion} - App {_settings.ProductVersion} - Targets {string.Join(',', _settings.BuildTargets)}";
+                $"{_baseTitle} {_settings.UnityEditorVersion} - App {_settings.ProductVersion}" +
+                $" - Target{(_settings.BuildTargets.Count > 1 ? "" : "s")} [{string.Join(',', _settings.BuildTargets)}]" +
+                $" in {_settings.WorkingDirectory}";
             UpdateProjectInfo(_settings.BuildTargets.Count > 0 ? Color.Magenta : Color.Red);
             StartupCommand();
             if (_settings.BuildTargets.Count == 0)
@@ -115,114 +121,45 @@ public partial class Form1 : Form
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
         setProjectFolderToolStripMenuItem.Click += (_, _) => { SetProjectFolder(); };
-        var isCommandExecuting = false;
-        var startTime = DateTime.Now;
-        var timerLabel = "";
         timer1.Tick += (_, _) =>
         {
-            var duration = DateTime.Now - startTime;
-            SetStatus($"{timerLabel} {duration:mm':'ss}", Color.Green);
+            var duration = DateTime.Now - _commandStartTime;
+            SetStatus($"{_commandLabel} {duration:mm':'ss}", Color.Green);
         };
         gitStatusToolStripMenuItem.Text = $"[{gitStatusToolStripMenuItem.Text}]";
-        gitStatusToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
-        {
-            if (isCommandExecuting)
-            {
-                MessageBox.Show("A command is already executing", "UNITY Build", MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
-                return;
-            }
-            timerLabel = "Executing";
-            startTime = DateTime.Now;
-            timer1.Start();
-            ClearLines();
-            isCommandExecuting = true;
-            GitCommands.GitStatus(_settings.WorkingDirectory, () =>
-            {
-                isCommandExecuting = false;
-                timer1.Stop();
-                var duration = DateTime.Now - startTime;
-                SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
-            });
-        });
+        gitStatusToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
+            () => { GitCommands.GitStatus(_settings.WorkingDirectory, ReleaseMenuCommandSync); });
+
+        gitPullToolStripMenuItem.Text = $"[{gitPullToolStripMenuItem.Text}]";
+        gitPullToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
+            () => { GitCommands.GitPull(_settings.WorkingDirectory, ReleaseMenuCommandSync); });
+
+        gitPushToolStripMenuItem.Text = $"[{gitPushToolStripMenuItem.Text}]";
+        gitPushToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
+            () => { GitCommands.GitPush(_settings.WorkingDirectory, _settings.PushOptions, ReleaseMenuCommandSync); });
+
         updateBuildToolStripMenuItem.Text = $"[{updateBuildToolStripMenuItem.Text}]";
-        updateBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
+        updateBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Updating", () =>
         {
-            if (isCommandExecuting)
-            {
-                MessageBox.Show("A command is already executing", "UNITY Build", MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
-                return;
-            }
-            if (_settings.BuildTargets.Count == 0)
-            {
-                MessageBox.Show("No build target found", "UNITY Build", MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
-                return;
-            }
-            timerLabel = "Updating";
-            startTime = DateTime.Now;
-            timer1.Start();
-            ClearLines();
-            isCommandExecuting = true;
             ProjectCommands.ModifyProject(_settings,
                 (updated) =>
                 {
-                    isCommandExecuting = false;
-                    timer1.Stop();
-                    var duration = DateTime.Now - startTime;
-                    SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
+                    ReleaseMenuCommandSync();
                     UpdateProjectInfo(updated ? Color.Green : Color.Red);
                     PlayNotification();
                 });
         });
         startBuildToolStripMenuItem.Text = $"[{startBuildToolStripMenuItem.Text}]";
-        startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommand(() =>
-        {
-            if (isCommandExecuting)
+        startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Building",
+            () =>
             {
-                MessageBox.Show("A command is already executing", "UNITY Build", MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
-                return;
-            }
-            if (_settings.BuildTargets.Count == 0)
-            {
-                MessageBox.Show("No build target found", "UNITY Build", MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
-                return;
-            }
-            if (!File.Exists(_settings.UnityExecutable))
-            {
-                AddLine("ERROR", $"UnityExecutable not found: '{_settings.UnityExecutable}'");
-                MessageBox.Show("UnityExecutable not found", "UNITY Build", MessageBoxButtons.OK,
-                    MessageBoxIcon.Exclamation);
-                return;
-            }
-            timerLabel = "Building";
-            startTime = DateTime.Now;
-            timer1.Start();
-            ClearLines();
-            isCommandExecuting = true;
-            BuildCommands.BuildPlayer(_settings, BuildPlayerCallback);
-            Logger.Trace("BuildPlayer started");
-            return;
-
-            void BuildPlayerCallback()
-            {
-                Logger.Trace("BuildPlayer done");
-                GitCommands.GitRevert(_settings.WorkingDirectory, _settings.RevertFiles, GitRevertCallback);
-                Logger.Trace("BuildPlayer started");
-            }
-
-            void GitRevertCallback()
-            {
-                Logger.Trace("GitRevert done");
-                isCommandExecuting = false;
-                timer1.Stop();
-                var duration = DateTime.Now - startTime;
-                SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
-            }
-        });
+                BuildCommands.BuildPlayer(_settings,
+                    () =>
+                    {
+                        GitCommands.GitRevert(_settings.WorkingDirectory, _settings.RevertFiles,
+                            ReleaseMenuCommandSync);
+                    });
+            });
     }
 
     private void UpdateProjectInfo(Color color)
@@ -236,6 +173,43 @@ public partial class Form1 : Form
         Thread.Yield();
         ExecuteMenuCommand(() =>
             GitCommands.GitStatus(_settings.WorkingDirectory, () => { SetStatus("Ready", Color.Blue); }));
+    }
+
+    private void ExecuteMenuCommandSync(string commandLabel, Action command)
+    {
+        if (_isCommandExecuting)
+        {
+            MessageBox.Show("A command is already executing", "UNITY Build", MessageBoxButtons.OK,
+                MessageBoxIcon.Exclamation);
+            return;
+        }
+        if (_settings.BuildTargets.Count == 0)
+        {
+            MessageBox.Show("No build target found", "UNITY Build", MessageBoxButtons.OK,
+                MessageBoxIcon.Exclamation);
+            return;
+        }
+        _isCommandExecuting = true;
+        _commandLabel = commandLabel;
+        _commandStartTime = DateTime.Now;
+        timer1.Start();
+        ClearLines();
+        try
+        {
+            command();
+        }
+        catch (Exception x)
+        {
+            AddLine("ERROR", $"{x.Message}");
+        }
+    }
+
+    private void ReleaseMenuCommandSync()
+    {
+        _isCommandExecuting = false;
+        timer1.Stop();
+        var duration = DateTime.Now - _commandStartTime;
+        SetStatus($"Done in {duration:mm':'ss}", Color.Blue);
     }
 
     private void ExecuteMenuCommand(Action command)
