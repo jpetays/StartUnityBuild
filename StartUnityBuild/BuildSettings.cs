@@ -40,7 +40,7 @@ public class BuildSettings(string workingDirectory)
     /// <summary>
     /// Git options for push command.
     /// </summary>
-    public string PushOptions { get; set; } = "--dry-run";
+    public string PushOptions { get; set; } = "";
 
     /// <summary>
     /// Copy files before build (source, target).

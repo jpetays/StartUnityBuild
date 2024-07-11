@@ -25,7 +25,7 @@ public partial class Form1 : Form
     private string _commandLabel = "";
     private DateTime _commandStartTime;
 
-    public Form1()
+    public Form1(bool isTesting = false)
     {
         var appVersion = Application.ProductVersion.Split('+')[0];
         _baseTitle = $"Build {appVersion} UNITY";
@@ -46,7 +46,7 @@ public partial class Form1 : Form
         label1.Text = "";
         timer1.Interval = 1000;
 
-        SetupMenuCommands();
+        SetupMenuCommands(isTesting);
     }
 
     protected override void OnLoad(EventArgs e)
@@ -116,7 +116,7 @@ public partial class Form1 : Form
         LoadProject();
     }
 
-    private void SetupMenuCommands()
+    private void SetupMenuCommands(bool isTesting)
     {
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
@@ -146,6 +146,10 @@ public partial class Form1 : Form
                     PlayNotification();
                 });
         });
+        if (isTesting)
+        {
+            _settings.PushOptions = "--dry-run";
+        }
         SetCaption(gitPushToolStripMenuItem, ++order);
         gitPushToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
             () => { GitCommands.GitPush(_settings.WorkingDirectory, _settings.PushOptions, ReleaseMenuCommandSync); });
@@ -163,9 +167,9 @@ public partial class Form1 : Form
             });
         return;
 
-        void SetCaption(ToolStripMenuItem item, int order)
+        void SetCaption(ToolStripItem item, int itemNumber)
         {
-            item.Text = $"[{order}] {item.Text}";
+            item.Text = $"[{itemNumber}] {item.Text}";
         }
     }
 
