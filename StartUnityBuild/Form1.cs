@@ -27,6 +27,7 @@ public partial class Form1 : Form
 
     public Form1(bool isTesting = false)
     {
+        RunCommand.IsVerbose = isTesting;
         var appVersion = Application.ProductVersion.Split('+')[0];
         _baseTitle = $"Build {appVersion} UNITY";
         _instance = this;
@@ -69,7 +70,7 @@ public partial class Form1 : Form
         {
             LoadEnvironment();
             Text =
-                $"{_baseTitle} {_settings.UnityEditorVersion} - App {_settings.ProductVersion}" +
+                $"{_baseTitle} {_settings.UnityEditorVersion} - {_settings.ProductName} {_settings.ProductVersion}" +
                 $" - Target{(_settings.BuildTargets.Count > 1 ? "" : "s")} [{string.Join(',', _settings.BuildTargets)}]" +
                 $" in {_settings.WorkingDirectory}";
             UpdateProjectInfo(_settings.BuildTargets.Count > 0 ? Color.Magenta : Color.Red);
@@ -278,17 +279,17 @@ public partial class Form1 : Form
         {
             throw new ApplicationException($"ProjectVersion.txt not found, is this UNITY project folder?");
         }
-        AddLine("Unity", $"{_settings.UnityEditorVersion}");
+        AddLine(".unity", $"{_settings.UnityEditorVersion}");
         ProjectSettings.LoadProjectSettingsFile(_settings.WorkingDirectory,
             out var productName, out var productVersion, out var bundleVersion, out var muteOtherAudioSources);
         _settings.ProductName = productName;
         _settings.ProductVersion = productVersion;
         _settings.BundleVersion = bundleVersion;
         _settings.IsMuteOtherAudioSources = muteOtherAudioSources;
-        AddLine(">Product", $"{_settings.ProductName}");
-        AddLine(">Version", $"{_settings.ProductVersion}");
-        AddLine(">Bundle", $"{_settings.BundleVersion}");
-        Files.UpdateAutoBuildSettings(_settings);
+        Files.LoadAutoBuildSettings(_settings);
+        AddLine("Product", $"{_settings.ProductName}");
+        AddLine("Version", $"{_settings.ProductVersion}");
+        AddLine("Bundle", $"{_settings.BundleVersion}");
         AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
         bool exists;
         if (_settings.CopyFiles.Count > 0)
@@ -348,9 +349,9 @@ public partial class Form1 : Form
         AddLine(prefix ?? "ERROR", line);
     }
 
-    public static void ExitListener(string prefix, int exitCode)
+    public static void ExitListener(string processPrefix, string commandPrefix, int exitCode)
     {
-        AddLine($">{prefix}", $"exit: {exitCode}");
+        AddLine($">{processPrefix}", $"{commandPrefix} exit: {exitCode}");
     }
 
     private void ClearLines()

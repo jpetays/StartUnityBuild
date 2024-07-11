@@ -8,14 +8,16 @@ namespace StartUnityBuild.Commands;
 /// </summary>
 public static class RunCommand
 {
+    public static bool IsVerbose;
+
     public static async Task<int> Execute(string prefix, string fileName, string arguments,
         string workingDirectory, Dictionary<string, string>? environmentVariables,
-        Action<string, string> readOutput, Action<string, int> readExitCode)
+        Action<string, string> readOutput, Action<string, string, int> readExitCode)
     {
         if (!Directory.Exists(workingDirectory))
         {
             Form1.AddLine("ERROR", $"working directory not found: {workingDirectory}");
-            readExitCode(prefix, -1);
+            readExitCode("ERROR", prefix, -1);
             return -1;
         }
         var startInfo = new ProcessStartInfo(fileName, arguments)
@@ -40,19 +42,17 @@ public static class RunCommand
         if (!process.Start())
         {
             Form1.AddLine("ERROR", "unable start process");
-            readExitCode(prefix, -1);
+            readExitCode("ERROR", prefix, -1);
             return -1;
         }
-        var outPrefix = $"{prefix}[{process.Id:x}]";
-        var errPrefix = $".{prefix}[{process.Id:x}]";
+        var linePrefix = $"[{process.Id:x}]";
         var outLines = 0;
-        var printOutMessage = true;
+        var printOutMessage = IsVerbose;
         var errLines = 0;
-        var printErrMessage = false;
         var standardOutput = new AsyncStreamReader(process.StandardOutput,
-            data => { CountAndFilter(ref outLines, ref printOutMessage, outPrefix, data); });
+            line => { CountAndFilter(ref outLines, ref printOutMessage, line); });
         var standardError = new AsyncStreamReader(process.StandardError,
-            data => { CountAndFilter(ref errLines, ref printErrMessage, errPrefix, data); });
+            line => { CountAndFilter(ref errLines, ref printOutMessage, line); });
         standardOutput.Start();
         standardError.Start();
 
@@ -75,14 +75,14 @@ public static class RunCommand
                 Thread.Yield();
             }
         }
-        if (outLines > 0 || errLines > 0)
+        if (IsVerbose && (outLines > 0 || errLines > 0))
         {
-            Form1.AddLine(".cmd", $"{outPrefix} end");
+            Form1.AddLine($".{linePrefix}", $"{prefix} end");
         }
-        readExitCode(outPrefix, process.ExitCode);
+        readExitCode(linePrefix, prefix, process.ExitCode);
         return process.ExitCode;
 
-        void CountAndFilter(ref int counter, ref bool printStartMessage, string linePrefix, string line)
+        void CountAndFilter(ref int counter, ref bool printStartMessage, string line)
         {
             if (string.IsNullOrWhiteSpace(line))
             {
@@ -91,7 +91,7 @@ public static class RunCommand
             if (printStartMessage)
             {
                 printStartMessage = false;
-                Form1.AddLine(".cmd", $"{outPrefix} start");
+                Form1.AddLine($".{linePrefix}", $"{prefix} start");
             }
             counter += 1;
             readOutput(linePrefix, line);

@@ -45,7 +45,7 @@ public static class Files
         }
     }
 
-    public static void UpdateAutoBuildSettings(BuildSettings settings)
+    public static void LoadAutoBuildSettings(BuildSettings settings)
     {
         var path = Path.Combine(settings.WorkingDirectory, AutoBuildEnvironmentFilePath);
         Form1.AddLine(".file", $"{path}");
