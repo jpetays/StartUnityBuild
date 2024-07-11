@@ -122,7 +122,7 @@ public static class ProjectCommands
 
     public static List<Tuple<string, string>> GetCopyFiles(BuildSettings settings)
     {
-        var keys = settings.CopyFiles.Keys.ToList();
+        var keys = settings.CopyFilesBefore.Keys.ToList();
         keys.Sort();
         var result = new List<Tuple<string, string>>();
         for (var i = 0; i < keys.Count; ++i)
@@ -144,8 +144,8 @@ public static class ProjectCommands
             {
                 throw new InvalidOperationException($"invalid copy line keys: {sourceKey} vs {targetKey}");
             }
-            var source = settings.CopyFiles[sourceKey];
-            var target = settings.CopyFiles[targetKey];
+            var source = settings.CopyFilesBefore[sourceKey];
+            var target = settings.CopyFilesBefore[targetKey];
             result.Add(new Tuple<string, string>(source, target));
         }
         return result;

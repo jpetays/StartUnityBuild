@@ -69,7 +69,7 @@ public partial class Form1 : Form
         {
             LoadEnvironment();
             Text =
-                $"{_baseTitle} {_settings.UnityEditorVersion} - {_settings.ProductName} {_settings.ProductVersion}" +
+                $"{_baseTitle} {_settings.UnityEditorVersion} - {_settings.ProductName}" +
                 $" - Target{(_settings.BuildTargets.Count > 1 ? "" : "s")} [{string.Join(',', _settings.BuildTargets)}]" +
                 $" in {_settings.WorkingDirectory}";
             UpdateProjectInfo(_settings.BuildTargets.Count > 0 ? Color.Magenta : Color.Red);
@@ -171,15 +171,30 @@ public partial class Form1 : Form
                     () =>
                     {
                         GitCommands.GitRevert(
-                            _settings.WorkingDirectory, _settings.RevertFiles, ReleaseMenuCommandSync);
+                            _settings.WorkingDirectory, _settings.RevertFilesAfter, ReleaseMenuCommandSync);
                     });
             });
+
+        if (_settings.CopyDirectoriesAfter.Count == 0)
+        {
+            postProcessToolStripMenuItem.Enabled = false;
+        }
+        else
+        {
+            SetCaption(postProcessToolStripMenuItem, ++order);
+            postProcessToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing", PostProcessBuild);
+        }
         return;
 
         void SetCaption(ToolStripItem item, int itemNumber)
         {
             item.Text = $"[{itemNumber}] {item.Text}";
         }
+    }
+
+    private void PostProcessBuild()
+    {
+        CopyCommands.CopyDirectories("source", "target", ReleaseMenuCommandSync);
     }
 
     private void UpdateProjectInfo(Color color)
@@ -300,7 +315,7 @@ public partial class Form1 : Form
         AddLine("Bundle", $"{_settings.BundleVersion}");
         AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
         bool exists;
-        if (_settings.CopyFiles.Count > 0)
+        if (_settings.CopyFilesBefore.Count > 0)
         {
             // This checks CopyFiles validity as well.
             var copyFiles = ProjectCommands.GetCopyFiles(_settings);
@@ -310,9 +325,9 @@ public partial class Form1 : Form
                 AddLine($"{(exists ? ".copy" : "ERROR")}", $"copy {tuple.Item1} to {tuple.Item2}");
             }
         }
-        if (_settings.RevertFiles.Count > 0)
+        if (_settings.RevertFilesAfter.Count > 0)
         {
-            foreach (var file in _settings.RevertFiles)
+            foreach (var file in _settings.RevertFilesAfter)
             {
                 var path = Path.Combine(".", file);
                 exists = File.Exists(path);

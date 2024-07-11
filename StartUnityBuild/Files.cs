@@ -52,8 +52,8 @@ public static class Files
         var path = Path.Combine(settings.WorkingDirectory, AutoBuildEnvironmentFilePath);
         Form1.AddLine(".file", $"{path}");
         settings.BuildTargets.Clear();
-        settings.CopyFiles.Clear();
-        settings.RevertFiles.Clear();
+        settings.CopyFilesBefore.Clear();
+        settings.RevertFilesAfter.Clear();
         foreach (var line in File.ReadAllLines(path)
                      .Where(x => !(string.IsNullOrEmpty(x) || x.StartsWith('#')) && x.Contains('=')))
         {
@@ -76,12 +76,12 @@ public static class Files
             }
             if (key.StartsWith("copy.") && (key.EndsWith(".source") || key.EndsWith(".target")))
             {
-                settings.CopyFiles.Add(key, value);
+                settings.CopyFilesBefore.Add(key, value);
                 continue;
             }
             if (key.StartsWith("revert.") && key.EndsWith(".file"))
             {
-                settings.RevertFiles.Add(value);
+                settings.RevertFilesAfter.Add(value);
             }
         }
     }

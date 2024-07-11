@@ -36,22 +36,23 @@ partial class Form1
         copyOutputToClipboardToolStripMenuItem = new ToolStripMenuItem();
         exitToolStripMenuItem = new ToolStripMenuItem();
         gitStatusToolStripMenuItem = new ToolStripMenuItem();
+        gitPullToolStripMenuItem = new ToolStripMenuItem();
         updateBuildToolStripMenuItem = new ToolStripMenuItem();
+        gitPushToolStripMenuItem = new ToolStripMenuItem();
         startBuildToolStripMenuItem = new ToolStripMenuItem();
         projectInfoToolStripMenuItem = new ToolStripMenuItem();
         listView1 = new ListView();
         label1 = new Label();
         timer1 = new System.Windows.Forms.Timer(components);
         fileSystemWatcher1 = new FileSystemWatcher();
-        gitPullToolStripMenuItem = new ToolStripMenuItem();
-        gitPushToolStripMenuItem = new ToolStripMenuItem();
+        postProcessToolStripMenuItem = new ToolStripMenuItem();
         menuStrip1.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize) fileSystemWatcher1).BeginInit();
         SuspendLayout();
         // 
         // menuStrip1
         // 
-        menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, gitStatusToolStripMenuItem, gitPullToolStripMenuItem, updateBuildToolStripMenuItem, gitPushToolStripMenuItem, startBuildToolStripMenuItem, projectInfoToolStripMenuItem });
+        menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, gitStatusToolStripMenuItem, gitPullToolStripMenuItem, updateBuildToolStripMenuItem, gitPushToolStripMenuItem, startBuildToolStripMenuItem, postProcessToolStripMenuItem, projectInfoToolStripMenuItem });
         menuStrip1.Location = new Point(0, 0);
         menuStrip1.Name = "menuStrip1";
         menuStrip1.Size = new Size(1063, 24);
@@ -89,11 +90,23 @@ partial class Form1
         gitStatusToolStripMenuItem.Size = new Size(69, 20);
         gitStatusToolStripMenuItem.Text = "Git Status";
         // 
+        // gitPullToolStripMenuItem
+        // 
+        gitPullToolStripMenuItem.Name = "gitPullToolStripMenuItem";
+        gitPullToolStripMenuItem.Size = new Size(57, 20);
+        gitPullToolStripMenuItem.Text = "Git Pull";
+        // 
         // updateBuildToolStripMenuItem
         // 
         updateBuildToolStripMenuItem.Name = "updateBuildToolStripMenuItem";
         updateBuildToolStripMenuItem.Size = new Size(87, 20);
         updateBuildToolStripMenuItem.Text = "Update Build";
+        // 
+        // gitPushToolStripMenuItem
+        // 
+        gitPushToolStripMenuItem.Name = "gitPushToolStripMenuItem";
+        gitPushToolStripMenuItem.Size = new Size(63, 20);
+        gitPushToolStripMenuItem.Text = "Git Push";
         // 
         // startBuildToolStripMenuItem
         // 
@@ -134,17 +147,11 @@ partial class Form1
         fileSystemWatcher1.EnableRaisingEvents = true;
         fileSystemWatcher1.SynchronizingObject = this;
         // 
-        // gitPullToolStripMenuItem
+        // postProcessToolStripMenuItem
         // 
-        gitPullToolStripMenuItem.Name = "gitPullToolStripMenuItem";
-        gitPullToolStripMenuItem.Size = new Size(57, 20);
-        gitPullToolStripMenuItem.Text = "Git Pull";
-        // 
-        // gitPushToolStripMenuItem
-        // 
-        gitPushToolStripMenuItem.Name = "gitPushToolStripMenuItem";
-        gitPushToolStripMenuItem.Size = new Size(63, 20);
-        gitPushToolStripMenuItem.Text = "Git Push";
+        postProcessToolStripMenuItem.Name = "postProcessToolStripMenuItem";
+        postProcessToolStripMenuItem.Size = new Size(85, 20);
+        postProcessToolStripMenuItem.Text = "Post Process";
         // 
         // Form1
         // 
@@ -182,4 +189,5 @@ partial class Form1
     private ToolStripMenuItem setProjectFolderToolStripMenuItem;
     private ToolStripMenuItem gitPullToolStripMenuItem;
     private ToolStripMenuItem gitPushToolStripMenuItem;
+    private ToolStripMenuItem postProcessToolStripMenuItem;
 }

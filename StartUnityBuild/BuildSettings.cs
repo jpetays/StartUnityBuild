@@ -45,12 +45,17 @@ public class BuildSettings(string workingDirectory)
     /// <summary>
     /// Copy files before build (source, target).
     /// </summary>
-    public Dictionary<string, string> CopyFiles { get; private set; } = [];
+    public Dictionary<string, string> CopyFilesBefore { get; private set; } = [];
 
     /// <summary>
     /// Revert files before build.
     /// </summary>
-    public List<string> RevertFiles { get; private set; } = [];
+    public List<string> RevertFilesAfter { get; private set; } = [];
+
+    /// <summary>
+    /// Copy directories after build (source, target).
+    /// </summary>
+    public Dictionary<string, string> CopyDirectoriesAfter { get; private set; } = [];
 
     /// <summary>
     /// UnityEditorVersion from ProjectVersion.txt.
