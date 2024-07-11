@@ -15,7 +15,7 @@ internal static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        var projectDirectory = ParseArgs();
+        var projectDirectory = ParseArgs(out var args);
         if (Directory.Exists(projectDirectory) && Files.HasProjectVersionFile(projectDirectory))
         {
             Directory.SetCurrentDirectory(projectDirectory);
@@ -29,47 +29,29 @@ internal static class Program
                 Directory.SetCurrentDirectory(projectDirectory);
             }
         }
-        Application.Run(new Form1());
+        Application.Run(new Form1(args.isTesting));
     }
 
-    private static string ParseArgs()
+    private class Args
     {
-        var verDate = "--verDate".ToLower();
-        var semVer = "--semVer".ToLower();
-        var dryRun = "--dryRun".ToLower();
-        var projectFolder = "--projectFolder".ToLower();
+        public bool isTesting;
+    }
 
-        var args = Environment.GetCommandLineArgs().ToList();
-        args.RemoveAt(0);
+    private static string ParseArgs(out Args args)
+    {
+        var isTesting = "--isTesting".ToLower();
+
+        var argsList = Environment.GetCommandLineArgs().ToList();
+        argsList.RemoveAt(0);
         var currentDirectory = Directory.GetCurrentDirectory();
-        using var enumerator = args.GetEnumerator();
+        args = new Args();
+        using var enumerator = argsList.GetEnumerator();
         while (enumerator.MoveNext())
         {
             var value = enumerator.Current.ToLower();
-            if (value == verDate)
+            if (value == isTesting)
             {
-                continue;
-            }
-            if (value == semVer)
-            {
-                continue;
-            }
-            if (value == dryRun)
-            {
-                continue;
-            }
-            if (value == projectFolder)
-            {
-                if (!enumerator.MoveNext())
-                {
-                    throw new ApplicationException($"required parameter after '{projectFolder}' is missing");
-                }
-                value = enumerator.Current;
-                if (!Directory.Exists(value))
-                {
-                    throw new ApplicationException($"'{projectFolder}' directory not found: {value}");
-                }
-                currentDirectory = value;
+                args.isTesting = true;
             }
         }
         return currentDirectory;

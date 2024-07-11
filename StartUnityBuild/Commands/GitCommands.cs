@@ -1,3 +1,5 @@
+using PrgBuild;
+
 namespace StartUnityBuild.Commands;
 
 /// <summary>
@@ -60,14 +62,34 @@ public static class GitCommands
         });
     }
 
-    public static void GitPush(string workingDirectory, string options, Action finished)
+    public static void GitCommitAnPushWithLabel(BuildSettings settings, string options, Action finished)
     {
-        const string outPrefix = "push";
         Task.Run(async () =>
         {
-            var gitCommand = $"push {options} origin main";
-            Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
-            await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+            var message = $"auto update version {settings.ProductVersion}";
+            var tagName = $"auto_build_{DateTime.Today:yyyy-MM-dd}_version_{settings.ProductVersion}";
+            var files = new List<string>
+            {
+                "ProjectSettings/ProjectSettings.asset",
+                BuildInfoUpdater.GetGFitPath(settings.WorkingDirectory, settings.BuildInfoFilename),
+            };
+            var getVerb = "commit";
+            var gitCommand = $"""{getVerb} -m "{message}" {string.Join(' ', files)}""";
+            Form1.AddLine($">{getVerb}", $"git {gitCommand}");
+            await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
+                null, Form1.OutputListener, Form1.ExitListener);
+
+            // Create a lightweight commit tag.
+            getVerb = "tag";
+            gitCommand = $"{getVerb} -f {tagName}";
+            Form1.AddLine($">{getVerb}", $"git {gitCommand}");
+            await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
+                null, Form1.OutputListener, Form1.ExitListener);
+
+            getVerb = "push";
+            gitCommand = $"{getVerb} {options} origin main";
+            Form1.AddLine($">{getVerb}", $"git {gitCommand}");
+            await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
             finished();
         });

@@ -29,7 +29,7 @@ public partial class Form1 : Form
     {
         RunCommand.IsVerbose = isTesting;
         var appVersion = Application.ProductVersion.Split('+')[0];
-        _baseTitle = $"Build {appVersion} UNITY";
+        _baseTitle = $"{(isTesting ? "*TEST* " : "")}Build {appVersion} UNITY";
         _instance = this;
         _settings = new BuildSettings(Directory.GetCurrentDirectory());
         InitializeComponent();
@@ -153,7 +153,7 @@ public partial class Form1 : Form
         }
         SetCaption(gitPushToolStripMenuItem, ++order);
         gitPushToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
-            () => { GitCommands.GitPush(_settings.WorkingDirectory, _settings.PushOptions, ReleaseMenuCommandSync); });
+            () => { GitCommands.GitCommitAnPushWithLabel(_settings, _settings.PushOptions, ReleaseMenuCommandSync); });
 
         SetCaption(startBuildToolStripMenuItem, ++order);
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Building",
