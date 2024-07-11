@@ -25,11 +25,10 @@ public partial class Form1 : Form
     private string _commandLabel = "";
     private DateTime _commandStartTime;
 
-    public Form1(bool isTesting = false)
+    public Form1()
     {
-        RunCommand.IsVerbose = isTesting;
         var appVersion = Application.ProductVersion.Split('+')[0];
-        _baseTitle = $"{(isTesting ? "*TEST* " : "")}Build {appVersion} UNITY";
+        _baseTitle = $"{(Args.Instance.IsTesting ? "*TEST* " : "")}Build {appVersion} UNITY";
         _instance = this;
         _settings = new BuildSettings(Directory.GetCurrentDirectory());
         InitializeComponent();
@@ -47,7 +46,7 @@ public partial class Form1 : Form
         label1.Text = "";
         timer1.Interval = 1000;
 
-        SetupMenuCommands(isTesting);
+        SetupMenuCommands();
     }
 
     protected override void OnLoad(EventArgs e)
@@ -117,7 +116,7 @@ public partial class Form1 : Form
         LoadProject();
     }
 
-    private void SetupMenuCommands(bool isTesting)
+    private void SetupMenuCommands()
     {
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
@@ -147,7 +146,7 @@ public partial class Form1 : Form
                     PlayNotification();
                 });
         });
-        if (isTesting)
+        if (Args.Instance.IsTesting)
         {
             _settings.PushOptions = "--dry-run";
         }

@@ -8,8 +8,6 @@ namespace StartUnityBuild.Commands;
 /// </summary>
 public static class RunCommand
 {
-    public static bool IsVerbose;
-
     public static async Task<int> Execute(string prefix, string fileName, string arguments,
         string workingDirectory, Dictionary<string, string>? environmentVariables,
         Action<string, string> readOutput, Action<string, string, int> readExitCode)
@@ -47,7 +45,7 @@ public static class RunCommand
         }
         var linePrefix = $"[{process.Id:x}]";
         var outLines = 0;
-        var printOutMessage = IsVerbose;
+        var printOutMessage = Args.Instance.IsTesting;
         var errLines = 0;
         var standardOutput = new AsyncStreamReader(process.StandardOutput,
             line => { CountAndFilter(ref outLines, ref printOutMessage, line); });
@@ -75,7 +73,7 @@ public static class RunCommand
                 Thread.Yield();
             }
         }
-        if (IsVerbose && (outLines > 0 || errLines > 0))
+        if (Args.Instance.IsTesting && (outLines > 0 || errLines > 0))
         {
             Form1.AddLine($".{linePrefix}", $"{prefix} end");
         }

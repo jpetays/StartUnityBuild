@@ -9,8 +9,6 @@ public static class BuildCommands
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    private static string Quoted(string path) => path.Contains(' ') ? $"\"{path}\"" : path;
-
     /// <summary>
     /// Calls UNITY side "build command" whose output is:<br />
     /// - final binary if successful in output folder
@@ -44,8 +42,8 @@ public static class BuildCommands
                 var outputLogMetafile = $"{outputLogFile}.meta";
                 PrepareFilesForBuild();
                 var arguments =
-                    $" -buildTarget {buildTarget} -projectPath {Quoted(projectPath)}" +
-                    $" -logFile {Quoted(buildLogFile)}" +
+                    $" -buildTarget {buildTarget} -projectPath {Files.Quoted(projectPath)}" +
+                    $" -logFile {Files.Quoted(buildLogFile)}" +
                     $" -executeMethod {executeMethod} -quit -batchmode";
                 Form1.AddLine($".{outPrefix}", $"executable: {executable}");
                 Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");

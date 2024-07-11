@@ -15,7 +15,7 @@ internal static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        var projectDirectory = ParseArgs(out var args);
+        var projectDirectory = Args.ParseArgs(out var args);
         if (Directory.Exists(projectDirectory) && Files.HasProjectVersionFile(projectDirectory))
         {
             Directory.SetCurrentDirectory(projectDirectory);
@@ -29,15 +29,24 @@ internal static class Program
                 Directory.SetCurrentDirectory(projectDirectory);
             }
         }
-        Application.Run(new Form1(args.isTesting));
+        Application.Run(new Form1());
     }
+}
 
-    private class Args
+public class Args
+{
+    public bool IsTesting { get; private set; }
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    public static Args Instance;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+    private Args()
     {
-        public bool isTesting;
+        Instance = this;
     }
 
-    private static string ParseArgs(out Args args)
+    public static string ParseArgs(out Args args)
     {
         var isTesting = "--isTesting".ToLower();
 
@@ -51,7 +60,7 @@ internal static class Program
             var value = enumerator.Current.ToLower();
             if (value == isTesting)
             {
-                args.isTesting = true;
+                args.IsTesting = true;
             }
         }
         return currentDirectory;

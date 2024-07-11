@@ -15,6 +15,8 @@ public static class Files
     private const string ProjectVersionFileName = "ProjectVersion.txt";
     private static readonly string AutoBuildEnvironmentFilePath = Path.Combine("etc", "batchBuild", "_auto_build.env");
 
+    public static string Quoted(string path) => path.Contains(' ') ? $"\"{path}\"" : path;
+
     public static string GetAssetFolder(string workingDirectory) => Path.Combine(workingDirectory, "Assets");
 
     public static bool HasProjectVersionFile(string workingDirectory)
