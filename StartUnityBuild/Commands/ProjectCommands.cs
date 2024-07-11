@@ -23,7 +23,7 @@ public static class ProjectCommands
             {
                 UpdateProjectSettings();
                 UpdateBuildProperties();
-                CopyFiles();
+                Form1.AddLine($">{outPrefix}", "Update done");
                 finished(true);
             }
             catch (Exception x)
@@ -96,17 +96,28 @@ public static class ProjectCommands
                     Form1.AddLine($".{outPrefix}", $"Did not update BuildProperties {shortName}, it is same");
                 }
             }
-
-            void CopyFiles()
-            {
-                var copyFiles = GetCopyFiles(settings);
-                foreach (var tuple in copyFiles)
-                {
-                    Form1.AddLine($">{outPrefix}", $"copy {tuple.Item1} to {tuple.Item2}");
-                    File.Copy(tuple.Item1, tuple.Item2, overwrite: true);
-                }
-            }
         });
+    }
+
+    public static bool CopyFiles(BuildSettings settings)
+    {
+        const string outPrefix = "copy";
+        try
+        {
+            var copyFiles = GetCopyFiles(settings);
+            foreach (var tuple in copyFiles)
+            {
+                Form1.AddLine($">{outPrefix}", $"copy {tuple.Item1} to {tuple.Item2}");
+                File.Copy(tuple.Item1, tuple.Item2, overwrite: true);
+            }
+            return true;
+        }
+        catch (Exception x)
+        {
+            Form1.AddLine("ERROR", $"Copy failed: {x.GetType().Name} {x.Message}");
+            Logger.Trace(x.StackTrace);
+            return false;
+        }
     }
 
     public static List<Tuple<string, string>> GetCopyFiles(BuildSettings settings)

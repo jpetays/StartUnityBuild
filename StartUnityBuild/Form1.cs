@@ -159,11 +159,20 @@ public partial class Form1 : Form
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Building",
             () =>
             {
+                // (1) Copy required (secret) files for build.
+                // (2) Build the project.
+                // (3) Revert copied and/or changed files.
+                if (!ProjectCommands.CopyFiles(_settings))
+                {
+                    AddLine("ERROR", $"Unable to start build: can not copy required 'build project' files");
+                    ReleaseMenuCommandSync();
+                    return;
+                }
                 BuildCommands.BuildPlayer(_settings,
                     () =>
                     {
-                        GitCommands.GitRevert(_settings.WorkingDirectory, _settings.RevertFiles,
-                            ReleaseMenuCommandSync);
+                        GitCommands.GitRevert(
+                            _settings.WorkingDirectory, _settings.RevertFiles, ReleaseMenuCommandSync);
                     });
             });
         return;
