@@ -126,19 +126,16 @@ public partial class Form1 : Form
             var duration = DateTime.Now - _commandStartTime;
             SetStatus($"{_commandLabel} {duration:mm':'ss}", Color.Green);
         };
-        gitStatusToolStripMenuItem.Text = $"[{gitStatusToolStripMenuItem.Text}]";
+        var order = -1;
+        SetCaption(gitStatusToolStripMenuItem, ++order);
         gitStatusToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
             () => { GitCommands.GitStatus(_settings.WorkingDirectory, ReleaseMenuCommandSync); });
 
-        gitPullToolStripMenuItem.Text = $"[{gitPullToolStripMenuItem.Text}]";
+        SetCaption(gitPullToolStripMenuItem, ++order);
         gitPullToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
             () => { GitCommands.GitPull(_settings.WorkingDirectory, ReleaseMenuCommandSync); });
 
-        gitPushToolStripMenuItem.Text = $"[{gitPushToolStripMenuItem.Text}]";
-        gitPushToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
-            () => { GitCommands.GitPush(_settings.WorkingDirectory, _settings.PushOptions, ReleaseMenuCommandSync); });
-
-        updateBuildToolStripMenuItem.Text = $"[{updateBuildToolStripMenuItem.Text}]";
+        SetCaption(updateBuildToolStripMenuItem, ++order);
         updateBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Updating", () =>
         {
             ProjectCommands.ModifyProject(_settings,
@@ -149,7 +146,11 @@ public partial class Form1 : Form
                     PlayNotification();
                 });
         });
-        startBuildToolStripMenuItem.Text = $"[{startBuildToolStripMenuItem.Text}]";
+        SetCaption(gitPushToolStripMenuItem, ++order);
+        gitPushToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
+            () => { GitCommands.GitPush(_settings.WorkingDirectory, _settings.PushOptions, ReleaseMenuCommandSync); });
+
+        SetCaption(startBuildToolStripMenuItem, ++order);
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Building",
             () =>
             {
@@ -160,6 +161,12 @@ public partial class Form1 : Form
                             ReleaseMenuCommandSync);
                     });
             });
+        return;
+
+        void SetCaption(ToolStripMenuItem item, int order)
+        {
+            item.Text = $"[{order}] {item.Text}";
+        }
     }
 
     private void UpdateProjectInfo(Color color)
@@ -313,12 +320,17 @@ public partial class Form1 : Form
         {
             _settings.UnityExecutable = _settings.UnityPath.Replace("$VERSION$", _settings.UnityEditorVersion);
             exists = File.Exists(_settings.UnityExecutable);
-            AddLine($"{(exists ? "." : "")}Executable", $"{(exists ? "" : "-")}{_settings.UnityExecutable}");
+            AddLine($"{(exists ? ".file" : "ERROR")}", $"{_settings.UnityExecutable}");
+            if (!exists)
+            {
+                AddLine("ERROR",
+                    $"UnityExecutable not found for path '{_settings.UnityPath}' and version '{_settings.UnityEditorVersion}'");
+            }
         }
         else
         {
             AddLine("ERROR",
-                $"UnityExecutable not found for path '{_settings.UnityPath}' and version '{_settings.UnityEditorVersion}'");
+                $"UnityExecutable error with path '{_settings.UnityPath}' and version '{_settings.UnityEditorVersion}'");
         }
     }
 
