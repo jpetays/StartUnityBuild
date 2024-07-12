@@ -322,7 +322,7 @@ public partial class Form1 : Form
         bool exists;
         if (_settings.CopyFilesBefore.Count > 0)
         {
-            // This checks CopyFiles validity as well.
+            // This checks some CopyFiles validity as well.
             var copyFiles = Files.GetCopyFiles(_settings);
             foreach (var tuple in copyFiles)
             {
@@ -339,9 +339,9 @@ public partial class Form1 : Form
                 AddLine($"{(exists ? ".revert" : "ERROR")}", $"git revert {path}");
             }
         }
-        if (_settings.CopyDirectoriesAfter.Count > 0)
+        if (_settings.HasPostProcessingFor(BuildName.WebGL))
         {
-            // This checks CopyDirectories validity as well.
+            // This checks some CopyDirectories validity as well.
             var copyDirs = Files.GetCopyDirs(_settings, BuildName.WebGL);
             foreach (var tuple in copyDirs)
             {

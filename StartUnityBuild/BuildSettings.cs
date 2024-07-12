@@ -74,6 +74,10 @@ public class BuildSettings(string workingDirectory)
 
     public bool HasPostProcessingFor(string buildTarget)
     {
+        if (!BuildTargets.Contains(buildTarget))
+        {
+            return false;
+        }
         var buildTargetPart = $".{buildTarget}.";
         return CopyDirectoriesAfter.Keys.Any(x => x.Contains(buildTargetPart));
     }
