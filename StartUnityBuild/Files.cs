@@ -37,8 +37,6 @@ public static class Files
     public static string ExpandUniqueName(string path, string uniqueName) =>
         path.Replace(UniqueNameName, uniqueName);
 
-    public static string PseudoRandomString(int chars) => DateTime.Now.Ticks.ToString()[^chars..];
-
     public static bool HasProjectVersionFile(string workingDirectory)
     {
         var path = Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectVersionFileName);

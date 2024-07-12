@@ -1,3 +1,5 @@
+using PrgFrame.Util;
+
 namespace StartUnityBuild;
 
 /// <summary>
@@ -83,7 +85,7 @@ public class BuildSettings(string workingDirectory)
     }
 
     public string UniqueBuildName =>
-        $"{Files.SanitizePath(ProductVersion).Replace('.', '_')}_{DateTime.Today.DayOfYear}_{Files.PseudoRandomString(6)}";
+        $"{Files.SanitizePath(ProductVersion).Replace('.', '_')}_{DateTime.Today.DayOfYear}_{RandomUtil.StringFromTicks(6)}";
 
     public override string ToString()
     {

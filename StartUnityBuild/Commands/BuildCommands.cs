@@ -1,4 +1,5 @@
 using NLog;
+using PrgFrame.Util;
 
 namespace StartUnityBuild.Commands;
 
@@ -112,7 +113,7 @@ public static class BuildCommands
                                          assetBundleVariant:_
 
                                        """;
-        var ticks = Files.PseudoRandomString(6);
+        var ticks = RandomUtil.StringFromTicks(6);
         var randomGuid = $"e6a1509ef46ba1d3ba55c8e8ce{ticks}";
         File.WriteAllText(metaFilename, metaFileContent
             .Replace("142774e6a1509ef46ba1d3ba55c8e8ce", randomGuid)
