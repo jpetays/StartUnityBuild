@@ -4,7 +4,7 @@ using System.Text;
 namespace StartUnityBuild;
 
 /// <summary>
-/// Utilities for project and build system specific files.
+/// Utilities and constants for project and build system specific files.
 /// </summary>
 public static class Files
 {
@@ -12,12 +12,16 @@ public static class Files
 
     public const string ProjectSettingsFolderName = "ProjectSettings";
     public const string ProjectSettingsFileName = "ProjectSettings.asset";
+
     private const string ProjectVersionFileName = "ProjectVersion.txt";
+    private const string UnityVersionName = "$UNITY_VERSION$";
     private static readonly string AutoBuildEnvironmentFilePath = Path.Combine("etc", "batchBuild", "_auto_build.env");
 
     public static string Quoted(string path) => path.Contains(' ') ? $"\"{path}\"" : path;
 
     public static string GetAssetFolder(string workingDirectory) => Path.Combine(workingDirectory, "Assets");
+
+    public static string ExpandUnityPath(string path, string unityVersion) => path.Replace(UnityVersionName, unityVersion);
 
     public static bool HasProjectVersionFile(string workingDirectory)
     {

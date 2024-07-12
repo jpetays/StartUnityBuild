@@ -346,7 +346,7 @@ public partial class Form1 : Form
             !string.IsNullOrEmpty(_settings.UnityPath) && !string.IsNullOrEmpty(_settings.UnityEditorVersion);
         if (setUnityExecutablePath)
         {
-            _settings.UnityExecutable = _settings.UnityPath.Replace("$VERSION$", _settings.UnityEditorVersion);
+            _settings.UnityExecutable = Files.ExpandUnityPath(_settings.UnityPath, _settings.UnityEditorVersion);
             exists = File.Exists(_settings.UnityExecutable);
             AddLine($"{(exists ? ".file" : "ERROR")}", $"{_settings.UnityExecutable}");
             if (!exists)
