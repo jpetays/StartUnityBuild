@@ -104,7 +104,7 @@ public static class ProjectCommands
         const string outPrefix = "copy";
         try
         {
-            var copyFiles = GetCopyFiles(settings);
+            var copyFiles = Files.GetCopyFiles(settings);
             foreach (var tuple in copyFiles)
             {
                 Form1.AddLine($">{outPrefix}", $"copy {tuple.Item1} to {tuple.Item2}");
@@ -118,36 +118,5 @@ public static class ProjectCommands
             Logger.Trace(x.StackTrace);
             return false;
         }
-    }
-
-    public static List<Tuple<string, string>> GetCopyFiles(BuildSettings settings)
-    {
-        var keys = settings.CopyFilesBefore.Keys.ToList();
-        keys.Sort();
-        var result = new List<Tuple<string, string>>();
-        for (var i = 0; i < keys.Count; ++i)
-        {
-            var sourceKey = keys[i];
-            if (!sourceKey.EndsWith(".source"))
-            {
-                throw new InvalidOperationException($"invalid format for copy.N.source key: {sourceKey}");
-            }
-            i += 1;
-            var targetKey = keys[i];
-            if (!targetKey.EndsWith(".target"))
-            {
-                throw new InvalidOperationException($"invalid format for copy.N.target key: {targetKey}");
-            }
-            var n1 = sourceKey.Split('.')[1];
-            var n2 = sourceKey.Split('.')[1];
-            if (n1 != n2)
-            {
-                throw new InvalidOperationException($"invalid copy line keys: {sourceKey} vs {targetKey}");
-            }
-            var source = settings.CopyFilesBefore[sourceKey];
-            var target = settings.CopyFilesBefore[targetKey];
-            result.Add(new Tuple<string, string>(source, target));
-        }
-        return result;
     }
 }

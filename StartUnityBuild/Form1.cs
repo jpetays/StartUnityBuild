@@ -318,7 +318,7 @@ public partial class Form1 : Form
         if (_settings.CopyFilesBefore.Count > 0)
         {
             // This checks CopyFiles validity as well.
-            var copyFiles = ProjectCommands.GetCopyFiles(_settings);
+            var copyFiles = Files.GetCopyFiles(_settings);
             foreach (var tuple in copyFiles)
             {
                 exists = File.Exists(tuple.Item1);
@@ -332,6 +332,16 @@ public partial class Form1 : Form
                 var path = Path.Combine(".", file);
                 exists = File.Exists(path);
                 AddLine($"{(exists ? ".revert" : "ERROR")}", $"git revert {path}");
+            }
+        }
+        if (_settings.CopyDirectoriesAfter.Count > 0)
+        {
+            // This checks CopyDirectories validity as well.
+            var copyDirs = Files.GetCopyDirs(_settings, BuildName.WebGL);
+            foreach (var tuple in copyDirs)
+            {
+                exists = Directory.Exists(tuple.Item1);
+                AddLine($"{(exists ? ".copy" : "copy")}", $"{(exists ? "" : "-")}copy {tuple.Item1} to {tuple.Item2}");
             }
         }
         var assetFolder = Files.GetAssetFolder(_settings.WorkingDirectory);
