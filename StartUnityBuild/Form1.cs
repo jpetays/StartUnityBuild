@@ -175,7 +175,7 @@ public partial class Form1 : Form
                     });
             });
 
-        if (_settings.CopyDirectoriesAfter.Count == 0)
+        if (_settings.HasPostProcessingFor(BuildName.WebGL))
         {
             postProcessToolStripMenuItem.Enabled = false;
         }
@@ -194,7 +194,12 @@ public partial class Form1 : Form
 
     private void PostProcessBuild()
     {
-        CopyCommands.CopyDirectories("source", "target", ReleaseMenuCommandSync);
+        var copyDirs = Files.GetCopyDirs(_settings, BuildName.WebGL);
+        foreach (var tuple in copyDirs)
+        {
+            var outputDir = Files.ExpandUniqueName(tuple.Item2, _settings.UniqueBuildName);
+            CopyCommands.CopyDirectories(tuple.Item1, outputDir, ReleaseMenuCommandSync);
+        }
     }
 
     private void UpdateProjectInfo(Color color)

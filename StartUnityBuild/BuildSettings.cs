@@ -72,6 +72,15 @@ public class BuildSettings(string workingDirectory)
     /// </summary>
     public string UnityExecutable { get; set; } = "";
 
+    public bool HasPostProcessingFor(string buildTarget)
+    {
+        var buildTargetPart = $".{buildTarget}.";
+        return CopyDirectoriesAfter.Keys.Any(x => x.Contains(buildTargetPart));
+    }
+
+    public string UniqueBuildName =>
+        $"{Files.SanitizePath(ProductVersion).Replace('.', '_')}_{DateTime.Today.DayOfYear}_{Files.PseudoRandomString(6)}";
+
     public override string ToString()
     {
         return $"Product: {ProductName} Version: {ProductVersion} Bundle: {BundleVersion}";

@@ -24,6 +24,7 @@ public static class Files
     private const string ProjectVersionFileName = "ProjectVersion.txt";
     private const string UnityVersionName = "$UNITY_VERSION$";
     private const string BuildTargetName = "$BUILD_TARGET$";
+    private const string UniqueNameName = "$UNIQUE_NAME$";
     private static readonly string AutoBuildEnvironmentFilePath = Path.Combine("etc", "batchBuild", "_auto_build.env");
 
     public static string Quoted(string path) => path.Contains(' ') ? $"\"{path}\"" : path;
@@ -33,10 +34,38 @@ public static class Files
     public static string ExpandUnityPath(string path, string unityVersion) =>
         path.Replace(UnityVersionName, unityVersion);
 
+    public static string ExpandUniqueName(string path, string uniqueName) =>
+        path.Replace(UniqueNameName, uniqueName);
+
+    public static string PseudoRandomString(int chars) => DateTime.Now.Ticks.ToString()[^chars..];
+
     public static bool HasProjectVersionFile(string workingDirectory)
     {
         var path = Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectVersionFileName);
         return File.Exists(path);
+    }
+
+    public static string SanitizePath(string path)
+    {
+        // https://www.mtu.edu/umc/services/websites/writing/characters-avoid/
+        var illegalCharacters = new[]
+        {
+            '#', '<', '$', '+',
+            '%', '>', '!', '`',
+            '&', '*', '\'', '|',
+            '{', '?', '"', '=',
+            '}', '/', ':', '@',
+            '\\', ' '
+        };
+        for (var i = 0; i < path.Length; ++i)
+        {
+            var c = path[i];
+            if (illegalCharacters.Contains(c))
+            {
+                path = path.Replace(c, '_');
+            }
+        }
+        return path;
     }
 
     [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]

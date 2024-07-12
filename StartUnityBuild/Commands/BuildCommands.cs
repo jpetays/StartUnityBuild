@@ -112,7 +112,7 @@ public static class BuildCommands
                                          assetBundleVariant:_
 
                                        """;
-        var ticks = DateTime.Now.Ticks.ToString()[^6..];
+        var ticks = Files.PseudoRandomString(6);
         var randomGuid = $"e6a1509ef46ba1d3ba55c8e8ce{ticks}";
         File.WriteAllText(metaFilename, metaFileContent
             .Replace("142774e6a1509ef46ba1d3ba55c8e8ce", randomGuid)
