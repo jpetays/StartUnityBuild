@@ -24,10 +24,11 @@ public static class BuildCommands
         Task.Run(async () =>
         {
             var success = false;
-            foreach (var buildTarget in settings.BuildTargets)
+            for (var i = 0; i < 2; ++i)
             {
+                var buildTarget = settings.BuildTargets[i];
                 success = await BuildTarget(buildTarget);
-                ProjectCommands.WriteBuildLogEntry(settings, buildTarget, success);
+                settings.BuildResult[i] = success;
                 if (!success)
                 {
                     break;

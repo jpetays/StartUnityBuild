@@ -20,6 +20,7 @@ public static class Files
 
     public const string ProjectSettingsFolderName = "ProjectSettings";
     public const string ProjectSettingsFileName = "ProjectSettings.asset";
+    public const string ReleaseNotesFileName = "releasenotes.txt";
 
     private const string ProjectVersionFileName = "ProjectVersion.txt";
     private const string UnityVersionName = "$UNITY_VERSION$";
@@ -30,6 +31,9 @@ public static class Files
     public static string Quoted(string path) => path.Contains(' ') ? $"\"{path}\"" : path;
 
     public static string GetAssetFolder(string workingDirectory) => Path.Combine(workingDirectory, "Assets");
+
+    public static string GetResourcesFolder(string workingDirectory) =>
+        Path.Combine(workingDirectory, "Assets", "Resources");
 
     public static string ExpandUnityPath(string path, string unityVersion) =>
         path.Replace(UnityVersionName, unityVersion);
@@ -107,6 +111,7 @@ public static class Files
                 foreach (var target in targets)
                 {
                     settings.BuildTargets.Add(target.Trim());
+                    settings.BuildResult.Add(false);
                 }
                 continue;
             }

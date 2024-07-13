@@ -40,6 +40,11 @@ public class BuildSettings(string workingDirectory)
     public List<string> BuildTargets { get; private set; } = [];
 
     /// <summary>
+    /// Build results from build command.
+    /// </summary>
+    public List<bool> BuildResult { get; private set; } = [];
+
+    /// <summary>
     /// Git options for push command.
     /// </summary>
     public string PushOptions { get; set; } = "";
@@ -122,6 +127,12 @@ public class BuildSettings(string workingDirectory)
         }
         var buildTargetPart = $".{buildTarget}.";
         return CopyDirectoriesAfter.Keys.Any(x => x.Contains(buildTargetPart));
+    }
+
+    public bool BuildSucceeded(string buildTarget)
+    {
+        var index = BuildTargets.FindIndex(x => x == buildTarget);
+        return index == -1 || BuildResult[index];
     }
 
     /// <summary>

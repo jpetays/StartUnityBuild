@@ -25,15 +25,29 @@ public static class ProjectCommands
         }
         var linkLabel = $"{settings.ProductVersion}";
         var linkHref = $"{StripEnd(settings.WebGlHostName)}/{StripStart(webGlFolderName)}";
-        var releaseNotes =
-            @"In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before the final copy is available. Wikipedia";
+        var releaseNotes = GetReleaseNotesText();
         var buildLogEntryFile = @$".\etc\_local_build_{buildTarget}.build.history.json";
-        WriteBuildLogEntry(DateTime.Today, linkLabel, linkHref, releaseNotes, buildLogEntryFile);
+        WriteBuildLogEntry(DateTime.Now, linkLabel, linkHref, releaseNotes, buildLogEntryFile);
         return;
 
         string StripStart(string path) => path.StartsWith('/') ? path[1..] : path;
 
         string StripEnd(string path) => path.EndsWith('/') ? path[..^1] : path;
+
+        string GetReleaseNotesText()
+        {
+            var resourcesFolder = Files.GetResourcesFolder(settings.WorkingDirectory);
+            var path = Path.Combine(resourcesFolder, Files.ReleaseNotesFileName);
+            if (File.Exists(path))
+            {
+                foreach (var line in File.ReadAllLines(path)
+                             .Where(x => !string.IsNullOrEmpty(x)))
+                {
+                    return line;
+                }
+            }
+            return $"{settings.ProductName} {settings.ProductVersion} built on {DateTime.Today:yyyy-MM-dd}";
+        }
     }
 
     public static void ModifyProject(BuildSettings settings, Action<bool> finished)
@@ -149,10 +163,10 @@ public static class ProjectCommands
         string jsonFilename)
     {
         var entries = Serializer.LoadStateJson<BuildLogEntries>(jsonFilename) ?? new BuildLogEntries();
-        entries.List.Add(new BuildLogEntry()
+        entries.List.Insert(0, new BuildLogEntry
         {
             Ver = "1",
-            Date = $"{date:yyyy-MM-dd}",
+            Date = $"{date:yyyy-MM-dd HH:mm}",
             Label = linkLabel,
             HRef = linkHref,
             Notes = releaseNotes

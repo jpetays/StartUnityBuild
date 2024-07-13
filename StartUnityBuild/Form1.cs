@@ -199,8 +199,15 @@ public partial class Form1 : Form
     {
         if (!_settings.HasPostProcessingFor(BuildName.WebGL))
         {
+            AddLine("ERROR", $"{BuildName.WebGL} build is not in selected build targets");
             return;
         }
+        if (!_settings.BuildSucceeded(BuildName.WebGL))
+        {
+            AddLine("ERROR", $"{BuildName.WebGL} build was not successful, can not post process!");
+            return;
+        }
+        ProjectCommands.WriteBuildLogEntry(_settings, BuildName.WebGL, true);
         CopyCommands.CopyDirectories(_settings.WebGlBuildDir, _settings.WebGlFolderName, ReleaseMenuCommandSync);
     }
 
