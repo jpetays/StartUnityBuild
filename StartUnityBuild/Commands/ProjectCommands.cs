@@ -11,9 +11,9 @@ public static class ProjectCommands
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static void WriteBuildLogEntry(BuildSettings settings, bool isSuccess)
+    public static void WriteBuildLogEntry(BuildSettings settings, string buildTarget, bool isSuccess)
     {
-
+        var buildLogEntryFile = @$".\etc\_local_build_{buildTarget}.build.history.json";
     }
 
     public static void ModifyProject(BuildSettings settings, Action<bool> finished)

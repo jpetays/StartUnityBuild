@@ -27,6 +27,7 @@ public static class BuildCommands
             foreach (var buildTarget in settings.BuildTargets)
             {
                 success = await BuildTarget(buildTarget);
+                ProjectCommands.WriteBuildLogEntry(settings, buildTarget, success);
                 if (!success)
                 {
                     break;
@@ -117,9 +118,10 @@ public static class BuildCommands
                                        """;
         var ticks = RandomUtil.StringFromTicks(6);
         var randomGuid = $"e6a1509ef46ba1d3ba55c8e8ce{ticks}";
-        File.WriteAllText(metaFilename, metaFileContent
+        var content = metaFileContent
             .Replace("142774e6a1509ef46ba1d3ba55c8e8ce", randomGuid)
             .Replace('_', ' ')
-            .Replace("\r", ""));
+            .Replace("\r", "");
+        File.WriteAllText(metaFilename, content, Files.Encoding);
     }
 }

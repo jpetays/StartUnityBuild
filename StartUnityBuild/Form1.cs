@@ -172,7 +172,6 @@ public partial class Form1 : Form
                         GitCommands.GitRevert(
                             _settings.WorkingDirectory, _settings.RevertFilesAfter, () =>
                             {
-                                ProjectCommands.WriteBuildLogEntry(_settings, success);
                                 PlayNotification();
                                 ReleaseMenuCommandSync();
                             });

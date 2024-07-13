@@ -14,7 +14,7 @@ namespace StartUnityBuild
             var jsonString = JsonConvert.SerializeObject(dataObject);
             try
             {
-                File.WriteAllText(filename, jsonString);
+                File.WriteAllText(filename, jsonString, Encoding);
             }
             catch (Exception e)
             {
