@@ -167,11 +167,12 @@ public partial class Form1 : Form
                     return;
                 }
                 BuildCommands.BuildPlayer(_settings,
-                    () =>
+                    (success) =>
                     {
                         GitCommands.GitRevert(
                             _settings.WorkingDirectory, _settings.RevertFilesAfter, () =>
                             {
+                                ProjectCommands.WriteBuildLogEntry(_settings, success);
                                 PlayNotification();
                                 ReleaseMenuCommandSync();
                             });
@@ -200,7 +201,7 @@ public partial class Form1 : Form
         var copyDirs = Files.GetCopyDirs(_settings, BuildName.WebGL);
         foreach (var tuple in copyDirs)
         {
-            var outputDir = Files.ExpandUniqueName(tuple.Item2, _settings.UniqueBuildName);
+            var outputDir = Files.ExpandUniqueName(tuple.Item2, _settings.BuildSequenceName);
             CopyCommands.CopyDirectories(tuple.Item1, outputDir, ReleaseMenuCommandSync);
         }
     }

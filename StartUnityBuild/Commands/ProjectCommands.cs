@@ -11,6 +11,11 @@ public static class ProjectCommands
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    public static void WriteBuildLogEntry(BuildSettings settings, bool isSuccess)
+    {
+
+    }
+
     public static void ModifyProject(BuildSettings settings, Action<bool> finished)
     {
         const string outPrefix = "update";

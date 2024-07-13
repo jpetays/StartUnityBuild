@@ -74,6 +74,9 @@ public class BuildSettings(string workingDirectory)
     /// </summary>
     public string UnityExecutable { get; set; } = "";
 
+    /// <summary>
+    /// Checks that given build target contains post processing instructions.
+    /// </summary>
     public bool HasPostProcessingFor(string buildTarget)
     {
         if (!BuildTargets.Contains(buildTarget))
@@ -84,8 +87,24 @@ public class BuildSettings(string workingDirectory)
         return CopyDirectoriesAfter.Keys.Any(x => x.Contains(buildTargetPart));
     }
 
-    public string UniqueBuildName =>
-        $"{Files.SanitizePath(ProductVersion).Replace('.', '_')}_{DateTime.Today.DayOfYear}_{RandomUtil.StringFromTicks(6)}";
+    /// <summary>
+    /// Gets cached and lazy-initialized unique sequence name for this build settings instance
+    /// that is suitable to be used for example in file or folder names.
+    /// </summary>
+    public string BuildSequenceName
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_uniqueBuildName))
+            {
+                _uniqueBuildName =
+                    $"{Files.SanitizePath(ProductVersion).Replace('.', '_')}_{DateTime.Today.DayOfYear}_{RandomUtil.StringFromTicks(6)}";
+            }
+            return _uniqueBuildName;
+        }
+    }
+
+    private string _uniqueBuildName = "";
 
     public override string ToString()
     {

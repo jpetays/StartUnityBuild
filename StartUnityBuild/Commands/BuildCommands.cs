@@ -16,21 +16,26 @@ public static class BuildCommands
     /// - Win64.build.buildreport (UNITY BuildPipeline.BuildPlayer Build Report asset)
     /// - Win64.build.log.txt (copy of UNITY build log file created during build)
     /// </summary>
-    public static void BuildPlayer(BuildSettings settings, Action finished)
+    public static void BuildPlayer(BuildSettings settings, Action<bool> finished)
     {
         // For quick testing use: Editor.Demo.BuildTest.TestBuild
         const string executeMethod = "PrgBuild.Build.BuildPlayer";
         const string outPrefix = "build";
         Task.Run(async () =>
         {
+            var success = false;
             foreach (var buildTarget in settings.BuildTargets)
             {
-                await BuildTarget(buildTarget);
+                success = await BuildTarget(buildTarget);
+                if (!success)
+                {
+                    break;
+                }
             }
-            finished();
+            finished(success);
             return;
 
-            async Task BuildTarget(string buildTarget)
+            async Task<bool> BuildTarget(string buildTarget)
             {
                 Form1.AddLine($">{outPrefix}", $"build {buildTarget}");
                 var executable = settings.UnityExecutable;
@@ -50,9 +55,10 @@ public static class BuildCommands
                 Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
                 var result = await RunCommand.Execute(outPrefix, executable, arguments,
                     settings.WorkingDirectory, null, Form1.OutputListener, Form1.ExitListener);
-                Form1.AddExitCode(outPrefix, result, result == 0, showSuccess: true);
+                var isSuccess = result == 0;
+                Form1.AddExitCode(outPrefix, result, isSuccess, showSuccess: true);
                 HandleOutputFiles();
-                return;
+                return isSuccess;
 
                 #region Build Output File handling
 
