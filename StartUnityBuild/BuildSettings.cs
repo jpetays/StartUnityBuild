@@ -75,6 +75,43 @@ public class BuildSettings(string workingDirectory)
     public string UnityExecutable { get; set; } = "";
 
     /// <summary>
+    /// WebGl host name or path to folder for WebGL builds.
+    /// </summary>
+    public string WebGlHostName { get; set; } = "";
+
+    /// <summary>
+    /// Gets cached and lazy-initialized WebGl folder name where build output is copied in web server that hosts WebGl build.
+    /// </summary>
+    public string WebGlFolderName
+    {
+        get
+        {
+            // TODO: cache Files.GetCopyDirs for WebGL!
+            if (string.IsNullOrEmpty(_webGlFolderName))
+            {
+                var copyDirs = Files.GetCopyDirs(this, BuildName.WebGL);
+                _webGlFolderName = copyDirs.Count == 1
+                    ? Files.ExpandUniqueName(copyDirs[0].Item2, BuildSequenceName)
+                    : "";
+            }
+            return _webGlFolderName;
+        }
+    }
+
+    public string WebGlBuildDir
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_webGlBuildDir))
+            {
+                var copyDirs = Files.GetCopyDirs(this, BuildName.WebGL);
+                _webGlFolderName = copyDirs.Count == 1 ? copyDirs[0].Item1 : "";
+            }
+            return _webGlBuildDir;
+        }
+    }
+
+    /// <summary>
     /// Checks that given build target contains post processing instructions.
     /// </summary>
     public bool HasPostProcessingFor(string buildTarget)
@@ -104,6 +141,8 @@ public class BuildSettings(string workingDirectory)
         }
     }
 
+    private string _webGlFolderName = "";
+    private string _webGlBuildDir = "";
     private string _uniqueBuildName = "";
 
     public override string ToString()

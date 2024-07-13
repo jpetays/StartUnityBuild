@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using NLog;
 using Prg.Util;
 using PrgBuild;
@@ -13,7 +14,26 @@ public static class ProjectCommands
 
     public static void WriteBuildLogEntry(BuildSettings settings, string buildTarget, bool isSuccess)
     {
+        if (!isSuccess || !settings.HasPostProcessingFor(BuildName.WebGL))
+        {
+            return;
+        }
+        var webGlFolderName = Path.GetFileName(settings.WebGlFolderName);
+        if (string.IsNullOrWhiteSpace(webGlFolderName))
+        {
+            return;
+        }
+        var linkLabel = $"{settings.ProductVersion}";
+        var linkHref = $"{StripEnd(settings.WebGlHostName)}/{StripStart(webGlFolderName)}";
+        var releaseNotes =
+            @"In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before the final copy is available. Wikipedia";
         var buildLogEntryFile = @$".\etc\_local_build_{buildTarget}.build.history.json";
+        WriteBuildLogEntry(DateTime.Today, linkLabel, linkHref, releaseNotes, buildLogEntryFile);
+        return;
+
+        string StripStart(string path) => path.StartsWith('/') ? path[1..] : path;
+
+        string StripEnd(string path) => path.EndsWith('/') ? path[..^1] : path;
     }
 
     public static void ModifyProject(BuildSettings settings, Action<bool> finished)
@@ -123,5 +143,43 @@ public static class ProjectCommands
             Logger.Trace(x.StackTrace);
             return false;
         }
+    }
+
+    private static void WriteBuildLogEntry(DateTime date, string linkLabel, string linkHref, string releaseNotes,
+        string jsonFilename)
+    {
+        var entries = Serializer.LoadStateJson<BuildLogEntries>(jsonFilename) ?? new BuildLogEntries();
+        entries.List.Add(new BuildLogEntry()
+        {
+            Ver = "1",
+            Date = $"{date:yyyy-MM-dd}",
+            Label = linkLabel,
+            HRef = linkHref,
+            Notes = releaseNotes
+        });
+        Form1.AddLine($".info", $"Updated build history log {jsonFilename}, it has {entries.List.Count} entries");
+        Serializer.SaveStateJson(entries, jsonFilename);
+    }
+
+    /// <summary>
+    /// JSON serialized build log entry.<br />
+    /// This can be used for example to create table of content for all (recent) builds.
+    /// </summary>
+    private class BuildLogEntry
+    {
+        public string Ver { get; set; } = "";
+        public string Date { get; set; } = "";
+        public string Label { get; set; } = "";
+        public string HRef { get; set; } = "";
+        public string Notes { get; set; } = "";
+    }
+
+    /// <summary>
+    /// JSON serialized container for <c>BuildLogEntry</c> instances.
+    /// </summary>
+    [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Local")]
+    private class BuildLogEntries
+    {
+        public List<BuildLogEntry> List = [];
     }
 }

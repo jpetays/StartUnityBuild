@@ -167,7 +167,7 @@ public partial class Form1 : Form
                     return;
                 }
                 BuildCommands.BuildPlayer(_settings,
-                    (success) =>
+                    (_) =>
                     {
                         GitCommands.GitRevert(
                             _settings.WorkingDirectory, _settings.RevertFilesAfter, () =>
@@ -197,12 +197,11 @@ public partial class Form1 : Form
 
     private void PostProcessBuild()
     {
-        var copyDirs = Files.GetCopyDirs(_settings, BuildName.WebGL);
-        foreach (var tuple in copyDirs)
+        if (!_settings.HasPostProcessingFor(BuildName.WebGL))
         {
-            var outputDir = Files.ExpandUniqueName(tuple.Item2, _settings.BuildSequenceName);
-            CopyCommands.CopyDirectories(tuple.Item1, outputDir, ReleaseMenuCommandSync);
+            return;
         }
+        CopyCommands.CopyDirectories(_settings.WebGlBuildDir, _settings.WebGlFolderName, ReleaseMenuCommandSync);
     }
 
     private void UpdateProjectInfo(Color color)
