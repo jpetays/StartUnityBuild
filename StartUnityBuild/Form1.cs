@@ -404,6 +404,17 @@ public partial class Form1 : Form
         listView1.EndUpdate();
     }
 
+    private static void CopyLines()
+    {
+        var builder = new StringBuilder();
+        var listView = _instance.listView1;
+        foreach (var item in listView.Items)
+        {
+            builder.AppendLine(item is ListViewItem listViewItem ? listViewItem.Text : item.ToString());
+        }
+        Clipboard.SetText(builder.ToString());
+    }
+
     private static void AddLine(string line, Color? color = null)
     {
         if (_instance.InvokeRequired)
@@ -430,15 +441,16 @@ public partial class Form1 : Form
         listView.EnsureVisible(listView.Items.Count - 1);
     }
 
-    private static void CopyLines()
+    public static void AddExitCode(string prefix, int exitCode, bool isSuccess, bool showSuccess = true)
     {
-        var builder = new StringBuilder();
-        var listView = _instance.listView1;
-        foreach (var item in listView.Items)
+        if (isSuccess && !showSuccess)
         {
-            builder.AppendLine(item is ListViewItem listViewItem ? listViewItem.Text : item.ToString());
+            return;
         }
-        Clipboard.SetText(builder.ToString());
+        AddLine($"{prefix,-12}: command {prefix} {(isSuccess
+            ? "exited successfully"
+            : "execution failed")} ({exitCode})"
+            , isSuccess ? Color.Green : Color.Red);
     }
 
     public static void AddLine(string prefix, string content)
@@ -447,7 +459,7 @@ public partial class Form1 : Form
             : prefix.StartsWith('.') ? Color.Gray
             : prefix.StartsWith('>') ? Color.Blue
             : content.StartsWith('-') ? Color.Magenta
-            : content.StartsWith('+') || content.Contains("SUCCESSFULLY") ? Color.Green
+            : content.StartsWith('+') ? Color.Green
             : null;
         AddLine($"{prefix,-12}: {content}", color);
     }

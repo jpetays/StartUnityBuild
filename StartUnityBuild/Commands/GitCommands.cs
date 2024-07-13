@@ -14,12 +14,14 @@ public static class GitCommands
         {
             var gitCommand = "status --porcelain=v1";
             Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
-            await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+            var result = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
                 null, GitStatusFilter, Form1.ExitListener);
+            Form1.AddExitCode(outPrefix, result, result == 0, showSuccess: false);
             gitCommand = "log --pretty=oneline origin/main..HEAD";
             Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
-            await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+            result = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
                 null, GitLogFilter, Form1.ExitListener);
+            Form1.AddExitCode(outPrefix, result, result == 0, showSuccess: false);
             finished();
         });
         return;
@@ -56,8 +58,9 @@ public static class GitCommands
         {
             var gitCommand = "pull --rebase=true origin main";
             Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
-            await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+            var result = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
+            Form1.AddExitCode(outPrefix, result, result == 0, showSuccess: true);
             finished();
         });
     }
@@ -76,21 +79,24 @@ public static class GitCommands
             var getVerb = "commit";
             var gitCommand = $"""{getVerb} -m "{message}" {string.Join(' ', files)}""";
             Form1.AddLine($">{getVerb}", $"git {gitCommand}");
-            await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
+            var result = await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
+            Form1.AddExitCode(getVerb, result, result == 0, showSuccess: false);
 
             // Create a lightweight commit tag.
             getVerb = "tag";
             gitCommand = $"{getVerb} -f {tagName}";
             Form1.AddLine($">{getVerb}", $"git {gitCommand}");
-            await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
+            result = await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
+            Form1.AddExitCode(getVerb, result, result == 0, showSuccess: false);
 
             getVerb = "push";
             gitCommand = $"{getVerb} {options} origin main";
             Form1.AddLine($">{getVerb}", $"git {gitCommand}");
-            await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
+            result = await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
+            Form1.AddExitCode(getVerb, result, result == 0, showSuccess: true);
             finished();
         });
     }
@@ -107,8 +113,9 @@ public static class GitCommands
         {
             var gitCommand = $"checkout --force -- {string.Join(' ', files)}";
             Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
-            await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+            var result = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
+            Form1.AddExitCode(outPrefix, result, result == 0, showSuccess: true);
             finished();
         });
     }

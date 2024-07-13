@@ -24,8 +24,9 @@ public static class CopyCommands
                 copyOptions = $"{copyOptions} /L";
             }
             Form1.AddLine($">{outPrefix}", $"{copyCommand} {copyOptions}");
-            await RunCommand.Execute(outPrefix, $"{copyCommand}.exe", copyOptions, workingDirectory,
+            var result = await RunCommand.Execute(outPrefix, $"{copyCommand}.exe", copyOptions, workingDirectory,
                 null, OutputListenerFilter, Form1.ExitListener);
+            Form1.AddExitCode(outPrefix, result, result == 0, showSuccess: true);
             finished();
         });
         return;

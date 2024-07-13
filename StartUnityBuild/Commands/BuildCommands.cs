@@ -50,11 +50,7 @@ public static class BuildCommands
                 Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
                 var result = await RunCommand.Execute(outPrefix, executable, arguments,
                     settings.WorkingDirectory, null, Form1.OutputListener, Form1.ExitListener);
-                Form1.AddLine($">{outPrefix}", $"return code {result}");
-                if (result != 0)
-                {
-                    Form1.AddLine(outPrefix, $"- return code was not zero!");
-                }
+                Form1.AddExitCode(outPrefix, result, result == 0, showSuccess: true);
                 HandleOutputFiles();
                 return;
 
