@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Builds</title>
+    <style>
+        #builds {
+            font-family: Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 95%;
+            margin: 0 .5em 0 .5em;
+        }
+
+        #builds td, #builds th {
+            border: 1px solid #ddd;
+            padding-top: 16px;
+            padding-right: 8px;
+            padding-bottom: 16px;
+            padding-left: 8px;
+            margin: .5em;
+        }
+
+        #builds tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #builds tr:hover {
+            background-color: #ddd;
+        }
+
+        #builds th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #04AA6D;
+            color: white;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="builder.js"></script>
+</head>
+<body>
+<h2>Latest Builds</h2>
+<table id="builds">
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>Version</th>
+        <th>Notes</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+</body>
+</html>
