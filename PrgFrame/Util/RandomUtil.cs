@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace PrgFrame.Util
 {
@@ -18,7 +19,7 @@ namespace PrgFrame.Util
             {
                 len = 16;
             }
-            return DateTime.Now.Ticks.ToString()[^len..];
+            return string.Join("", DateTime.Now.Ticks.ToString()[^len..].ToCharArray().Reverse());
         }
 
         public static string StringFromGuid(int len)
