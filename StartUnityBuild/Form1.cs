@@ -143,7 +143,6 @@ public partial class Form1 : Form
                 {
                     ReleaseMenuCommandSync();
                     UpdateProjectInfo(updated ? Color.Green : Color.Red);
-                    PlayNotification();
                 });
         });
         if (Args.Instance.IsTesting)
@@ -171,7 +170,11 @@ public partial class Form1 : Form
                     () =>
                     {
                         GitCommands.GitRevert(
-                            _settings.WorkingDirectory, _settings.RevertFilesAfter, ReleaseMenuCommandSync);
+                            _settings.WorkingDirectory, _settings.RevertFilesAfter, () =>
+                            {
+                                PlayNotification();
+                                ReleaseMenuCommandSync();
+                            });
                     });
             });
 
