@@ -9,7 +9,7 @@ public static class CopyCommands
     {
         if (!Directory.Exists(sourceDir))
         {
-            Form1.AddLine("ERROR", $"source directory not found: {sourceDir}");
+            Form1.AddLine("ERROR", $"can not copy, source directory not found or is empty: {sourceDir}");
             finished();
             return;
         }
