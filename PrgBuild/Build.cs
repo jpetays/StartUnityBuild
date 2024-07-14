@@ -25,6 +25,7 @@ namespace PrgBuild
         /// <returns>0 on success<br />
         /// 1 on build failed<br />
         /// 2 on invalid arguments or error starting build
+        /// 10 is reserved to build tests
         /// </returns>
         public static void BuildPlayer()
         {
