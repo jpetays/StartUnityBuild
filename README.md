@@ -23,6 +23,12 @@ This is totally optional package is a history of old build needs to be available
 The build system requires and uses some files and folders for its configuration and operation.  
 Most of the files and folders has hard coded names or are given in configuration files itself.
 
+The UNITY application that is going to be built using the build system needs to have both `PrgBuild` and `PrgFrame` DLLs imported.  
+They can be copied with their respective .meta files from `DemoProject\Assets\PrgAssemblies` folder for minimal fuss.
+
+Working folder for `StartUnityBuild` executable should be set to be the same as the UNITY project that is going to be built.  
+Optionally it can be set from `File->Set Project Folder` menu that makes it global setting to be used if current working folder for `StartUnityBuild` is not actual UNITY project folder.
+
 #### Folders
 
 `.\etc\batchBuild` contains config file(s) for the build system.  
