@@ -353,6 +353,12 @@ public partial class Form1 : Form
                 AddLine($"{(exists ? ".revert" : "ERROR")}", $"git revert {path}");
             }
         }
+        if (_settings.HasBuildTarget(BuildName.Android))
+        {
+            _settings.AndroidSettingsFileName = Files.GetAndroidSettingsFileName(_settings.WorkingDirectory);
+            exists = File.Exists(_settings.AndroidSettingsFileName);
+            AddLine($"{(exists ? ".file" : "ERROR")}", $"{_settings.AndroidSettingsFileName}");
+        }
         if (_settings.HasPostProcessingFor(BuildName.WebGL))
         {
             // This checks some CopyDirectories validity as well.

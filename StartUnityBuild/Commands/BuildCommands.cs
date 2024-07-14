@@ -27,7 +27,6 @@ public static class BuildCommands
             var success = false;
             for (var i = 0; i < settings.BuildTargets.Count; ++i)
             {
-                Form1.AddLine("debug", "-BuildTarget");
                 var buildTarget = settings.BuildTargets[i];
                 success = await BuildTarget(buildTarget);
                 settings.BuildResult[i] = success;
@@ -55,6 +54,10 @@ public static class BuildCommands
                     $" -buildTarget {buildTarget} -projectPath {Files.Quoted(projectPath)}" +
                     $" -logFile {Files.Quoted(buildLogFile)}" +
                     $" -executeMethod {executeMethod} -quit -batchmode";
+                if (buildTarget == BuildName.Android)
+                {
+                    arguments = $"{arguments} -android {settings.AndroidSettingsFileName}";
+                }
                 Form1.AddLine($".{outPrefix}", $"executable: {executable}");
                 Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
                 var result = await RunCommand.Execute(outPrefix, executable, arguments,

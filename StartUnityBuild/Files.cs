@@ -8,6 +8,7 @@ namespace StartUnityBuild;
 /// </summary>
 public static class BuildName
 {
+    public const string Android = nameof(Android);
     public const string WebGL = nameof(WebGL);
 }
 
@@ -18,34 +19,48 @@ public static class Files
 {
     public static readonly Encoding Encoding = new UTF8Encoding(false, false);
 
-    public const string ProjectSettingsFolderName = "ProjectSettings";
-    public const string ProjectSettingsFileName = "ProjectSettings.asset";
-    public const string ReleaseNotesFileName = "releasenotes.txt";
+    private const string ProjectSettingsFolderName = "ProjectSettings";
+    private const string AssetsFolderName = "Assets";
+    private static readonly string AutoBuildFolderName = Path.Combine("etc", "batchBuild");
+    private static readonly string SecretKeysFolderName = Path.Combine("etc", "secretKeys");
 
+    private const string ProjectSettingsFileName = "ProjectSettings.asset";
     private const string ProjectVersionFileName = "ProjectVersion.txt";
+    private const string ReleaseNotesFileName = "releasenotes.txt";
+    private const string AndroidSettingsFileName = "AndroidOptions.txt";
+    private const string AutoBuildFileName = "_auto_build.env";
+
     private const string UnityVersionName = "$UNITY_VERSION$";
     private const string BuildTargetName = "$BUILD_TARGET$";
     private const string UniqueNameName = "$UNIQUE_NAME$";
-    private static readonly string AutoBuildEnvironmentFilePath = Path.Combine("etc", "batchBuild", "_auto_build.env");
 
     public static string Quoted(string path) => path.Contains(' ') ? $"\"{path}\"" : path;
 
-    public static string GetAssetFolder(string workingDirectory) => Path.Combine(workingDirectory, "Assets");
+    public static string GetAutoBuildFileName(string workingDirectory) =>
+        Path.Combine(workingDirectory, AutoBuildFolderName, AutoBuildFileName);
 
-    public static string GetResourcesFolder(string workingDirectory) =>
-        Path.Combine(workingDirectory, "Assets", "Resources");
+    public static string GetProjectSettingsFileName(string workingDirectory) =>
+        Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectSettingsFileName);
+
+    public static string GetProjectVersionFile(string workingDirectory) =>
+        Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectVersionFileName);
+
+    public static string GetReleaseNotesFileName(string workingDirectory) =>
+        Path.Combine(GetAssetFolder(workingDirectory), ReleaseNotesFileName);
+
+    public static string GetAndroidSettingsFileName(string workingDirectory) =>
+        Path.Combine(workingDirectory, SecretKeysFolderName, AndroidSettingsFileName);
+
+    public static string GetAssetFolder(string workingDirectory) => Path.Combine(workingDirectory, AssetsFolderName);
+
+    public static bool HasProjectVersionFile(string workingDirectory) =>
+        File.Exists(GetProjectVersionFile(workingDirectory));
 
     public static string ExpandUnityPath(string path, string unityVersion) =>
         path.Replace(UnityVersionName, unityVersion);
 
     public static string ExpandUniqueName(string path, string uniqueName) =>
         path.Replace(UniqueNameName, uniqueName);
-
-    public static bool HasProjectVersionFile(string workingDirectory)
-    {
-        var path = Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectVersionFileName);
-        return File.Exists(path);
-    }
 
     public static string SanitizePath(string path)
     {
@@ -74,7 +89,7 @@ public static class Files
     public static void LoadProjectVersionFile(string workingDirectory, out string unityVersion)
     {
         unityVersion = null!;
-        var path = Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectVersionFileName);
+        var path = GetProjectVersionFile(workingDirectory);
         Form1.AddLine(".file", $"{path}");
         var lines = File.ReadAllLines(path, Encoding);
         foreach (var line in lines)
@@ -94,7 +109,7 @@ public static class Files
 
     public static void LoadAutoBuildSettings(BuildSettings settings)
     {
-        var path = Path.Combine(settings.WorkingDirectory, AutoBuildEnvironmentFilePath);
+        var path = GetAutoBuildFileName(settings.WorkingDirectory);
         Form1.AddLine(".file", $"{path}");
         settings.BuildTargets.Clear();
         settings.CopyFilesBefore.Clear();
@@ -226,7 +241,7 @@ public static class ProjectSettings
         productVersion = null!;
         bundleVersion = null!;
         muteOtherAudioSources = false;
-        var path = Path.Combine(workingDirectory, Files.ProjectSettingsFolderName, Files.ProjectSettingsFileName);
+        var path = Files.GetProjectSettingsFileName(workingDirectory);
         Form1.AddLine(".file", $"{path}");
         var lines = File.ReadAllLines(path, Files.Encoding);
         foreach (var line in lines)
@@ -260,7 +275,7 @@ public static class ProjectSettings
 
     public static int UpdateProjectSettingsFile(string workingDirectory, string productVersion, string bundleVersion)
     {
-        var path = Path.Combine(workingDirectory, Files.ProjectSettingsFolderName, Files.ProjectSettingsFileName);
+        var path = Files.GetProjectSettingsFileName(workingDirectory);
         var lines = File.ReadAllLines(path, Files.Encoding);
         var updateCount = 0;
         var skipCount = 0;

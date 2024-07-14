@@ -40,8 +40,7 @@ public static class ProjectCommands
 
         string GetReleaseNotesText()
         {
-            var resourcesFolder = Files.GetResourcesFolder(settings.WorkingDirectory);
-            var path = Path.Combine(resourcesFolder, Files.ReleaseNotesFileName);
+            var path = Files.GetReleaseNotesFileName(settings.WorkingDirectory);
             if (File.Exists(path))
             {
                 foreach (var line in File.ReadAllLines(path)
@@ -183,6 +182,7 @@ public static class ProjectCommands
     /// JSON serialized build log entry.<br />
     /// This can be used for example to create table of content for all (recent) builds.
     /// </summary>
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     private class BuildLogEntry
     {
         public string Ver { get; set; } = "";

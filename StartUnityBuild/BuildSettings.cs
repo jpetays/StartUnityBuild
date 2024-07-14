@@ -80,6 +80,11 @@ public class BuildSettings(string workingDirectory)
     public string UnityExecutable { get; set; } = "";
 
     /// <summary>
+    /// Android settings filename for Android builds.
+    /// </summary>
+    public string AndroidSettingsFileName { get; set; } = "";
+
+    /// <summary>
     /// WebGl host name or path to folder for WebGL builds.
     /// </summary>
     public string WebGlHostName { get; set; } = "";
@@ -122,11 +127,16 @@ public class BuildSettings(string workingDirectory)
     }
 
     /// <summary>
+    /// Checks that settings has given build target included.
+    /// </summary>
+    public bool HasBuildTarget(string buildTarget) => BuildTargets.Contains(buildTarget);
+
+    /// <summary>
     /// Checks that given build target contains post processing instructions.
     /// </summary>
     public bool HasPostProcessingFor(string buildTarget)
     {
-        if (!BuildTargets.Contains(buildTarget))
+        if (!HasBuildTarget(buildTarget))
         {
             return false;
         }
