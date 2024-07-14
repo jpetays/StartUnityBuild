@@ -38,22 +38,26 @@ Optionally it can be set from `File->Set Project Folder` menu that makes it glob
 
 `etc\batchBuild\_auto_build.env` is the config file for the build system.
 
-`ProjectSettings\ProjectSettings.asset` is UNITY project setting asset file that the build system modifies.
+`ProjectSettings\ProjectSettings.asset` is UNITY project settings asset file that the build system modifies.
 `ProjectSettings\ProjectVersion.txt` is used to determine which UNITY version and executable is used for the build.
 `Assets\Resources\releasenotes.txt` is UNITY text asset for optional WebGL build history list.
 
 #### Android
 
+`.\etc\secretKeys\AndroidOptions.txt` for Android production build config.
+
 Android build for [Google Play](https://play.google.com/store/apps) using [Google Play Console](https://developer.android.com/distribute/console) requires signing the `.aab` output file using [UNITY keystore](https://docs.unity3d.com/Manual/android-keystore.html) and its related settings like passwords.
-These are kept in a file `.\etc\secretKeys\AndroidOptions.txt` that contains the settings (used in [PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.html) 
+These are kept in the `AndroidOptions.txt` file that contains the settings (used in [PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.html) 
 and [Android PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.Android.html)) required to sign the build.
 
 #### GameAnalytics
 
-[GameAnalytics](https://gameanalytics.com/) uses secret API keys that can not be kept in version control.
+`.\etc\secretKeys\GameAnalytics_Settings.asset` GameAnalytics production build settings (non versioned).
+`.\Assets\Resources\GameAnalytics\Settings.asset` GameAnalytics settings asset file in version control.
 
-UNITY asset file `ProjectSettings\ProjectSettings.asset` contains those keys in plaintext.  
-Similar file with _correct production API keys_ can be put in `.\etc\secretKeys\` folder and copied before UNITY build so that the built product has correct API keys asset inside.
+[GameAnalytics](https://gameanalytics.com/) uses secret API keys that should not be kept in version control.  
+`GameAnalytics_Settings.asset` file with _correct production API keys_ can be put in `.\etc\secretKeys\` folder
+and it will copied over original versioned file before UNITY build so that the built product has correct API keys asset inside.
 
 ### StartUnityBuild
 
@@ -69,6 +73,11 @@ Workflow goes in following steps:
 * **Git push** to commit and push changes made to the project for the build.
 * **Start Build** to start the UNITY build using UNITY executable to do this.
 * **Post Process** is optional tasks to do after build(s). Currently only WebGL build can use this.
+
+#### Touching files during build
+
+All version controlled files that are changed during build are reverted back to their original (pre-build) state after build.  
+Currently this requires manual configuration in `_auto_build.env` file.
 
 ### PrgBuild
 
