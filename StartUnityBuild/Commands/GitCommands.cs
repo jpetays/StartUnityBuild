@@ -42,6 +42,11 @@ public static class GitCommands
                 Form1.OutputListener(prefix, $"-commit: {line}");
                 return;
             }
+            if (line.StartsWith("?? "))
+            {
+                Form1.OutputListener(prefix, $"-untracked: {line}");
+                return;
+            }
             Form1.OutputListener(prefix, $"-status: {line}");
         }
 
