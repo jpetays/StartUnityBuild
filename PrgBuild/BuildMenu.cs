@@ -22,7 +22,7 @@ namespace PrgBuild
         [MenuItem(MenuItem + "About Build System", false, 21)]
         private static void AboutBuildSystem() => Logged(() =>
         {
-            Debug.Log($"Build System version {Info.Version}");
+            Debug.Log($"Build System: {Info.Version} with {PrgFrame.Info.Version}");
         });
 
         private static void Logged(Action action)
