@@ -40,7 +40,13 @@ Optionally it can be set from `File->Set Project Folder` menu that makes it glob
 
 `ProjectSettings\ProjectSettings.asset` is UNITY project setting asset file that the build system modifies.
 `ProjectSettings\ProjectVersion.txt` is used to determine which UNITY version and executable is used for the build.
-`releasenotes.txt` is optional UNITY text asset in `Resources` folder for WebGL build history list.
+`Assets\Resources\releasenotes.txt` is UNITY text asset for optional WebGL build history list.
+
+#### Android
+
+Android build for [Google Play](https://play.google.com/store/apps) using [Google Play Console](https://developer.android.com/distribute/console) requires signing the `.aab` output file using [UNITY keystore](https://docs.unity3d.com/Manual/android-keystore.html) and its related settings like passwords.
+These are kept in a file `.\etc\secretKeys\AndroidOptions.txt` that contains the settings (used in [PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.html) 
+and [Android PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.Android.html)) required to sign the build.
 
 #### GameAnalytics
 
