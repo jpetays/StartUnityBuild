@@ -120,6 +120,11 @@ public static class Files
                 settings.UnityPath = tokens[1].Trim();
                 continue;
             }
+            if (key == "webgl.build.history.json")
+            {
+                settings.WebGlBuildHistoryJson = tokens[1].Trim();
+                continue;
+            }
             if (key.StartsWith("before.copy.") && (key.EndsWith(".source") || key.EndsWith(".target")))
             {
                 settings.CopyFilesBefore.Add(key, value);

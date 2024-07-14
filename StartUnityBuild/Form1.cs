@@ -128,7 +128,7 @@ public partial class Form1 : Form
         };
         var order = -1;
         SetCaption(gitStatusToolStripMenuItem, ++order);
-        gitStatusToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
+        gitStatusToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Querying",
             () => { GitCommands.GitStatus(_settings.WorkingDirectory, ReleaseMenuCommandSync); });
 
         SetCaption(gitPullToolStripMenuItem, ++order);
@@ -185,7 +185,11 @@ public partial class Form1 : Form
         else
         {
             SetCaption(postProcessToolStripMenuItem, ++order);
-            postProcessToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing", PostProcessBuild);
+            postProcessToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing", () =>
+            {
+                PostProcessBuild();
+                ReleaseMenuCommandSync();
+            });
         }
         return;
 
@@ -197,6 +201,7 @@ public partial class Form1 : Form
 
     private void PostProcessBuild()
     {
+        // /* TEST */ _settings.BuildResult[_settings.BuildTargets.FindIndex(x => x == BuildName.WebGL)] = true;
         if (!_settings.HasPostProcessingFor(BuildName.WebGL))
         {
             AddLine("ERROR", $"{BuildName.WebGL} build is not in selected build targets");
@@ -356,6 +361,10 @@ public partial class Form1 : Form
             {
                 exists = Directory.Exists(tuple.Item1);
                 AddLine($"{(exists ? ".copy" : "copy")}", $"{(exists ? "" : "-")}copy {tuple.Item1} to {tuple.Item2}");
+            }
+            if (!string.IsNullOrWhiteSpace(_settings.WebGlBuildHistoryJson))
+            {
+                AddLine(".builds", $"{_settings.WebGlBuildHistoryJson}");
             }
         }
         var assetFolder = Files.GetAssetFolder(_settings.WorkingDirectory);

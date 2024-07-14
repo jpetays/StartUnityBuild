@@ -18,11 +18,13 @@ public static class ProjectCommands
             || string.IsNullOrWhiteSpace(settings.WebGlBuildHistoryJson)
             || !settings.HasPostProcessingFor(BuildName.WebGL))
         {
+            Form1.AddLine("ERROR", "Can not do WebGL build history: conditions are not met");
             return;
         }
         var webGlFolderName = Path.GetFileName(settings.WebGlFolderName);
         if (string.IsNullOrWhiteSpace(webGlFolderName))
         {
+            Form1.AddLine("ERROR", "Can not do WebGL build history: WebGL Folder Name empty");
             return;
         }
         var linkLabel = $"{settings.ProductVersion}";
@@ -173,7 +175,7 @@ public static class ProjectCommands
             HRef = linkHref,
             Notes = releaseNotes
         });
-        Form1.AddLine($".info", $"Updated build history log {jsonFilename}, it has {entries.List.Count} entries");
+        Form1.AddLine($".update", $"Build history log entries #{entries.List.Count} in {jsonFilename}");
         Serializer.SaveStateJson(entries, jsonFilename);
     }
 

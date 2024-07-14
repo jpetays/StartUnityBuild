@@ -26,7 +26,12 @@ public static class CopyCommands
             Form1.AddLine($">{outPrefix}", $"{copyCommand} {copyOptions}");
             var result = await RunCommand.Execute(outPrefix, $"{copyCommand}.exe", copyOptions, workingDirectory,
                 null, OutputListenerFilter, Form1.ExitListener);
-            Form1.AddExitCode(outPrefix, result, result == 0, showSuccess: true);
+            var isSuccess = result is >= 0 and <= 1;
+            if (!isSuccess)
+            {
+                Form1.AddLine(outPrefix,"-Robocopy reported that copy was not perfect, check the output for possible problems");
+            }
+            Form1.AddExitCode(outPrefix, result, isSuccess, showSuccess: true);
             finished();
         });
         return;

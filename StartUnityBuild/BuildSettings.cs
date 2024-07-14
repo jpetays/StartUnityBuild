@@ -115,7 +115,7 @@ public class BuildSettings(string workingDirectory)
             if (string.IsNullOrEmpty(_webGlBuildDir))
             {
                 var copyDirs = Files.GetCopyDirs(this, BuildName.WebGL);
-                _webGlFolderName = copyDirs.Count == 1 ? copyDirs[0].Item1 : "";
+                _webGlBuildDir = copyDirs.Count == 1 ? copyDirs[0].Item1 : "";
             }
             return _webGlBuildDir;
         }
