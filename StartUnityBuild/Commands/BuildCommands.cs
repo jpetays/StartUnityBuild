@@ -18,14 +18,16 @@ public static class BuildCommands
     /// </summary>
     public static void BuildPlayer(BuildSettings settings, Action<bool> finished)
     {
-        // For quick testing use: Editor.Demo.BuildTest.TestBuild
+        // For quick testing use: Editor.Demo.BuildTest.TestBuild and successReturn = 10
         const string executeMethod = "PrgBuild.Build.BuildPlayer";
+        const int successReturn = 0;
         const string outPrefix = "build";
         Task.Run(async () =>
         {
             var success = false;
-            for (var i = 0; i < 2; ++i)
+            for (var i = 0; i < settings.BuildTargets.Count; ++i)
             {
+                Form1.AddLine("debug", "-BuildTarget");
                 var buildTarget = settings.BuildTargets[i];
                 success = await BuildTarget(buildTarget);
                 settings.BuildResult[i] = success;
@@ -57,7 +59,7 @@ public static class BuildCommands
                 Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
                 var result = await RunCommand.Execute(outPrefix, executable, arguments,
                     settings.WorkingDirectory, null, Form1.OutputListener, Form1.ExitListener);
-                var isSuccess = result == 0;
+                var isSuccess = result == successReturn;
                 Form1.AddExitCode(outPrefix, result, isSuccess, showSuccess: true);
                 HandleOutputFiles();
                 return isSuccess;
