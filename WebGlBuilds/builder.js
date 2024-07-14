@@ -11,25 +11,35 @@ window.onload = (event) => {
 
 async function fetchJSON(path) {
     const response = await fetch(path);
+    if (!response.ok) {
+        return {"List": []};
+    }
     const movies = await response.json();
     return movies;
 }
 
 function buildTable(table, history) {
 
+    if (!Array.isArray(history.List)) {
+        insertMessage(table, "No builds available yet");
+        return
+    }
     const array = Array.from(history.List);
-    console.log("array", array);
     if (array.length === 0) {
-        const row = table.insertRow();
-        const cell = row.insertCell();
-        cell.colSpan = 3;
-        cell.innerText = "No builds available yet";
+        insertMessage(table, "No builds available yet");
         return
     }
     array.forEach(item => {
         console.log("item", item);
         insertRow(table, item);
     });
+}
+
+function insertMessage(table, message) {
+    const row = table.insertRow();
+    const cell = row.insertCell();
+    cell.colSpan = 3;
+    cell.innerText = message;
 }
 
 function insertRow(table, item) {
