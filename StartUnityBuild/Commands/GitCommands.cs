@@ -56,7 +56,7 @@ public static class GitCommands
         const string outPrefix = "pull";
         Task.Run(async () =>
         {
-            var gitCommand = "pull --rebase=true origin main";
+            var gitCommand = "pull --rebase=true --no-autostash origin main";
             Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
             var result = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
