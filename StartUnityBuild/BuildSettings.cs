@@ -85,6 +85,11 @@ public class BuildSettings(string workingDirectory)
     public string WebGlHostName { get; set; } = "";
 
     /// <summary>
+    /// Path to folder for WebGL build history.
+    /// </summary>
+    public string WebGlBuildHistoryJson { get; set; } = "";
+
+    /// <summary>
     /// Gets cached and lazy-initialized WebGl folder name where build output is copied in web server that hosts WebGl build.
     /// </summary>
     public string WebGlFolderName

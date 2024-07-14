@@ -12,9 +12,11 @@ public static class ProjectCommands
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static void WriteBuildLogEntry(BuildSettings settings, string buildTarget, bool isSuccess)
+    public static void WriteWebGLBuildHistory(BuildSettings settings, bool isSuccess)
     {
-        if (!isSuccess || !settings.HasPostProcessingFor(BuildName.WebGL))
+        if (!isSuccess
+            || string.IsNullOrWhiteSpace(settings.WebGlBuildHistoryJson)
+            || !settings.HasPostProcessingFor(BuildName.WebGL))
         {
             return;
         }
@@ -26,7 +28,7 @@ public static class ProjectCommands
         var linkLabel = $"{settings.ProductVersion}";
         var linkHref = $"{StripEnd(settings.WebGlHostName)}/{StripStart(webGlFolderName)}";
         var releaseNotes = GetReleaseNotesText();
-        var buildLogEntryFile = @$".\etc\_local_build_{buildTarget}.build.history.json";
+        var buildLogEntryFile = settings.WebGlBuildHistoryJson;
         WriteBuildLogEntry(DateTime.Now, linkLabel, linkHref, releaseNotes, buildLogEntryFile);
         return;
 

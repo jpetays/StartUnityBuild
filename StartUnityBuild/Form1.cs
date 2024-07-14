@@ -207,7 +207,7 @@ public partial class Form1 : Form
             AddLine("ERROR", $"{BuildName.WebGL} build was not successful, can not post process!");
             return;
         }
-        ProjectCommands.WriteBuildLogEntry(_settings, BuildName.WebGL, true);
+        ProjectCommands.WriteWebGLBuildHistory(_settings, true);
         CopyCommands.CopyDirectories(_settings.WebGlBuildDir, _settings.WebGlFolderName, ReleaseMenuCommandSync);
     }
 
