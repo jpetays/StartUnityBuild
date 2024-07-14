@@ -32,7 +32,17 @@ public static class GitCommands
             {
                 return;
             }
-            Form1.OutputListener(prefix, line.StartsWith("   ") ? line : $"-commit: {line}");
+            if (line.StartsWith("   "))
+            {
+                Form1.OutputListener(prefix, line);
+                return;
+            }
+            if (line.StartsWith(" M "))
+            {
+                Form1.OutputListener(prefix, $"-commit: {line}");
+                return;
+            }
+            Form1.OutputListener(prefix, $"-status: {line}");
         }
 
         void GitLogFilter(string prefix, string? line)
