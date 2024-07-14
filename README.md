@@ -5,16 +5,16 @@ This is Simple Build System for UNITY on Windows platform.
 
 This repo contains several folders for projects that are required to use and test the build system.
 
-**StartUnityBuild** is the UI for the build system. It is C# Windows Forms desktop application (made using VS 2022).
+**StartUnityBuild** is the UI for the build system. It is a C# Windows Forms desktop application (made using VS 2022).
 
-**PrgBuild** is support library to integrate the build system with actual UNITY application that is going to be build with this.
+**PrgBuild** is support library to integrate the build system with the actual UNITY application that is going to be build with this.
 
-**PrgFrame** is general support library for any UNITY application to use.
+**PrgFrame** is general support library for any UNITY applications to use.
 
-**DemoProject** is an UNITY application that be used to test the build system.
+**DemoProject** is an UNITY application that can be used to test the build system.
 
 **WebGlBuilds** is simple javascript automation project for creating a HTML page containing list of WebGL builds.  
-This is totally optional package is a history of old build needs to be available for some reason.
+This is totally optional package to create a history (list) of created WebGL builds to load (for testing).
 
 **etc** contains some supporting folders, for example [Actual Installer](https://www.actualinstaller.com/) configuration file for creating a setup program for the UI.
 
