@@ -17,10 +17,19 @@ async function fetchJSON(path) {
 
 function buildTable(table, history) {
 
-    for (const entry of Object.entries(history.List)) {
-        console.log("entry", entry[1]);
-        insertRow(table, entry[1]);
+    const array = Array.from(history.List);
+    console.log("array", array);
+    if (array.length === 0) {
+        const row = table.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 3;
+        cell.innerText = "No builds available yet";
+        return
     }
+    array.forEach(item => {
+        console.log("item", item);
+        insertRow(table, item);
+    });
 }
 
 function insertRow(table, item) {
