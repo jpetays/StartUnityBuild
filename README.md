@@ -1,7 +1,7 @@
 ### Simple Build System for UNITY
 
 This is Simple Build System for UNITY on Windows platform.  
-'Simple' means that is simple to use after it has been setup on configured properly :-)
+'Simple' means that is simple to use after it has been setup and configured properly :-)
 
 This repo contains several folders for projects that are required to use and test the build system.
 
