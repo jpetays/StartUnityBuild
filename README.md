@@ -1,7 +1,12 @@
 ### Simple Build System for UNITY
 
-This is Simple Build System for UNITY on Windows platform.  
+This is Simple (wizard-like) Build System for UNITY applications _(works on Windows platform)_.
+
+![image](https://github.com/jpetays/StartUnityBuild/blob/main/etc/images/readme_pic01.gif)
+
 'Simple' means that is simple to use after it has been setup and configured properly :-)
+
+Just press 'buttons' **① - ② - ③ - ④ - ⑤** and you are done in no time.
 
 This repo contains several folders for projects that are required to use and test the build system.
 
@@ -68,11 +73,11 @@ Supported platforms are Android, WebGL, Win64.
 Supported third party integrations are: GameAnalytics.
 
 Workflow goes in following steps:
-* **Git pull** to update local project folder
-* **Update Build** to UNITY build version and related files for the build
-* **Git push** to commit and push changes made to the project for the build.
-* **Start Build** to start the UNITY build using UNITY executable to do this.
-* **Post Process** is optional tasks to do after build(s). Currently only WebGL build can use this.
+* **① Git pull** to update local project folder to latest from version control.
+* **② Update Build** to update automatically UNITY application product version and related files for the build.
+* **③ Git push** to commit and push changes made to the project for the build back to version control.
+* **④ Start Build** to start the UNITY application build using UNITY executable (in batch mode) to do this.
+* **⑤ Post Process** is optional tasks to do after build(s). Currently used for WebGL builds.
 
 #### Touching files during build
 
