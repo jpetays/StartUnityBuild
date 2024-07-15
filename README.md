@@ -79,7 +79,19 @@ Workflow goes in following steps:
 * **④ Start Build** to start the UNITY application build using UNITY executable (in batch mode) to do this.
 * **⑤ Post Process** is optional tasks to do after build(s). Currently used for WebGL builds.
 
-#### Touching files during build
+#### * UNITY 'Product' Version (and Android Bundle Version Code) automation (4)
+
+The build system automatically updates Android Bundle Version Code every time **Update Build** operation is done.  
+Android Bundle Version Code is used like PATCH version in [Semantic Versioning](https://semver.org/).
+
+For UNITY 'Product' Version there is there options that are automatically picked:
+* Two digit MAJOR.MINOR version is not updated.
+* Three digit MAJOR.MINOR.PATCH <= PATCH version is replaced by Bundle Version Code.
+* Four digit DD.MM.YYYY.PATCH or YYYY.MM.DD.PATCH <= DATE is replaced by current date, PATCH version is replaced by Bundle Version Code.
+
+If UNITY 'Product' Version is not recognized, it is not updated.
+
+#### * Changing files during build (5)
 
 All version controlled files that are changed during build are reverted back to their original (pre-build) state after build.  
 Currently this requires manual configuration in `_auto_build.env` file.
