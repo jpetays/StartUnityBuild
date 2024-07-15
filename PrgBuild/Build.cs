@@ -33,6 +33,7 @@ namespace PrgBuild
             Util.Trace($"productName: {Application.productName}");
             Util.Trace($"version: {Application.version}");
             Util.Trace($"bundleVersionCode: {PlayerSettings.Android.bundleVersionCode}");
+            Util.Trace($"buildSystem: {Info.Version}");
             var options = LoadOptions();
             if (!Util.VerifyUnityVersion(out var editorVersion))
             {
@@ -226,6 +227,7 @@ namespace PrgBuild
             public readonly string ProjectPath = "";
             public readonly string LogFile = "";
             public readonly string AndroidFile = "";
+            public readonly string CallerSemVer = "";
             public readonly BuildTarget BuildTarget;
             public readonly BuildTargetGroup BuildTargetGroup;
             public readonly NamedBuildTarget NamedBuildTarget;
@@ -239,12 +241,12 @@ namespace PrgBuild
                 using var enumerator = args.GetEnumerator();
                 while (enumerator.MoveNext())
                 {
-                    var value = enumerator.Current;
+                    var value = enumerator.Current ?? "";
                     switch (value)
                     {
                         case "-buildTarget":
                             enumerator.MoveNext();
-                            buildTarget = enumerator.Current;
+                            buildTarget = enumerator.Current ?? "";
                             break;
                         case "-projectPath":
                             enumerator.MoveNext();
@@ -257,6 +259,10 @@ namespace PrgBuild
                         case "-android":
                             enumerator.MoveNext();
                             AndroidFile = enumerator.Current ?? "";
+                            break;
+                        case "-semVer":
+                            enumerator.MoveNext();
+                            CallerSemVer = enumerator.Current ?? "";
                             break;
                     }
                 }

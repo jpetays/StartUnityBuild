@@ -27,8 +27,8 @@ public partial class Form1 : Form
 
     public Form1()
     {
-        var appVersion = Application.ProductVersion.Split('+')[0];
-        _baseTitle = $"{(Args.Instance.IsTesting ? "*TEST* " : "")}Build {appVersion} UNITY";
+        var appVersion = $"{Application.ProductVersion.Split('+')[0]}/{Info.SemVer}";
+        _baseTitle = $"{(Args.Instance.IsTesting ? "*TEST* " : "")}{Application.ProductName} {appVersion} UNITY";
         _instance = this;
         _settings = new BuildSettings(Directory.GetCurrentDirectory());
         InitializeComponent();

@@ -8,7 +8,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Copyright>Jari Petays</Copyright>
         <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-        <Version>$(VersionPrefix)1.2.1</Version>
+        <Version>$(VersionPrefix)1.2.2</Version>
         <Title>Start UNITY Build</Title>
         <Description>Starts UNITY Build using associated supporting ecosystem</Description>
         <ApplicationIcon>Tpdkdesign.net-Refresh-Cl-Windows-Download.ico</ApplicationIcon>
@@ -20,6 +20,7 @@
       <Deterministic>False</Deterministic>
       <IsPublishable>False</IsPublishable>
       <DebugType>embedded</DebugType>
+      <DefineConstants>$(DefineConstants);PRG_BUILD_TEST</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

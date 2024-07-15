@@ -3,7 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <Version>$(VersionPrefix)1.0.2</Version>
+    <Company>$(Authors)Jari Petays</Company>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
 
   <ItemGroup>
     <ProjectReference Include="..\PrgFrame\PrgFrame.csproj" />
