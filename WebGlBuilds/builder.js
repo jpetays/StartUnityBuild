@@ -20,13 +20,9 @@ async function fetchJSON(path) {
 
 function buildTable(table, history) {
 
-    if (!Array.isArray(history.List)) {
-        insertMessage(table, "No builds available yet");
-        return
-    }
-    const array = Array.from(history.List);
+    const array = Array.isArray(history.List) ? Array.from(history.List) : [];
     if (array.length === 0) {
-        insertMessage(table, "No builds available yet");
+        insertMessage(table, "No builds available for testing");
         return
     }
     array.forEach(item => {
