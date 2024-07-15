@@ -18,9 +18,12 @@ public static class BuildCommands
     /// </summary>
     public static void BuildPlayer(BuildSettings settings, Action<bool> finished)
     {
-        // For quick testing use: Editor.Demo.BuildTest.TestBuild and successReturn = 10
+        // For quick testing use: Editor.Demo.BuildTest.TestBuild
         const string executeMethod = "PrgBuild.Build.BuildPlayer";
         const int successReturn = 0;
+        const int buildFailureReturn = 1;
+        const int startFailureReturn = 2;
+        const int testSuccessReturn = 10;
         const string outPrefix = "build";
         Task.Run(async () =>
         {
@@ -53,7 +56,7 @@ public static class BuildCommands
                 var arguments =
                     $" -buildTarget {buildTarget} -projectPath {Files.Quoted(projectPath)}" +
                     $" -logFile {Files.Quoted(buildLogFile)}" +
-                    $" -executeMethod {executeMethod} -quit -batchmode";
+                    $" -executeMethod {executeMethod} -quit -batchmode -semVer {PrgBuild.Info.SemVer}";
                 if (buildTarget == BuildName.Android)
                 {
                     arguments = $"{arguments} -android {settings.AndroidSettingsFileName}";
@@ -62,7 +65,20 @@ public static class BuildCommands
                 Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
                 var result = await RunCommand.Execute(outPrefix, executable, arguments,
                     settings.WorkingDirectory, null, Form1.OutputListener, Form1.ExitListener);
-                var isSuccess = result == successReturn;
+                var isSuccess = result is successReturn or testSuccessReturn;
+                if (!isSuccess)
+                {
+                    switch (result)
+                    {
+                        case buildFailureReturn:
+                            Form1.AddLine(outPrefix, $"-Build system reported: build failed");
+                            break;
+                        case startFailureReturn:
+                            Form1.AddLine(outPrefix,
+                                $"-Build system reported: invalid arguments or error starting build");
+                            break;
+                    }
+                }
                 Form1.AddExitCode(outPrefix, result, isSuccess, showSuccess: true);
                 HandleOutputFiles();
                 return isSuccess;

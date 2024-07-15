@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Prg.Util;
 using PrgFrame.Util;
 using UnityEditor;
 using UnityEditor.Build;
@@ -29,16 +30,30 @@ namespace PrgBuild
         /// </returns>
         public static void BuildPlayer()
         {
+            Util.Trace($"buildSystem: {Info.Version}");
             Util.Trace($"unityVersion: {Application.unityVersion}");
             Util.Trace($"productName: {Application.productName}");
             Util.Trace($"version: {Application.version}");
             Util.Trace($"bundleVersionCode: {PlayerSettings.Android.bundleVersionCode}");
-            Util.Trace($"buildSystem: {Info.Version}");
             var options = LoadOptions();
             if (!Util.VerifyUnityVersion(out var editorVersion))
             {
                 Util.Trace($"UNITY version {Application.unityVersion} does not match" +
                            $" Editor version {editorVersion} in ProjectSettings/ProjectVersion.txt");
+                EditorApplication.Exit(2);
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(options.CallerSemVer))
+            {
+                Util.Trace("Caller build system version is missing from command line");
+                EditorApplication.Exit(2);
+                return;
+            }
+            var isValid = SemVer.Compare(options.CallerSemVer, Info.SemVer) >= 0;
+            if (!isValid)
+            {
+                Util.Trace(
+                    $"Caller build system version {options.CallerSemVer} must be equal or newer that App build system version {Info.SemVer}");
                 EditorApplication.Exit(2);
                 return;
             }
@@ -166,6 +181,7 @@ namespace PrgBuild
             Util.Trace($"buildTarget: {options.BuildTargetName}");
             Util.Trace($"projectPath: {options.ProjectPath}");
             Util.Trace($"logFile: {options.LogFile}");
+            Util.Trace($"semVer: {options.CallerSemVer}");
             var defs = PlayerSettings.GetScriptingDefineSymbols(options.NamedBuildTarget)
                 .Split(';')
                 .ToList();
