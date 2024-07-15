@@ -201,11 +201,14 @@ public partial class Form1 : Form
 
     private void PostProcessBuild()
     {
-        // /* TEST */ _settings.BuildResult[_settings.BuildTargets.FindIndex(x => x == BuildName.WebGL)] = true;
         if (!_settings.HasPostProcessingFor(BuildName.WebGL))
         {
             AddLine("ERROR", $"{BuildName.WebGL} build is not in selected build targets");
             return;
+        }
+        if (Args.Instance.IsTesting)
+        {
+            _settings.BuildResult[_settings.BuildTargets.FindIndex(x => x == BuildName.WebGL)] = true;
         }
         if (!_settings.BuildSucceeded(BuildName.WebGL))
         {

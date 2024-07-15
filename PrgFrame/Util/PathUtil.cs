@@ -15,6 +15,14 @@ namespace PrgFrame.Util
 #endif
             ;
 
+        public static string FindFile(string fromFolder, string searchPattern)
+        {
+            var file = Directory.GetFiles(fromFolder, searchPattern, SearchOption.AllDirectories)
+                .ToList()
+                .FirstOrDefault();
+            return file ?? "";
+        }
+
         public static string WindowsPath(string path)
         {
             return IsWindows

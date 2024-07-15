@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using PrgFrame.Util;
 
 namespace StartUnityBuild;
 
@@ -21,6 +22,7 @@ public static class Files
 
     private const string ProjectSettingsFolderName = "ProjectSettings";
     private const string AssetsFolderName = "Assets";
+    private const string ResourcesFolderName = "Resources";
     private static readonly string AutoBuildFolderName = Path.Combine("etc", "batchBuild");
     private static readonly string SecretKeysFolderName = Path.Combine("etc", "secretKeys");
 
@@ -42,11 +44,11 @@ public static class Files
     public static string GetProjectSettingsFileName(string workingDirectory) =>
         Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectSettingsFileName);
 
-    public static string GetProjectVersionFile(string workingDirectory) =>
+    private static string GetProjectVersionFile(string workingDirectory) =>
         Path.Combine(workingDirectory, ProjectSettingsFolderName, ProjectVersionFileName);
 
     public static string GetReleaseNotesFileName(string workingDirectory) =>
-        Path.Combine(GetAssetFolder(workingDirectory), ReleaseNotesFileName);
+        PathUtil.FindFile(GetAssetFolder(workingDirectory), Path.Combine(ResourcesFolderName, ReleaseNotesFileName));
 
     public static string GetAndroidSettingsFileName(string workingDirectory) =>
         Path.Combine(workingDirectory, SecretKeysFolderName, AndroidSettingsFileName);
@@ -61,29 +63,6 @@ public static class Files
 
     public static string ExpandUniqueName(string path, string uniqueName) =>
         path.Replace(UniqueNameName, uniqueName);
-
-    public static string SanitizePath(string path)
-    {
-        // https://www.mtu.edu/umc/services/websites/writing/characters-avoid/
-        var illegalCharacters = new[]
-        {
-            '#', '<', '$', '+',
-            '%', '>', '!', '`',
-            '&', '*', '\'', '|',
-            '{', '?', '"', '=',
-            '}', '/', ':', '@',
-            '\\', ' '
-        };
-        for (var i = 0; i < path.Length; ++i)
-        {
-            var c = path[i];
-            if (illegalCharacters.Contains(c))
-            {
-                path = path.Replace(c, '_');
-            }
-        }
-        return path;
-    }
 
     [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
     public static void LoadProjectVersionFile(string workingDirectory, out string unityVersion)

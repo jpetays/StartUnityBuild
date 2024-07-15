@@ -128,18 +128,8 @@ namespace PrgBuild
 
         public static string BuildPropertiesPath(string fromFolder)
         {
-            // Try to find 'build info' file in the project by its filename.
-            var files = Directory.GetFiles(fromFolder, BuildPropertiesFilename,
-                SearchOption.AllDirectories);
-            foreach (var file in files)
-            {
-                if (file.EndsWith(BuildPropertiesFilename))
-                {
-                    return PathUtil.WindowsPath(file);
-                }
-            }
-            // This will be error but we set filename so caller can know what is was looking for!
-            return BuildPropertiesFilename;
+            var path = PathUtil.FindFile(fromFolder, BuildPropertiesFilename);
+            return !string.IsNullOrEmpty(path) ? path : BuildPropertiesFilename;
         }
     }
 }

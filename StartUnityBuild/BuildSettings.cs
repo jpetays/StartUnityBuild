@@ -161,7 +161,7 @@ public class BuildSettings(string workingDirectory)
             if (string.IsNullOrEmpty(_uniqueBuildName))
             {
                 _uniqueBuildName =
-                    $"{Files.SanitizePath(ProductVersion).Replace('.', '_')}_{DateTime.Today.DayOfYear}_{RandomUtil.StringFromTicks(6)}";
+                    $"{PathUtil.SanitizePath(ProductVersion).Replace('.', '_')}_{DateTime.Today.DayOfYear}_{RandomUtil.StringFromTicks(6)}";
             }
             return _uniqueBuildName;
         }
