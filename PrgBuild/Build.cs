@@ -33,7 +33,7 @@ namespace PrgBuild
             Util.Trace($"buildSystem: {Info.Version}");
             Util.Trace($"unityVersion: {Application.unityVersion}");
             Util.Trace($"productName: {Application.productName}");
-            Util.Trace($"version: {Application.version}");
+            Util.Trace($"productVersion: {Application.version}");
             Util.Trace($"bundleVersionCode: {PlayerSettings.Android.bundleVersionCode}");
             var options = LoadOptions();
             if (!Util.VerifyUnityVersion(out var editorVersion))
