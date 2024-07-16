@@ -75,19 +75,23 @@ public static class ProjectCommands
             Form1.AddLine($">{outPrefix}", $"update {settings.ProductName} in {settings.WorkingDirectory}");
             var today = DateTime.Now;
             Form1.AddLine($">{outPrefix}", $"today is {today:yyyy-MM-dd HH:mm}");
+            int result;
             try
             {
                 UpdateProjectSettings();
                 UpdateBuildProperties();
                 Form1.AddLine($">{outPrefix}", "Update done");
-                finished(true);
+                result = 0;
             }
             catch (Exception x)
             {
                 Form1.AddLine("ERROR", $"Update failed: {x.GetType().Name} {x.Message}");
                 Logger.Trace(x.StackTrace);
-                finished(false);
+                result = -1;
             }
+            var isSuccess = result == 0;
+            Form1.AddExitCode(outPrefix, result, isSuccess, showSuccess: true);
+            finished(false);
             return;
 
             void UpdateProjectSettings()
