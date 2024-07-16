@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using NLog;
 using Prg.Util;
 using PrgBuild;
@@ -43,10 +44,22 @@ public static class ProjectCommands
             var path = Files.GetReleaseNotesFileName(settings.WorkingDirectory);
             if (File.Exists(path))
             {
-                foreach (var line in File.ReadAllLines(path)
-                             .Where(x => !string.IsNullOrEmpty(x)))
+                var builder = new StringBuilder();
+                foreach (var line in File.ReadAllLines(path))
                 {
-                    return line;
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        break;
+                    }
+                    if (builder.Length > 0)
+                    {
+                        builder.Append("<br />");
+                    }
+                    builder.Append(line);
+                }
+                if (builder.Length > 0)
+                {
+                    return builder.ToString();
                 }
             }
             return $"{settings.ProductName} {settings.ProductVersion} built on {DateTime.Today:yyyy-MM-dd}";
