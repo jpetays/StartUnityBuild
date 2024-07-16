@@ -10,31 +10,40 @@ namespace Demo
 
         private void Awake()
         {
+            var white = Color.white;
+            var gray = Color.gray;
+
+#if UNITY_EDITOR
+            var buildVersion = PrgBuild.Info.Version;
+#else
+            var buildVersion = "---";
+#endif
             var lines = new[]
             {
-                new Tuple<string, string>(" ProductName", Application.productName),
-                new Tuple<string, string>(" Version", Application.version),
-                new Tuple<string, string>(" BundleVersion", BuildProperties.BundleVersionCode.ToString()),
-                new Tuple<string, string>(" CompiledOnDate", BuildProperties.CompiledOnDate),
-                new Tuple<string, string>(" PrgFrame", PrgFrame.Info.Version),
-#if UNITY_EDITOR
-                new Tuple<string, string>(" PrgBuild", PrgBuild.Info.Version),
-#else
-                new Tuple<string, string>(" PrgBuild", "---"),
-#endif
-                new Tuple<string, string>(" UnityVersion", Application.unityVersion),
+                new Tuple<string, string, Color>(" UnityVersion", Application.unityVersion, white),
+                new Tuple<string, string, Color>(" ProductName", Application.productName, white),
+                new Tuple<string, string, Color>(" Version", Application.version, white),
+                new Tuple<string, string, Color>(" BundleVersion", BuildProperties.BundleVersionCode.ToString(), white),
+                new Tuple<string, string, Color>(" CompiledOnDate", BuildProperties.CompiledOnDate, white),
+                new Tuple<string, string, Color>(" PrgFrame", PrgFrame.Info.Version, white),
+                new Tuple<string, string, Color>(" PrgBuild", buildVersion, gray),
             };
             for (int i = 0; i < lines.Length; ++i)
             {
-                SetContent(i, lines[i].Item1, lines[i].Item2);
+                var tuple = lines[i];
+                SetContent(i, tuple.Item1, tuple.Item2, tuple.Item3);
             }
             return;
 
-            void SetContent(int index, string label, string content)
+            void SetContent(int index, string label, string content, Color color)
             {
                 var parent = _labels[index];
-                parent.GetChild(0).GetComponent<TextMeshProUGUI>().text = label;
-                parent.GetChild(1).GetComponent<TextMeshProUGUI>().text = content;
+                var textLabel = parent.GetChild(0).GetComponent<TextMeshProUGUI>();
+                var textContent = parent.GetChild(1).GetComponent<TextMeshProUGUI>();
+                textLabel.text = label;
+                textLabel.color = color;
+                textContent.text = content;
+                textContent.color = color;
             }
         }
     }
