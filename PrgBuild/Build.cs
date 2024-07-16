@@ -133,7 +133,8 @@ namespace PrgBuild
             {
                 case BuildTarget.Android:
                 {
-                    // Android settings we enforce.
+                    // Android settings we enforce to build App Bundle.
+                    EditorUserBuildSettings.buildAppBundle = true;
                     PlayerSettings.Android.minifyRelease = true;
                     PlayerSettings.Android.useCustomKeystore = true;
                     Util.Trace($"Android.minifyRelease: {PlayerSettings.Android.minifyRelease}");
@@ -159,9 +160,10 @@ namespace PrgBuild
                     break;
                 }
                 case BuildTarget.WebGL:
+                    // for WebGL we enforce Brotli compression and disable stack trace for logging.
+                    // - no use to show stack trace in browser because it is totally obfuscated.
                     PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
                     Util.Trace($"WebGL.compressionFormat: {PlayerSettings.WebGL.compressionFormat}");
-                    // No use to show stack trace in browser.
                     Util.Trace($"SetStackTraceLogType: {StackTraceLogType.None}");
                     PlayerSettings.SetStackTraceLogType(LogType.Error, StackTraceLogType.None);
                     PlayerSettings.SetStackTraceLogType(LogType.Assert, StackTraceLogType.None);
