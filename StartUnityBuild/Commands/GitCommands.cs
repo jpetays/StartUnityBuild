@@ -107,7 +107,7 @@ public static class GitCommands
             Form1.AddExitCode(getVerb, result, result == 0, showSuccess: false);
 
             getVerb = "push";
-            gitCommand = $"{getVerb} {options} origin main";
+            gitCommand = $"{getVerb} {options} --tags origin main";
             Form1.AddLine($">{getVerb}", $"git {gitCommand}");
             result = await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
