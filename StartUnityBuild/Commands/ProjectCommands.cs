@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Newtonsoft.Json;
 using NLog;
 using Prg.Util;
 using PrgBuild;
@@ -188,7 +189,7 @@ public static class ProjectCommands
             Notes = releaseNotes
         });
         Form1.AddLine($".update", $"Build history log entries #{entries.List.Count} in {jsonFilename}");
-        Serializer.SaveStateJson(entries, jsonFilename);
+        Serializer.SaveStateJson(entries, jsonFilename, Formatting.Indented);
     }
 
     /// <summary>

@@ -9,9 +9,9 @@ namespace StartUnityBuild
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         private static readonly Encoding Encoding = new UTF8Encoding(false);
 
-        public static void SaveStateJson(object dataObject, string filename)
+        public static void SaveStateJson(object dataObject, string filename, Formatting formatting = Formatting.None)
         {
-            var jsonString = JsonConvert.SerializeObject(dataObject);
+            var jsonString = JsonConvert.SerializeObject(dataObject, formatting);
             try
             {
                 File.WriteAllText(filename, jsonString, Encoding);
