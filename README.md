@@ -54,7 +54,8 @@ Build output will always be created in folder named `build<PLATFORM_NAME>` in UN
 #### Android
 
 The build system supports only [The Android App Bundle format](https://developer.android.com/guide/app-bundle/app-bundle-format) (.aab)
-that you can upload to Google Play.
+that you can upload to Google Play.  
+We set `PlayerSettings.Android.minifyRelease` = **true** and `PlayerSettings.Android.useCustomKeystore` = **true** _(for signing)_.
 
 `.\etc\secretKeys\AndroidOptions.txt` for Android production build config.
 
