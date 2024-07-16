@@ -1,4 +1,4 @@
-### Simple Build System for UNITY
+## Simple Build System for UNITY
 
 This is Simple (wizard-like) Build System for UNITY applications _(works on Windows platform)_.
 
@@ -23,7 +23,7 @@ This is totally optional package to create a history (list) of created WebGL bui
 
 **etc** contains some supporting folders, for example [Actual Installer](https://www.actualinstaller.com/) configuration file for creating a setup program for the UI.
 
-### Configuration
+## Configuration
 
 The build system requires and uses some files and folders for its configuration and operation.  
 Most of the files and folders has hard coded names or are given in configuration files itself.
@@ -34,12 +34,14 @@ They can be copied with their respective .meta files from `DemoProject\Assets\Pr
 Working folder for `StartUnityBuild` executable should be set to be the same as the UNITY project that is going to be built.  
 Optionally it can be set from `File->Set Project Folder` menu that makes it global setting to be used if current working folder for `StartUnityBuild` is not actual UNITY project folder.
 
-#### Folders
+### Folders
 
 `.\etc\batchBuild` contains config file(s) for the build system.  
 `.\etc\secretKeys` contains all (sensitive) files that are not kept in version control but required for the build.
 
-#### Files
+Build output will always be created in folder named `build<PLATFORM_NAME>` in UNITY project folder.
+
+### Files
 
 `etc\batchBuild\_auto_build.env` is the config file for the build system.
 
@@ -47,13 +49,41 @@ Optionally it can be set from `File->Set Project Folder` menu that makes it glob
 `ProjectSettings\ProjectVersion.txt` is used to determine which UNITY version and executable is used for the build.
 `Assets\Resources\releasenotes.txt` is UNITY text asset for optional WebGL build history list.
 
+### Platforms
+
 #### Android
+
+The build system supports only [The Android App Bundle format](https://developer.android.com/guide/app-bundle/app-bundle-format) (.aab)
+that you can upload to Google Play.
 
 `.\etc\secretKeys\AndroidOptions.txt` for Android production build config.
 
-Android build for [Google Play](https://play.google.com/store/apps) using [Google Play Console](https://developer.android.com/distribute/console) requires signing the `.aab` output file using [UNITY keystore](https://docs.unity3d.com/Manual/android-keystore.html) and its related settings like passwords.
-These are kept in the `AndroidOptions.txt` file that contains the settings (used in [PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.html) 
-and [Android PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.Android.html)) required to sign the build.
+Android build for [Google Play](https://play.google.com/store/apps) 
+using [Google Play Console](https://developer.android.com/distribute/console) 
+requires **signing** the `.aab` output file using [UNITY keystore](https://docs.unity3d.com/Manual/android-keystore.html) 
+and its related settings like passwords.  
+These are kept in the `AndroidOptions.txt` file that contains 
+the settings (used in [PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.html) 
+and [Android PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.Android.html)) used to sign the build.
+
+Google **Play App Signing** is mandatory for apps created after August 2021.
+Read [Use Play App Signing](https://support.google.com/googleplay/android-developer/answer/9842756) for more.
+
+Output filename will be `<ProductName>_<Version>.aab`.
+
+#### WebGL
+
+WebGL sets build output compression to [Brotli](https://en.wikipedia.org/wiki/Brotli) because it produces smallest output size for bandwidth consumption.
+
+Output filename is always `index.html`.
+
+#### Desktop
+
+For Desktop build there is no special settings that are set or enforced by the build system.
+
+Output filename will be `<ProductName>_<Version>.exe`.
+
+### Third parties
 
 #### GameAnalytics
 
@@ -64,7 +94,7 @@ and [Android PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSett
 `GameAnalytics_Settings.asset` file with _correct production API keys_ can be put in `.\etc\secretKeys\` folder
 and it will copied over original versioned file before UNITY build so that the built product has correct API keys asset inside.
 
-### StartUnityBuild
+## StartUnityBuild
 
 `StartUnityBuild` has wizard style workflow to create a UNITY build for one or more target platforms.
 
@@ -79,7 +109,7 @@ Workflow goes in following steps:
 * **④ Start Build** to start the UNITY application build using UNITY executable (in batch mode) to do this.
 * **⑤ Post Process** is optional tasks to do after build(s). Currently used for WebGL builds.
 
-#### * UNITY 'Product' Version (and Android Bundle Version Code) automation (4)
+### * UNITY 'Product' Version (and Android Bundle Version Code) automation (4)
 
 The build system automatically updates Android Bundle Version Code every time **Update Build** operation is done.  
 Android Bundle Version Code is used like PATCH version in [Semantic Versioning](https://semver.org/).
@@ -91,34 +121,34 @@ For UNITY 'Product' Version there is there options that are automatically picked
 
 If UNITY 'Product' Version is not recognized, it is not updated.
 
-#### * Changing files during build (5)
+### * Changing files during build (5)
 
 All version controlled files that are changed during build are reverted back to their original (pre-build) state after build.  
 Currently this requires manual configuration in `_auto_build.env` file.
 
-### PrgBuild
+## PrgBuild
 
 `PrgBuild` is UNITY support library that actually invokes UNITY [BuildPipeline](https://docs.unity3d.com/ScriptReference/BuildPipeline.html) to do the build for one platform at a time.  
 This library is Editor only and can not be included in final built application.
 
-### PrgFrame
+## PrgFrame
 
 `PrgFrame` is UNITY support library containing general utilies for any UNITY application.  
 This library can  be included in final built application.
 
-### DemoProject
+## DemoProject
 
 `DemoProject` is simple one scene project to test the build system and libraries in real world use case.
 
-### WebGlBuilds
+## WebGlBuilds
 
 `WebGlBuilds` contains example HTML page and javascript to create a list of builds from JSON file (that can be created in WebGL post processing phase by the build system).
 
-### Actual Installer
+## Actual Installer
 
 Actual Installer can be used to create a installation program for `StartUnityBuild` (the build system).
 
-### Example configuration file
+## Example configuration file
 
 Below is example configuration file for WebGL build (with GameAnalytics).
 
