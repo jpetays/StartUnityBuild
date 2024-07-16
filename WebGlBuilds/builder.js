@@ -4,7 +4,6 @@ window.onload = (event) => {
     const table = document.getElementById("builds");
     console.log("table", table);
     fetchJSON(buildHistoryPath).then(history => {
-        console.log("history", history);
         buildTable(table, history);
     });
 };
@@ -25,8 +24,8 @@ function buildTable(table, history) {
         insertMessage(table, "No builds available for testing");
         return
     }
+    console.log("history", array);
     array.forEach(item => {
-        console.log("item", item);
         insertRow(table, item);
     });
 }
@@ -49,5 +48,8 @@ function insertRow(table, item) {
 }
 
 function createLink(href, label) {
-    return `<a href="${href}" rel="external nofollow noopener" target="_blank">${label} &nbsp; <i class="fa fa-external-link" style="font-size:16px"></i></a>`;
+    const part1 = `<a href="${href}" rel="external nofollow noopener" target="_blank">${label}</a>`;
+    const part2 = `<a href="${href}" rel="external nofollow noopener" target="_blank"  class="spacer">&nbsp;&nbsp;</a>`;
+    const part3 = `<a href="${href}" rel="external nofollow noopener" target="_blank"><i class="fa fa-external-link" style="font-size:16px"></i></a>`;
+    return `${part1}${part2}${part3}`;
 }

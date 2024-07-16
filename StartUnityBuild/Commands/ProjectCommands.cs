@@ -53,7 +53,7 @@ public static class ProjectCommands
                     }
                     if (builder.Length > 0)
                     {
-                        builder.Append("<br />");
+                        builder.Append("\r\n");
                     }
                     builder.Append(line);
                 }
