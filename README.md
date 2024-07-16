@@ -1,10 +1,10 @@
 ## Simple Build System for UNITY
 
-This is Simple (wizard-like) Build System for UNITY applications _(works on Windows platform)_.
+This is Simple (wizard-like) Production Build System for UNITY applications _(works on Windows platform)_.
 
 ![image](https://github.com/jpetays/StartUnityBuild/blob/main/etc/images/readme_pic01.gif)
 
-'Simple' means that is simple to use after it has been setup and configured properly :-)
+'Simple' means that is simple to use after it has been setup and configured properly 😊
 
 Just press 'buttons' **① - ② - ③ - ④ - ⑤** and you are done in no time.
 
@@ -26,7 +26,7 @@ This is totally optional package to create a history (list) of created WebGL bui
 ## Configuration
 
 The build system requires and uses some files and folders for its configuration and operation.  
-Most of the files and folders has hard coded names or are given in configuration files itself.
+Most of the files and folders has hard coded names or are given in the configuration files themselves.
 
 The UNITY application that is going to be built using the build system needs to have both `PrgBuild` and `PrgFrame` DLLs imported.  
 They can be copied with their respective .meta files from `DemoProject\Assets\PrgAssemblies` folder for minimal fuss.
@@ -34,12 +34,12 @@ They can be copied with their respective .meta files from `DemoProject\Assets\Pr
 Working folder for `StartUnityBuild` executable should be set to be the same as the UNITY project that is going to be built.  
 Optionally it can be set from `File->Set Project Folder` menu that makes it global setting to be used if current working folder for `StartUnityBuild` is not actual UNITY project folder.
 
+**Build output** will always be created in folder named `build<PLATFORM_NAME>` in the UNITY project folder.
+
 ### Folders
 
 `.\etc\batchBuild` contains config file(s) for the build system.  
-`.\etc\secretKeys` contains all (sensitive) files that are not kept in version control but required for the build.
-
-Build output will always be created in folder named `build<PLATFORM_NAME>` in UNITY project folder.
+`.\etc\secretKeys` contains all (sensitive) files that are not kept in version control but required for the (production) build.
 
 ### Files
 
@@ -65,10 +65,11 @@ requires **signing** the `.aab` output file using [UNITY keystore](https://docs.
 and its related settings like passwords.  
 These are kept in the `AndroidOptions.txt` file that contains 
 the settings (used in [PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.html) 
-and [Android PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.Android.html)) used to sign the build.
+and [Android PlayerSettings](https://docs.unity3d.com/ScriptReference/PlayerSettings.Android.html)) required to sign the build.
 
 Google **Play App Signing** is mandatory for apps created after August 2021.
-Read [Use Play App Signing](https://support.google.com/googleplay/android-developer/answer/9842756) for more.
+Read [Use Play App Signing](https://support.google.com/googleplay/android-developer/answer/9842756) for more.  
+_If you accidentally lose your .aab signing keystore you should be able recover it from Google Play._
 
 Output filename will be `<ProductName>_<Version>.aab`.
 
@@ -89,11 +90,12 @@ Output filename will be `<ProductName>_<Version>.exe`.
 #### GameAnalytics
 
 `.\etc\secretKeys\GameAnalytics_Settings.asset` GameAnalytics production build settings (non versioned).
-`.\Assets\Resources\GameAnalytics\Settings.asset` GameAnalytics settings asset file in version control.
+`.\Assets\Resources\GameAnalytics\Settings.asset` GameAnalytics settings asset file in version control for production.
 
 [GameAnalytics](https://gameanalytics.com/) uses secret API keys that should not be kept in version control.  
 `GameAnalytics_Settings.asset` file with _correct production API keys_ can be put in `.\etc\secretKeys\` folder
-and it will copied over original versioned file before UNITY build so that the built product has correct API keys asset inside.
+and it will copied over original versioned file before UNITY build so that the built product has correct API keys asset inside.  
+_This file is reverted back to original version controlled one after the build._
 
 ## StartUnityBuild
 
@@ -102,6 +104,9 @@ and it will copied over original versioned file before UNITY build so that the b
 Supported platforms are Android, WebGL, Win64.
 
 Supported third party integrations are: GameAnalytics.
+
+**Note** that git workspace should be clean before doing any builds. `Git pull` requires this to work!  
+_You can keep files in stash but for simplicity it is better to have empty stash as well._
 
 Workflow goes in following steps:
 * **① Git pull** to update local project folder to latest from version control.
