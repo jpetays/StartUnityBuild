@@ -4,7 +4,7 @@ AIEdition=1
 GUID={AA5BADAE-9B32-4D82-BF01-BC91DE74C7FE}
 AppName=Start Unity Build
 AppEdition=
-AppVersion=1.1.3+45441610117540bd74aaf6d3ba050009a2045b58
+AppVersion=1.2.2+2f011cd310cf3a481f465f2116ee17681ee1cb21
 GetVerFromExe=1
 AppDescription=StartUnityBuild
 CompanyName=Jari Petays
@@ -37,15 +37,15 @@ PackageType=0
 SetupFolder=Q:\Work\github\jpetays\StartUnityBuild\dist
 SetupFileName=Setup
 IconFile=Default
-SourceDir=Q:\Work\github\jpetays\StartUnityBuild\temp\StartUnityBuild
+SourceDir=Q:\Work\github\jpetays\StartUnityBuild\StartUnityBuild\bin\Release\net8.0-windows
 InstallDir=<AppData>\<AppName>
 MainExe=<InstallDir>\StartUnityBuild.exe
 ProgramGroup=<AppName>
-Uninstall=0
-ShowAddRemove=0
+Uninstall=1
+ShowAddRemove=1
 ProductIcon=0
 SilentUninstall=0
-UninstallForce=0
+UninstallForce=1
 UninstallRestart=0
 UninstallSettings=0
 UninstallSettingsCommand=
@@ -94,7 +94,7 @@ DialogDestinationFolder=1
 DialogAdditionalTasks=1
 DialogReady=0
 DialogFinish=1
-ShowPublisher=1
+ShowPublisher=0
 HideFileNames=1
 Beep=1
 License=
@@ -151,9 +151,9 @@ CustomActionName=Visit Web Site
 CustomActionCommand=<WebSite>
 CustomActionChecked=0
 CustomActionAdmin=0
-TotalFiles=0
-SourceDirFiles=6
-SourceDirSize=1544932
+TotalFiles=1
+SourceDirFiles=25
+SourceDirSize=31213940
 
 [GUI]
 FontName=Verdana
@@ -167,6 +167,10 @@ LogoStretch=0
 LogoProportional=0
 LogoTransparent=1
 
+[Files]
+0=<AIDir>\Uninstall.exe?<InstallDir>\Uninstall.exe?1?1
+
 [Shortcuts]
 0=<Desktop>*?<AppName>*?<MainExecutable>*?*?*?<InstallDir>*?*?0*?Normal*?No
+1=<ProgramsMenu>*?<AppName>*?<MainExecutable>*?*?*?<InstallDir>*?*?0*?Normal*?No
 

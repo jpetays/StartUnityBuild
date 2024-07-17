@@ -14,19 +14,20 @@
         <ApplicationIcon>Tpdkdesign.net-Refresh-Cl-Windows-Download.ico</ApplicationIcon>
         <SignAssembly>False</SignAssembly>
         <RepositoryUrl>https://github.com/jpetays/StartUnityBuild</RepositoryUrl>
+        <Authors>Jari Petays</Authors>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <Deterministic>False</Deterministic>
+      <Deterministic>True</Deterministic>
       <IsPublishable>False</IsPublishable>
-      <DebugType>embedded</DebugType>
+      <DebugType>none</DebugType>
       <DefineConstants>$(DefineConstants);PRG_BUILD_TEST</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <Deterministic>False</Deterministic>
+      <Deterministic>True</Deterministic>
       <IsPublishable>False</IsPublishable>
-      <DebugType>embedded</DebugType>
+      <DebugType>none</DebugType>
     </PropertyGroup>
 
     <ItemGroup>

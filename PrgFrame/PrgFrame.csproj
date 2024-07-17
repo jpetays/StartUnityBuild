@@ -5,7 +5,17 @@
     <Nullable>enable</Nullable>
     <RootNamespace>PrgFrame</RootNamespace>
     <Version>$(VersionPrefix)1.0.2</Version>
-    <Authors>$(AssemblyName)Jari Petays</Authors>
+    <Authors>Jari Petays</Authors>
+    <Copyright>Jari Petays</Copyright>
+    <Description>Prg Framework</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <IsPublishable>False</IsPublishable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <IsPublishable>False</IsPublishable>
   </PropertyGroup>
 
   <ItemGroup>
