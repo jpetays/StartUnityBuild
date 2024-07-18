@@ -97,7 +97,7 @@ Output filename will be `<ProductName>_<Version>.exe`.
 and it will copied over original versioned file before UNITY build so that the built product has correct API keys asset inside.  
 _This file is reverted back to original version controlled one after the build._
 
-## StartUnityBuild
+## StartUnityBuild UI
 
 `StartUnityBuild` has wizard style workflow to create a UNITY build for one or more target platforms.
 
@@ -132,27 +132,42 @@ If UNITY 'Product' Version is not recognized, it is not updated.
 All version controlled files that are changed during build are reverted back to their original (pre-build) state after build.  
 Currently this requires manual configuration in `_auto_build.env` file.
 
-## PrgBuild
+## Support DLLs
+
+These DLLs (assemblies) has dependency both to UNITY runtime and Editor libraries.
+
+### PrgBuild
 
 `PrgBuild` is UNITY support library that actually invokes UNITY [BuildPipeline](https://docs.unity3d.com/ScriptReference/BuildPipeline.html) to do the build for one platform at a time.  
-This library is Editor only and can not be included in final built application.
+This library is `Editor only` and can not be included in final built application.
 
-## PrgFrame
+### PrgFrame
 
-`PrgFrame` is UNITY support library containing general utilies for any UNITY application.  
+`PrgFrame` is UNITY support library containing general utilities for any UNITY application.  
 This library can  be included in final built application.
 
-## DemoProject
+### DemoProject
 
 `DemoProject` is simple one scene project to test the build system and libraries in real world use case.
 
-## WebGlBuilds
+## Other notable folders
+
+### WebGlBuilds
 
 `WebGlBuilds` contains example HTML page and javascript to create a list of builds from JSON file (that can be created in WebGL post processing phase by the build system).
 
-## Actual Installer
+### Actual Installer
 
 Actual Installer can be used to create a installation program for `StartUnityBuild` (the build system).
+
+`StartUnityBuild.aip` project can be found in `.\etc\installer` folder.
+
+## Building
+
+[Visual Studio Community 2022](https://visualstudio.microsoft.com/vs/community/) is used to build all binaries.
+
+`_build_PrgBuild_release.bat` builds release version of support DLLs.  
+`_build_StartUnityBuild_release.bat` builds release version of StartUnityBuild UI.
 
 ## Example configuration file
 
