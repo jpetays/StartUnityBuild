@@ -66,7 +66,7 @@ public static class Files
         path.Replace(UniqueNameName, uniqueName);
 
     public static string ExpandDeliveryTrackName(string path, string deliveryTrack) =>
-        path.Replace(DeliveryTrackName, deliveryTrack);
+        path.Replace(DeliveryTrackName.ToLower(), deliveryTrack);
 
     [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
     public static void LoadProjectVersionFile(string workingDirectory, out string unityVersion)
