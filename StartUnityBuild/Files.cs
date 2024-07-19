@@ -143,10 +143,6 @@ public static class Files
                 settings.CopyDirectoriesAfter.Add(key, value);
             }
         }
-        if (string.IsNullOrWhiteSpace(settings.DeliveryTrack))
-        {
-            settings.DeliveryTrack = BuildSettings.DefaultDeliveryTrack;
-        }
     }
 
     public static List<Tuple<string, string>> GetCopyFiles(BuildSettings settings)

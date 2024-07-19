@@ -72,6 +72,10 @@ public partial class Form1 : Form
                 $"{_baseTitle} {_settings.UnityEditorVersion} - {_settings.ProductName}" +
                 $" - Target{(_settings.BuildTargets.Count > 1 ? "" : "s")} [{string.Join(',', _settings.BuildTargets)}]" +
                 $" in {_settings.WorkingDirectory}";
+            if (!string.IsNullOrWhiteSpace(_settings.DeliveryTrack))
+            {
+                Text = $"{Text} - Track {_settings.DeliveryTrack}";
+            }
             UpdateProjectInfo(_settings.BuildTargets.Count > 0 ? Color.Magenta : Color.Red);
             StartupCommand();
             if (_settings.BuildTargets.Count == 0)

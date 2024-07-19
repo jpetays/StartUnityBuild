@@ -7,8 +7,6 @@ namespace StartUnityBuild;
 /// </summary>
 public class BuildSettings(string workingDirectory)
 {
-    public const string DefaultDeliveryTrack = "Test";
-
     public string WorkingDirectory { get; } = workingDirectory;
 
     /// <summary>
@@ -52,9 +50,9 @@ public class BuildSettings(string workingDirectory)
     public string PushOptions { get; set; } = "";
 
     /// <summary>
-    /// Delivery Track name for file system etc. operations.
+    /// Optional Delivery Track name for file system etc. operations.
     /// </summary>
-    public string DeliveryTrack { get; set; } = DefaultDeliveryTrack;
+    public string DeliveryTrack { get; set; } = "";
 
     /// <summary>
     /// Copy files before build (source, target).
