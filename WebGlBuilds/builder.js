@@ -1,6 +1,16 @@
 const buildHistoryPath = 'build.history.json';
 
-window.onload = (event) => {
+// noinspection JSUnusedGlobalSymbols
+const Item = {
+    Ver: "2",
+    Track: "Test",
+    Date: "2024-07-19 09:30",
+    Label: "1.0.7",
+    HRef: "/Test-1_0_7_201_247418",
+    Notes: "Work In Progress for Demo 1.1.x"
+};
+
+window.onload = (_) => {
     const table = document.getElementById("builds");
     console.log("table", table);
     fetchJSON(buildHistoryPath).then(history => {
@@ -13,8 +23,7 @@ async function fetchJSON(path) {
     if (!response.ok) {
         return {"List": []};
     }
-    const movies = await response.json();
-    return movies;
+    return await response.json();
 }
 
 function buildTable(table, history) {
@@ -43,7 +52,8 @@ function insertRow(table, item) {
     const label = row.insertCell();
     const notes = row.insertCell();
     date.innerText = item.Date;
-    label.innerHTML = createLink(item.HRef, item.Label);
+    const labelText = item.Ver > 1 ? `${item.Track} ${item.Label}` : item.Label;
+    label.innerHTML = createLink(item.HRef, labelText);
     notes.innerText = item.Notes;
 }
 

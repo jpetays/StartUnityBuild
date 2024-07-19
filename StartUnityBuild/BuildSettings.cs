@@ -7,6 +7,8 @@ namespace StartUnityBuild;
 /// </summary>
 public class BuildSettings(string workingDirectory)
 {
+    public const string DefaultDeliveryTrack = "Test";
+
     public string WorkingDirectory { get; } = workingDirectory;
 
     /// <summary>
@@ -48,6 +50,11 @@ public class BuildSettings(string workingDirectory)
     /// Git options for push command.
     /// </summary>
     public string PushOptions { get; set; } = "";
+
+    /// <summary>
+    /// Delivery Track name for file system etc. operations.
+    /// </summary>
+    public string DeliveryTrack { get; set; } = DefaultDeliveryTrack;
 
     /// <summary>
     /// Copy files before build (source, target).
@@ -105,9 +112,9 @@ public class BuildSettings(string workingDirectory)
             if (string.IsNullOrEmpty(_webGlFolderName))
             {
                 var copyDirs = Files.GetCopyDirs(this, BuildName.WebGL);
-                _webGlFolderName = copyDirs.Count == 1
-                    ? Files.ExpandUniqueName(copyDirs[0].Item2, BuildSequenceName)
-                    : "";
+                _webGlFolderName = copyDirs.Count == 1 ? copyDirs[0].Item2 : "";
+                _webGlFolderName = Files.ExpandDeliveryTrackName(_webGlFolderName, DeliveryTrack);
+                _webGlFolderName = Files.ExpandUniqueName(_webGlFolderName, BuildSequenceName);
             }
             return _webGlFolderName;
         }

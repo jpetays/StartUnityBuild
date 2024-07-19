@@ -35,6 +35,7 @@ public static class Files
     private const string UnityVersionName = "$UNITY_VERSION$";
     private const string BuildTargetName = "$BUILD_TARGET$";
     private const string UniqueNameName = "$UNIQUE_NAME$";
+    private const string DeliveryTrackName = "$TRACK_NAME$";
 
     public static string Quoted(string path) => path.Contains(' ') ? $"\"{path}\"" : path;
 
@@ -63,6 +64,9 @@ public static class Files
 
     public static string ExpandUniqueName(string path, string uniqueName) =>
         path.Replace(UniqueNameName, uniqueName);
+
+    public static string ExpandDeliveryTrackName(string path, string deliveryTrack) =>
+        path.Replace(DeliveryTrackName, deliveryTrack);
 
     [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
     public static void LoadProjectVersionFile(string workingDirectory, out string unityVersion)
@@ -99,6 +103,11 @@ public static class Files
             var tokens = line.Split('=', StringSplitOptions.RemoveEmptyEntries);
             var key = tokens[0].Trim();
             var value = tokens[1].Trim();
+            if (key == "deliveryTrack")
+            {
+                settings.DeliveryTrack = tokens[1].Trim();
+                continue;
+            }
             if (key == "buildTargets")
             {
                 var targets = tokens[1].Split(',');
@@ -133,6 +142,10 @@ public static class Files
             {
                 settings.CopyDirectoriesAfter.Add(key, value);
             }
+        }
+        if (string.IsNullOrWhiteSpace(settings.DeliveryTrack))
+        {
+            settings.DeliveryTrack = BuildSettings.DefaultDeliveryTrack;
         }
     }
 

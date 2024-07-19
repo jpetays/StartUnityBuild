@@ -33,7 +33,7 @@ public static class ProjectCommands
         var linkHref = $"{StripEnd(settings.WebGlHostName)}/{StripStart(webGlFolderName)}";
         var releaseNotes = GetReleaseNotesText();
         var buildLogEntryFile = settings.WebGlBuildHistoryJson;
-        WriteBuildLogEntry(DateTime.Now, linkLabel, linkHref, releaseNotes, buildLogEntryFile);
+        WriteBuildLogEntry(settings.DeliveryTrack, DateTime.Now, linkLabel, linkHref, releaseNotes, buildLogEntryFile);
         return;
 
         string StripStart(string path) => path.StartsWith('/') ? path[1..] : path;
@@ -180,13 +180,14 @@ public static class ProjectCommands
         }
     }
 
-    private static void WriteBuildLogEntry(DateTime date, string linkLabel, string linkHref, string releaseNotes,
-        string jsonFilename)
+    private static void WriteBuildLogEntry(string deliveryTrack, DateTime date, string linkLabel, string linkHref,
+        string releaseNotes, string jsonFilename)
     {
         var entries = Serializer.LoadStateJson<BuildLogEntries>(jsonFilename) ?? new BuildLogEntries();
         entries.List.Insert(0, new BuildLogEntry
         {
-            Ver = "1",
+            Ver = "2",
+            Track = deliveryTrack,
             Date = $"{date:yyyy-MM-dd HH:mm}",
             Label = linkLabel,
             HRef = linkHref,
@@ -204,6 +205,7 @@ public static class ProjectCommands
     private class BuildLogEntry
     {
         public string Ver { get; set; } = "";
+        public string Track { get; set; } = "";
         public string Date { get; set; } = "";
         public string Label { get; set; } = "";
         public string HRef { get; set; } = "";
