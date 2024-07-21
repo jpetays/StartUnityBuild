@@ -105,6 +105,11 @@ public static class ProjectCommands
                     // Set version as date + patch.
                     productVersion = SemVer.CreateVersionDateWithPatch(productVersion, today, int.Parse(bundleVersion));
                 }
+                else if (SemVer.IsVersionDate(productVersion))
+                {
+                    // Set version as date.
+                    productVersion = SemVer.CreateVersionDate(productVersion, today);
+                }
                 else if (SemVer.HasDigits(productVersion, 3))
                 {
                     // Synchronize productVersion with bundleVersion in MAJOR.MINOR.PATCH format.

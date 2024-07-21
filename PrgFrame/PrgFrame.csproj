@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
     <RootNamespace>PrgFrame</RootNamespace>
-    <Version>$(VersionPrefix)1.0.2</Version>
+    <Version>$(VersionPrefix)1.0.3</Version>
     <Authors>Jari Petays</Authors>
     <Copyright>Jari Petays</Copyright>
     <Description>Prg Framework</Description>

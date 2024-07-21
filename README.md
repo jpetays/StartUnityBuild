@@ -120,12 +120,13 @@ Workflow goes in following steps:
 The build system automatically updates Android Bundle Version Code every time **Update Build** operation is done.  
 Android Bundle Version Code is used like PATCH version in [Semantic Versioning](https://semver.org/).
 
-For UNITY 'Product' Version there is there options that are automatically picked:
+For UNITY 'Product' Version these are the options that are automatically picked:
 * Two digit MAJOR.MINOR version is not updated.
 * Three digit MAJOR.MINOR.PATCH <= PATCH version is replaced by Bundle Version Code.
-* Four digit DD.MM.YYYY.PATCH or YYYY.MM.DD.PATCH <= DATE is replaced by current date, PATCH version is replaced by Bundle Version Code.
+* Three digit DD.MM.YYYY or YYYY.MM.DD <= DATE is replaced by current date.
+* Four digit DD.MM.YYYY.PATCH or YYYY.MM.DD.PATCH <= DATE is replaced by current date and PATCH version is replaced by Bundle Version Code.
 
-If UNITY 'Product' Version is not recognized, it is not updated.
+If UNITY 'Product' Version is not recognized as one of the above, it is not updated.
 
 ### * Changing files during build (5)
 

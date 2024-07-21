@@ -117,10 +117,36 @@ namespace Prg.Util
                     return false;
                 }
                 var ci = CultureInfo.InvariantCulture;
-                const DateTimeStyles styles = DateTimeStyles.None;
                 var dateString = $"{n[0]}.{n[1]}.{n[2]}";
-                if (DateTime.TryParseExact(dateString, "dd.MM.yyyy", ci, styles, out _)
-                    || DateTime.TryParseExact(dateString, "yyyy.MM.dd", ci, styles, out _))
+                return IsVersionDate(dateString);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks that version string is in dd.mm.yyyy or yyyy.mm.dd format.
+        /// </summary>
+        public static bool IsVersionDate(string version)
+        {
+            try
+            {
+                var n = Array.ConvertAll(version.Split('.'), int.Parse);
+                if (n.Length != 3)
+                {
+                    return false;
+                }
+                // https://learn.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings
+                // "d" - The day of the month, from 1 to 31.
+                // "M" - The month, from 1 to 12.
+                // "yyyy" - The year as a four-digit number.
+                const DateTimeStyles dateTimeStyle = DateTimeStyles.AssumeLocal | DateTimeStyles.NoCurrentDateDefault;
+                var culture = CultureInfo.InvariantCulture;
+                var dateString = $"{n[0]}-{n[1]}-{n[2]}";
+                if (DateTime.TryParseExact(dateString, "d-M-yyyy", culture, dateTimeStyle, out _)
+                    || DateTime.TryParseExact(dateString, "yyyy-M-d", culture, dateTimeStyle, out _))
                 {
                     return true;
                 }
@@ -155,6 +181,37 @@ namespace Prg.Util
                     n[2] = date.Day;
                 }
                 n[3] = patch;
+                return string.Join('.', n);
+            }
+            catch (Exception x)
+            {
+                throw new UnityException(
+                    $"Unable to set date+patch in '{version}': {x.GetType().Name} {x.Message}");
+            }
+        }
+
+        public static string CreateVersionDate(string version, DateTime date)
+        {
+            try
+            {
+                var n = Array.ConvertAll(version.Split('.'), int.Parse);
+                if (n.Length != 3)
+                {
+                    throw new UnityException(
+                        $"Unable to set date in '{version}': length must be 3 digits");
+                }
+                if (n[0] <= 31)
+                {
+                    n[0] = date.Day;
+                    n[1] = date.Month;
+                    n[2] = date.Year;
+                }
+                else
+                {
+                    n[0] = date.Year;
+                    n[1] = date.Month;
+                    n[2] = date.Day;
+                }
                 return string.Join('.', n);
             }
             catch (Exception x)
