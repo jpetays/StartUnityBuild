@@ -30,6 +30,11 @@ public static class BuildCommands
             var success = false;
             for (var i = 0; i < settings.BuildTargets.Count; ++i)
             {
+                if (i > 0)
+                {
+                    // Give some time for all background processes to shutdown in UNITY build infra.
+                    Thread.Sleep(3000);
+                }
                 var buildTarget = settings.BuildTargets[i];
                 success = await BuildTarget(buildTarget);
                 settings.BuildResult[i] = success;
