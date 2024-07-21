@@ -458,7 +458,7 @@ public partial class Form1 : Form
             _instance.Invoke(() => AddLine(line, color));
             return;
         }
-        line = $"{DateTime.Now:hh:mm:ss} {line}";
+        line = $"{DateTime.Now:HH:mm:ss} {line}";
         Logger.Trace(line);
         var listView = _instance.listView1;
         listView.BeginUpdate();
