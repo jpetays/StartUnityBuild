@@ -12,6 +12,7 @@ namespace StartUnityBuild;
 [SuppressMessage("ReSharper", "LocalizableElement")]
 public partial class Form1 : Form
 {
+    private const int WatchMinutes = 5;
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private readonly string _baseTitle;
 
@@ -24,6 +25,7 @@ public partial class Form1 : Form
 
     private bool _isCommandExecuting;
     private string _commandLabel = "";
+    private int _commandWatchMinutes;
     private DateTime _commandStartTime;
 
     public Form1()
@@ -130,6 +132,11 @@ public partial class Form1 : Form
         {
             var duration = DateTime.Now - _commandStartTime;
             SetStatus($"{_commandLabel} {duration:mm':'ss}", Color.Green);
+            if (duration.Minutes >= _commandWatchMinutes)
+            {
+                _commandWatchMinutes += WatchMinutes;
+                AddLine("timer", $"-just notice that {_commandLabel} has been running for {duration:mm':'ss}");
+            }
         };
         var order = -1;
         SetCaption(gitStatusToolStripMenuItem, ++order);
@@ -254,6 +261,7 @@ public partial class Form1 : Form
         _isCommandExecuting = true;
         _commandLabel = commandLabel;
         _commandStartTime = DateTime.Now;
+        _commandWatchMinutes = WatchMinutes;
         timer1.Start();
         ClearLines();
         try
