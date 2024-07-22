@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 
@@ -21,6 +22,24 @@ namespace PrgFrame.Util
                 .ToList()
                 .FirstOrDefault();
             return file ?? "";
+        }
+
+        public static void CreateDirectoryForFile(string path)
+        {
+            if (File.Exists(path))
+            {
+                return;
+            }
+            var directory = Path.GetDirectoryName(path);
+            if (string.IsNullOrEmpty(directory))
+            {
+                throw new ArgumentException($"Unable to get directory from path: {path}");
+            }
+            if (Directory.Exists(directory))
+            {
+                return;
+            }
+            Directory.CreateDirectory(directory);
         }
 
         public static string WindowsPath(string path)
