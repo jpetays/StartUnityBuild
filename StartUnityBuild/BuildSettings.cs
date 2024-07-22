@@ -167,25 +167,33 @@ public class BuildSettings(string workingDirectory)
     }
 
     /// <summary>
-    /// Gets cached and lazy-initialized unique sequence name for this build settings instance
+    /// Gets cached and lazy-initialized <c>ProductVersion</c> + unique sequence name for this build settings instance
     /// that is suitable to be used for example in file or folder names.
     /// </summary>
-    public string BuildSequenceName
+    private string BuildSequenceName
     {
         get
         {
-            if (string.IsNullOrEmpty(_uniqueBuildName))
+            if (string.IsNullOrEmpty(_uniqueBuildSequence))
             {
-                _uniqueBuildName =
-                    $"{PathUtil.SanitizePath(ProductVersion).Replace('.', '_')}_{DateTime.Today.DayOfYear}_{RandomUtil.StringFromTicks(6)}";
+                _versionForUniqueBuildSequence = ProductVersion;
+                _uniqueBuildSequence =
+                    $"{PathUtil.SanitizePath(_versionForUniqueBuildSequence).Replace('.', '_')}" +
+                    $"_{DateTime.Today.DayOfYear}_{RandomUtil.StringFromTicks(6)}";
             }
-            return _uniqueBuildName;
+            if (ProductVersion != _versionForUniqueBuildSequence)
+            {
+                throw new InvalidOperationException(
+                    $"Product version '{_versionForUniqueBuildSequence}' has been changed to '{ProductVersion}, current BuildSequence is invalid");
+            }
+            return _uniqueBuildSequence;
         }
     }
 
     private string _webGlFolderName = "";
     private string _webGlBuildDir = "";
-    private string _uniqueBuildName = "";
+    private string _uniqueBuildSequence = "";
+    private string _versionForUniqueBuildSequence = "";
 
     public override string ToString()
     {
