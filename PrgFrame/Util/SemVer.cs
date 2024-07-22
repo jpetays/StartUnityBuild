@@ -73,7 +73,7 @@ namespace Prg.Util
             }
             catch (Exception x)
             {
-                throw new UnityException(
+                throw new InvalidOperationException(
                     $"Unable to get version digit {digitPos} from '{version}': {x.GetType().Name} {x.Message}");
             }
         }
@@ -91,7 +91,7 @@ namespace Prg.Util
             }
             catch (Exception x)
             {
-                throw new UnityException(
+                throw new InvalidOperationException(
                     $"Unable to update version digit {digitPos} in '{version}': {x.GetType().Name} {x.Message}");
             }
         }
@@ -185,7 +185,7 @@ namespace Prg.Util
                 var n = Array.ConvertAll(version.Split('.'), int.Parse);
                 if (n.Length != 4)
                 {
-                    throw new UnityException(
+                    throw new InvalidOperationException(
                         $"Unable to set date+patch in '{version}': length must be 4 digits");
                 }
                 if (n[0] <= 31)
@@ -205,7 +205,7 @@ namespace Prg.Util
             }
             catch (Exception x)
             {
-                throw new UnityException(
+                throw new InvalidOperationException(
                     $"Unable to set date+patch in '{version}': {x.GetType().Name} {x.Message}");
             }
         }
@@ -217,7 +217,7 @@ namespace Prg.Util
                 var n = Array.ConvertAll(version.Split('.'), int.Parse);
                 if (n.Length != 3)
                 {
-                    throw new UnityException(
+                    throw new InvalidOperationException(
                         $"Unable to set date in '{version}': length must be 3 digits");
                 }
                 if (n[0] <= 31)
@@ -236,7 +236,7 @@ namespace Prg.Util
             }
             catch (Exception x)
             {
-                throw new UnityException(
+                throw new InvalidOperationException(
                     $"Unable to set date+patch in '{version}': {x.GetType().Name} {x.Message}");
             }
         }
