@@ -15,6 +15,14 @@ namespace Prg.Util
     /// </summary>
     public static class SemVer
     {
+        public enum SemVerType
+        {
+            MajorMinorPatch,
+            VersionDateWithPatch,
+            VersionDate,
+            Other,
+        }
+
         /// <summary>
         /// Compares two Semantic Version strings (of any length).
         /// </summary>
@@ -102,6 +110,18 @@ namespace Prg.Util
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Gets semantic version type as we can recognise it.
+        /// </summary>
+        public static SemVerType GetVersionType(string version)
+        {
+            return
+                IsVersionDateWithPatch(version) ? SemVerType.VersionDateWithPatch :
+                IsVersionDate(version) ? SemVerType.VersionDate :
+                HasDigits(version, 3) ? SemVerType.MajorMinorPatch :
+                SemVerType.Other;
         }
 
         /// <summary>

@@ -345,12 +345,9 @@ public partial class Form1 : Form
         _settings.BundleVersion = bundleVersion;
         _settings.IsMuteOtherAudioSources = muteOtherAudioSources;
         Files.LoadAutoBuildSettings(_settings);
-        var versionType =
-            SemVer.IsVersionDateWithPatch(_settings.ProductVersion) ? "date.patch" :
-            SemVer.IsVersionDate(_settings.ProductVersion) ? "date" :
-            SemVer.HasDigits(_settings.ProductVersion, 3) ? "3-digit" : "other";
+        var versionType = SemVer.GetVersionType(_settings.ProductVersion);
         AddLine("Product", $"{_settings.ProductName}");
-        AddLine("Version", $"{_settings.ProductVersion} {versionType}");
+        AddLine("Version", $"{_settings.ProductVersion} ({versionType})");
         AddLine("Bundle", $"{_settings.BundleVersion}");
         AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
         bool exists;
