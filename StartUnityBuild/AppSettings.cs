@@ -1,3 +1,5 @@
+using PrgFrame.Util;
+
 namespace StartUnityBuild;
 
 /// <summary>
@@ -34,6 +36,7 @@ public class AppSettings
 
     private void Save()
     {
+        PathUtil.CreateDirectoryForFile(Filename);
         Serializer.SaveStateJson(this, Filename);
     }
 }
