@@ -85,8 +85,9 @@ public static class GitCommands
         Task.Run(async () =>
         {
             var message = $"auto update version {settings.ProductVersion}";
+            var bundle = settings.HasProductVersionBundle() ? "" : $"_bundle_{settings.BundleVersion}";
             var track = string.IsNullOrWhiteSpace(settings.DeliveryTrack) ? "" : $"_{settings.DeliveryTrack}";
-            var tagName = $"auto_build_{DateTime.Today:yyyy-MM-dd}_version_{settings.ProductVersion}{track}";
+            var tagName = $"auto_build_{DateTime.Today:yyyy-MM-dd}_version_{settings.ProductVersion}{bundle}{track}";
             var files = new List<string>
             {
                 "ProjectSettings/ProjectSettings.asset",

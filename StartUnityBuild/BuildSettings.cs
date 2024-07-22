@@ -1,3 +1,4 @@
+using Prg.Util;
 using PrgFrame.Util;
 
 namespace StartUnityBuild;
@@ -129,6 +130,16 @@ public class BuildSettings(string workingDirectory)
             }
             return _webGlBuildDir;
         }
+    }
+
+    public bool HasProductVersionBundle()
+    {
+        return SemVer.GetVersionType(ProductVersion) switch
+        {
+            SemVer.SemVerType.VersionDateWithPatch => true,
+            SemVer.SemVerType.MajorMinorPatch => true,
+            _ => false
+        };
     }
 
     /// <summary>
