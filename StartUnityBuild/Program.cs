@@ -4,7 +4,6 @@ using NLog;
 namespace StartUnityBuild;
 
 [SuppressMessage("ReSharper", "LocalizableElement")]
-[SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
 internal static class Program
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
@@ -32,7 +31,7 @@ internal static class Program
 
     private static void SetWorkingDirectory()
     {
-        var projectDirectory = Args.ParseArgs(out var args);
+        var projectDirectory = Args.ParseArgs();
         if (Directory.Exists(projectDirectory) && Files.HasProjectVersionFile(projectDirectory))
         {
             Directory.SetCurrentDirectory(projectDirectory);
@@ -49,6 +48,7 @@ internal static class Program
     }
 }
 
+[SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible")]
 public class Args
 {
     public bool IsTesting { get; private set; }
@@ -57,26 +57,21 @@ public class Args
     public static Args Instance;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-    private Args()
-    {
-        Instance = this;
-    }
-
-    public static string ParseArgs(out Args args)
+    public static string ParseArgs()
     {
         var isTesting = "--isTesting".ToLower();
 
         var argsList = Environment.GetCommandLineArgs().ToList();
         argsList.RemoveAt(0);
         var currentDirectory = Directory.GetCurrentDirectory();
-        args = new Args();
+        Instance = new Args();
         using var enumerator = argsList.GetEnumerator();
         while (enumerator.MoveNext())
         {
             var value = enumerator.Current.ToLower();
             if (value == isTesting)
             {
-                args.IsTesting = true;
+                Instance.IsTesting = true;
             }
         }
         return currentDirectory;
