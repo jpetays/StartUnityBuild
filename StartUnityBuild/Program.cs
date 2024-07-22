@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using NLog;
 
 namespace StartUnityBuild;
 
@@ -6,6 +7,8 @@ namespace StartUnityBuild;
 [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
 internal static class Program
 {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     /// <summary>
     ///  The main entry point for the application.
     /// </summary>
@@ -15,6 +18,20 @@ internal static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
+        try
+        {
+            SetWorkingDirectory();
+        }
+        catch (Exception e)
+        {
+            Logger.Error(e, "Failed to set working directory");
+            Logger.Trace(e.StackTrace);
+        }
+        Application.Run(new Form1());
+    }
+
+    private static void SetWorkingDirectory()
+    {
         var projectDirectory = Args.ParseArgs(out var args);
         if (Directory.Exists(projectDirectory) && Files.HasProjectVersionFile(projectDirectory))
         {
@@ -29,7 +46,6 @@ internal static class Program
                 Directory.SetCurrentDirectory(projectDirectory);
             }
         }
-        Application.Run(new Form1());
     }
 }
 
