@@ -8,6 +8,11 @@ namespace StartUnityBuild;
 /// </summary>
 public class BuildSettings(string workingDirectory)
 {
+    private const string UnityVersionName = "$UNITY_VERSION$";
+    private const string BuildTargetName = "$BUILD_TARGET$";
+    private const string UniqueNameName = "$UNIQUE_NAME$";
+    private const string DeliveryTrackName = "$TRACK_NAME$";
+
     public string WorkingDirectory { get; } = workingDirectory;
 
     /// <summary>
@@ -91,45 +96,36 @@ public class BuildSettings(string workingDirectory)
     public string AndroidSettingsFileName { get; set; } = "";
 
     /// <summary>
-    /// WebGl host name or path to folder for WebGL builds.
+    /// Optional WebGl host name or path to folder for WebGL builds.
     /// </summary>
     public string WebGlHostName { get; set; } = "";
 
     /// <summary>
-    /// Path to folder for WebGL build history.
+    /// WebGL build history book-keeping json filename.
     /// </summary>
     public string WebGlBuildHistoryJson { get; set; } = "";
 
     /// <summary>
-    /// Gets cached and lazy-initialized WebGl folder name where build output is copied in web server that hosts WebGl build.
+    /// WebGL build history book-keeping html filename.
     /// </summary>
-    public string WebGlFolderName
+    public string WebGlBuildHistoryHtml { get; set; } = "";
+
+    /// <summary>
+    /// WebGl distribution folder name where build output is copied in web server that hosts WebGl builds.
+    /// </summary>
+    public string WebGlDistFolderName
     {
-        get
-        {
-            // TODO: cache Files.GetCopyDirs for WebGL!
-            if (string.IsNullOrEmpty(_webGlFolderName))
-            {
-                var copyDirs = Files.GetCopyDirs(this, BuildName.WebGL);
-                _webGlFolderName = copyDirs.Count == 1 ? copyDirs[0].Item2 : "";
-                _webGlFolderName = Files.ExpandDeliveryTrackName(_webGlFolderName, DeliveryTrack);
-                _webGlFolderName = Files.ExpandUniqueName(_webGlFolderName, BuildSequenceName);
-            }
-            return _webGlFolderName;
-        }
+        get => ExpandPath(_webGlDistFolderName);
+        set => _webGlDistFolderName = value;
     }
 
-    public string WebGlBuildDir
+    /// <summary>
+    /// WebGl build output folder name.
+    /// </summary>
+    public string WebGlBuildDirName
     {
-        get
-        {
-            if (string.IsNullOrEmpty(_webGlBuildDir))
-            {
-                var copyDirs = Files.GetCopyDirs(this, BuildName.WebGL);
-                _webGlBuildDir = copyDirs.Count == 1 ? copyDirs[0].Item1 : "";
-            }
-            return _webGlBuildDir;
-        }
+        get => ExpandPath(_webGlBuildDirName);
+        set => _webGlBuildDirName = value;
     }
 
     public bool HasProductVersionBundle()
@@ -152,18 +148,35 @@ public class BuildSettings(string workingDirectory)
     /// </summary>
     public bool HasPostProcessingFor(string buildTarget)
     {
-        if (!HasBuildTarget(buildTarget))
+        if (!HasBuildTarget(buildTarget) || buildTarget != BuildName.WebGL)
         {
             return false;
         }
-        var buildTargetPart = $".{buildTarget}.";
-        return CopyDirectoriesAfter.Keys.Any(x => x.Contains(buildTargetPart));
+        // Only WebGL has post processing options.
+        var hasJson = !string.IsNullOrEmpty(WebGlDistFolderName) &&
+                      !string.IsNullOrEmpty(WebGlBuildHistoryJson) &&
+                      !string.IsNullOrEmpty(WebGlBuildHistoryHtml);
+        var hasFolders = !string.IsNullOrEmpty(WebGlDistFolderName) && !string.IsNullOrEmpty(WebGlBuildDirName);
+        return hasJson || hasFolders;
     }
 
     public bool BuildSucceeded(string buildTarget)
     {
         var index = BuildTargets.FindIndex(x => x == buildTarget);
         return index == -1 || BuildResult[index];
+    }
+
+    public static string ExpandUnityPath(string path, string unityVersion) =>
+        path.Replace(UnityVersionName, unityVersion);
+
+    public static string ExpandBuildTarget(string path, string buildTarget) =>
+        path.Replace(BuildTargetName, buildTarget);
+
+    private string ExpandPath(string path)
+    {
+        path = path.Replace(DeliveryTrackName, DeliveryTrack);
+        path = path.Replace(UniqueNameName, BuildSequenceName);
+        return path;
     }
 
     /// <summary>
@@ -174,24 +187,19 @@ public class BuildSettings(string workingDirectory)
     {
         get
         {
-            if (string.IsNullOrEmpty(_uniqueBuildSequence))
+            if (string.IsNullOrEmpty(_uniqueBuildSequence) || ProductVersion != _versionForUniqueBuildSequence)
             {
                 _versionForUniqueBuildSequence = ProductVersion;
                 _uniqueBuildSequence =
                     $"{PathUtil.SanitizePath(_versionForUniqueBuildSequence).Replace('.', '_')}" +
                     $"_{DateTime.Today.DayOfYear}_{RandomUtil.StringFromTicks(6)}";
             }
-            if (ProductVersion != _versionForUniqueBuildSequence)
-            {
-                throw new InvalidOperationException(
-                    $"Product version '{_versionForUniqueBuildSequence}' has been changed to '{ProductVersion}, current BuildSequence is invalid");
-            }
             return _uniqueBuildSequence;
         }
     }
 
-    private string _webGlFolderName = "";
-    private string _webGlBuildDir = "";
+    private string _webGlDistFolderName = "";
+    private string _webGlBuildDirName = "";
     private string _uniqueBuildSequence = "";
     private string _versionForUniqueBuildSequence = "";
 

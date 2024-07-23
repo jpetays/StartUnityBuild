@@ -16,6 +16,7 @@ public static class ProjectCommands
 
     public static void WriteWebGLBuildHistory(BuildSettings settings, bool isSuccess)
     {
+        const string outPrefix = "post";
         if (!isSuccess
             || string.IsNullOrWhiteSpace(settings.WebGlBuildHistoryJson)
             || !settings.HasPostProcessingFor(BuildName.WebGL))
@@ -23,7 +24,7 @@ public static class ProjectCommands
             Form1.AddLine("ERROR", "Can not do WebGL build history: conditions are not met");
             return;
         }
-        var webGlFolderName = Path.GetFileName(settings.WebGlFolderName);
+        var webGlFolderName = Path.GetFileName(settings.WebGlDistFolderName);
         if (string.IsNullOrWhiteSpace(webGlFolderName))
         {
             Form1.AddLine("ERROR", "Can not do WebGL build history: WebGL Folder Name empty");
@@ -34,6 +35,15 @@ public static class ProjectCommands
         var releaseNotes = GetReleaseNotesText();
         var buildLogEntryFile = settings.WebGlBuildHistoryJson;
         WriteBuildLogEntry(settings.DeliveryTrack, DateTime.Now, linkLabel, linkHref, releaseNotes, buildLogEntryFile);
+        var htmlFile = settings.WebGlBuildHistoryHtml;
+        if (File.Exists(htmlFile))
+        {
+            var fileInfo = new FileInfo(htmlFile)
+            {
+                LastWriteTime = DateTime.Now
+            };
+            Form1.AddLine(outPrefix, $".touch {fileInfo.LastWriteTime:G} {htmlFile}");
+        }
         return;
 
         string StripStart(string path) => path.StartsWith('/') ? path[1..] : path;

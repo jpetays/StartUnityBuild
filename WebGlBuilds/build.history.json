@@ -3,6 +3,22 @@
     {
       "Ver": "2",
       "Track": "Test",
+      "Date": "2024-07-23 13:50",
+      "Label": "1.0.10",
+      "HRef": "zoomierush.com/Test-1_0_10_205_214997",
+      "Notes": "Work In Progress for Test 1.1.x patch 9\r\n- dog movement: jittery movement is fixed and overall shortest route optimizations\r\n- dog movement is now grid/tile based instead of using screen pixel coordinates\r\n- camera follow is now smart(ish) and tries to move ahead of the dog when dog is running longer in one direction"
+    },
+    {
+      "Ver": "2",
+      "Track": "Test",
+      "Date": "2024-07-23 13:37",
+      "Label": "1.0.9",
+      "HRef": "zoomierush.com/Test-1_0_9_205_544005",
+      "Notes": "Work In Progress for Test 1.1.x patch 9\r\n- dog movement: jittery movement is fixed and overall shortest route optimizations\r\n- dog movement is now grid/tile based instead of using screen pixel coordinates\r\n- camera follow is now smart(ish) and tries to move ahead of the dog when dog is running longer in one direction"
+    },
+    {
+      "Ver": "2",
+      "Track": "Test",
       "Date": "2024-07-19 09:30",
       "Label": "1.0.7",
       "HRef": "/Test-1_0_7_201_247418",

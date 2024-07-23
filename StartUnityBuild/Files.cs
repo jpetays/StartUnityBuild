@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using NLog;
 using PrgFrame.Util;
 
 namespace StartUnityBuild;
@@ -19,6 +20,7 @@ public static class BuildName
 public static class Files
 {
     public static readonly Encoding Encoding = new UTF8Encoding(false, false);
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     private const string ProjectSettingsFolderName = "ProjectSettings";
     private const string AssetsFolderName = "Assets";
@@ -31,11 +33,6 @@ public static class Files
     private const string ReleaseNotesFileName = "releasenotes.txt";
     private const string AndroidSettingsFileName = "AndroidOptions.txt";
     private const string AutoBuildFileName = "_auto_build.env";
-
-    private const string UnityVersionName = "$UNITY_VERSION$";
-    private const string BuildTargetName = "$BUILD_TARGET$";
-    private const string UniqueNameName = "$UNIQUE_NAME$";
-    private const string DeliveryTrackName = "$TRACK_NAME$";
 
     public static string Quoted(string path) => path.Contains(' ') ? $"\"{path}\"" : path;
 
@@ -58,15 +55,6 @@ public static class Files
 
     public static bool HasProjectVersionFile(string workingDirectory) =>
         File.Exists(GetProjectVersionFile(workingDirectory));
-
-    public static string ExpandUnityPath(string path, string unityVersion) =>
-        path.Replace(UnityVersionName, unityVersion);
-
-    public static string ExpandUniqueName(string path, string uniqueName) =>
-        path.Replace(UniqueNameName, uniqueName);
-
-    public static string ExpandDeliveryTrackName(string path, string deliveryTrack) =>
-        path.Replace(DeliveryTrackName, deliveryTrack.ToLower());
 
     [SuppressMessage("ReSharper", "NullableWarningSuppressionIsUsed")]
     public static void LoadProjectVersionFile(string workingDirectory, out string unityVersion)
@@ -123,11 +111,6 @@ public static class Files
                 settings.UnityPath = tokens[1].Trim();
                 continue;
             }
-            if (key == "webgl.build.history.json")
-            {
-                settings.WebGlBuildHistoryJson = tokens[1].Trim();
-                continue;
-            }
             if (key.StartsWith("before.copy.") && (key.EndsWith(".source") || key.EndsWith(".target")))
             {
                 settings.CopyFilesBefore.Add(key, value);
@@ -138,10 +121,36 @@ public static class Files
                 settings.RevertFilesAfter.Add(value);
                 continue;
             }
-            if (key.StartsWith("after.copy.") && (key.EndsWith(".sourceDir") || key.EndsWith(".targetDir")))
+            if (key.StartsWith("after.webgl."))
             {
-                settings.CopyDirectoriesAfter.Add(key, value);
+                if (key == "after.webgl.hostname")
+                {
+                    settings.WebGlHostName = tokens[1].Trim();
+                    continue;
+                }
+                if (key == "after.webgl.build.history.json")
+                {
+                    settings.WebGlBuildHistoryJson = tokens[1].Trim();
+                    continue;
+                }
+                if (key == "after.webgl.build.history.html")
+                {
+                    settings.WebGlBuildHistoryHtml = tokens[1].Trim();
+                    continue;
+                }
+                if (key == "after.webgl.sourceDir")
+                {
+                    settings.WebGlBuildDirName =
+                        BuildSettings.ExpandBuildTarget(tokens[1].Trim(), BuildName.WebGL);
+                    continue;
+                }
+                if (key == "after.webgl.targetDir")
+                {
+                    settings.WebGlDistFolderName = tokens[1].Trim();
+                    continue;
+                }
             }
+            Logger.Trace($"Unknown line {line}");
         }
     }
 
@@ -211,8 +220,8 @@ public static class Files
             {
                 throw new InvalidOperationException($"invalid copy line keys: {sourceKey} vs {targetKey}");
             }
-            var source = settings.CopyDirectoriesAfter[sourceKey].Replace(BuildTargetName, buildTarget);
-            var target = settings.CopyDirectoriesAfter[targetKey].Replace(BuildTargetName, buildTarget);
+            var source = BuildSettings.ExpandBuildTarget(settings.CopyDirectoriesAfter[sourceKey], buildTarget);
+            var target = BuildSettings.ExpandBuildTarget(settings.CopyDirectoriesAfter[targetKey], buildTarget);
             result.Add(new Tuple<string, string>(source, target));
         }
         return result;

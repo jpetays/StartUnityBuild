@@ -190,19 +190,14 @@ public partial class Form1 : Form
                     });
             });
 
-        if (_settings.HasPostProcessingFor(BuildName.WebGL))
+        // Post processing will be enabled when applicable.
+        postProcessToolStripMenuItem.Enabled = false;
+        SetCaption(postProcessToolStripMenuItem, ++order);
+        postProcessToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing", () =>
         {
-            postProcessToolStripMenuItem.Enabled = false;
-        }
-        else
-        {
-            SetCaption(postProcessToolStripMenuItem, ++order);
-            postProcessToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing", () =>
-            {
-                PostProcessBuild();
-                ReleaseMenuCommandSync();
-            });
-        }
+            PostProcessBuild();
+            ReleaseMenuCommandSync();
+        });
         return;
 
         void SetCaption(ToolStripItem item, int itemNumber)
@@ -228,7 +223,8 @@ public partial class Form1 : Form
             return;
         }
         ProjectCommands.WriteWebGLBuildHistory(_settings, true);
-        CopyCommands.CopyDirectories(_settings.WebGlBuildDir, _settings.WebGlFolderName, ReleaseMenuCommandSync);
+        CopyCommands.CopyDirectories(_settings.WebGlBuildDirName, _settings.WebGlDistFolderName,
+            ReleaseMenuCommandSync);
     }
 
     private void UpdateProjectInfo(Color color)
@@ -350,7 +346,15 @@ public partial class Form1 : Form
         AddLine("Version", $"{_settings.ProductVersion} ({versionType})");
         AddLine("Bundle", $"{_settings.BundleVersion}");
         AddLine("Builds", $"{string.Join(',', _settings.BuildTargets)}");
-        bool exists;
+        // List files used in build.
+        var assetFolder = Files.GetAssetFolder(_settings.WorkingDirectory);
+        _settings.BuildInfoFilename = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
+        var exists = File.Exists(_settings.BuildInfoFilename);
+        AddLine($"{(exists ? ".file" : "ERROR")}", $"update {_settings.BuildInfoFilename}");
+        if (!exists)
+        {
+            AddLine("ERROR", $"assetFolder {assetFolder}");
+        }
         if (_settings.CopyFilesBefore.Count > 0)
         {
             // This checks some CopyFiles validity as well.
@@ -358,7 +362,7 @@ public partial class Form1 : Form
             foreach (var tuple in copyFiles)
             {
                 exists = File.Exists(tuple.Item1);
-                AddLine($"{(exists ? ".copy" : "ERROR")}", $"copy {tuple.Item1} to {tuple.Item2}");
+                AddLine($"{(exists ? ".file" : "ERROR")}", $"copy {tuple.Item1} to {tuple.Item2}");
             }
         }
         if (_settings.RevertFilesAfter.Count > 0)
@@ -367,44 +371,32 @@ public partial class Form1 : Form
             {
                 var path = Path.Combine(".", file);
                 exists = File.Exists(path);
-                AddLine($"{(exists ? ".revert" : "ERROR")}", $"git revert {path}");
+                AddLine($"{(exists ? ".file" : "ERROR")}", $"git revert {path}");
             }
         }
         if (_settings.HasBuildTarget(BuildName.Android))
         {
             _settings.AndroidSettingsFileName = Files.GetAndroidSettingsFileName(_settings.WorkingDirectory);
             exists = File.Exists(_settings.AndroidSettingsFileName);
-            AddLine($"{(exists ? ".file" : "ERROR")}", $"{_settings.AndroidSettingsFileName}");
+            AddLine($"{(exists ? ".file" : "ERROR")}", $"android {_settings.AndroidSettingsFileName}");
         }
         if (_settings.HasPostProcessingFor(BuildName.WebGL))
         {
-            // This checks some CopyDirectories validity as well.
-            var copyDirs = Files.GetCopyDirs(_settings, BuildName.WebGL);
-            foreach (var tuple in copyDirs)
-            {
-                exists = Directory.Exists(tuple.Item1);
-                AddLine($"{(exists ? ".copy" : "copy")}", $"{(exists ? "" : "-")}copy {tuple.Item1} to {tuple.Item2}");
-            }
-            if (!string.IsNullOrWhiteSpace(_settings.WebGlBuildHistoryJson))
-            {
-                AddLine(".builds", $"{_settings.WebGlBuildHistoryJson}");
-            }
-        }
-        var assetFolder = Files.GetAssetFolder(_settings.WorkingDirectory);
-        _settings.BuildInfoFilename = BuildInfoUpdater.BuildPropertiesPath(assetFolder);
-        exists = File.Exists(_settings.BuildInfoFilename);
-        AddLine($"{(exists ? ".file" : "ERROR")}", $"{_settings.BuildInfoFilename}");
-        if (!exists)
-        {
-            AddLine("ERROR", $"assetFolder {assetFolder}");
+            postProcessToolStripMenuItem.Enabled = true;
+            AddLine(".file", $"webgl host {_settings.WebGlHostName}");
+            AddLine(".file", $"webgl html {_settings.WebGlBuildHistoryHtml}");
+            AddLine(".file", $"webgl json {_settings.WebGlBuildHistoryJson}");
+            AddLine(".file", $"webgl build {_settings.WebGlBuildDirName}");
+            AddLine(".file", $"webgl dist {_settings.WebGlDistFolderName}");
         }
         var setUnityExecutablePath =
             !string.IsNullOrEmpty(_settings.UnityPath) && !string.IsNullOrEmpty(_settings.UnityEditorVersion);
         if (setUnityExecutablePath)
         {
-            _settings.UnityExecutable = Files.ExpandUnityPath(_settings.UnityPath, _settings.UnityEditorVersion);
+            _settings.UnityExecutable =
+                BuildSettings.ExpandUnityPath(_settings.UnityPath, _settings.UnityEditorVersion);
             exists = File.Exists(_settings.UnityExecutable);
-            AddLine($"{(exists ? ".file" : "ERROR")}", $"{_settings.UnityExecutable}");
+            AddLine($"{(exists ? ".file" : "ERROR")}", $"UNITY {_settings.UnityExecutable}");
             if (!exists)
             {
                 AddLine("ERROR",
