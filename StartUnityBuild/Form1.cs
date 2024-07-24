@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Media;
 using System.Reflection;
@@ -147,6 +148,23 @@ public partial class Form1 : Form
 
     private void OpenDebugLog()
     {
+        var appDir = Path.GetDirectoryName(Application.ExecutablePath) ?? ".";
+        var logFilename = Path.Combine(appDir, "logs", "StartUnityBuild_trace.log");
+        if (!File.Exists(logFilename))
+        {
+            AddLine("ERROR", $"file not found {logFilename}");
+            return;
+        }
+        var executable = "notepad.exe";
+        try
+        {
+            AddLine(".file", $"open {logFilename}");
+            Process.Start(executable, logFilename);
+        }
+        catch (Exception x)
+        {
+            AddLine("ERROR", $"Unable to start {executable}: {x.GetType().Name} {x.Message}");
+        }
     }
 
     private static void CopyLines()
