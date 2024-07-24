@@ -33,19 +33,21 @@ partial class Form1
         menuStrip1 = new MenuStrip();
         fileToolStripMenuItem = new ToolStripMenuItem();
         setProjectFolderToolStripMenuItem = new ToolStripMenuItem();
+        deleteUNITYLibraryFolderToolStripMenuItem = new ToolStripMenuItem();
         copyOutputToClipboardToolStripMenuItem = new ToolStripMenuItem();
         exitToolStripMenuItem = new ToolStripMenuItem();
+        openDebugLogToolStripMenuItem = new ToolStripMenuItem();
         gitStatusToolStripMenuItem = new ToolStripMenuItem();
         gitPullToolStripMenuItem = new ToolStripMenuItem();
         updateBuildToolStripMenuItem = new ToolStripMenuItem();
         gitPushToolStripMenuItem = new ToolStripMenuItem();
         startBuildToolStripMenuItem = new ToolStripMenuItem();
+        postProcessToolStripMenuItem = new ToolStripMenuItem();
         projectInfoToolStripMenuItem = new ToolStripMenuItem();
         listView1 = new ListView();
         label1 = new Label();
         timer1 = new System.Windows.Forms.Timer(components);
         fileSystemWatcher1 = new FileSystemWatcher();
-        postProcessToolStripMenuItem = new ToolStripMenuItem();
         menuStrip1.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize) fileSystemWatcher1).BeginInit();
         SuspendLayout();
@@ -61,7 +63,7 @@ partial class Form1
         // 
         // fileToolStripMenuItem
         // 
-        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setProjectFolderToolStripMenuItem, copyOutputToClipboardToolStripMenuItem, exitToolStripMenuItem });
+        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setProjectFolderToolStripMenuItem, deleteUNITYLibraryFolderToolStripMenuItem, copyOutputToClipboardToolStripMenuItem, openDebugLogToolStripMenuItem, exitToolStripMenuItem });
         fileToolStripMenuItem.Name = "fileToolStripMenuItem";
         fileToolStripMenuItem.Size = new Size(37, 20);
         fileToolStripMenuItem.Text = "File";
@@ -69,20 +71,32 @@ partial class Form1
         // setProjectFolderToolStripMenuItem
         // 
         setProjectFolderToolStripMenuItem.Name = "setProjectFolderToolStripMenuItem";
-        setProjectFolderToolStripMenuItem.Size = new Size(212, 22);
+        setProjectFolderToolStripMenuItem.Size = new Size(216, 22);
         setProjectFolderToolStripMenuItem.Text = "Set Project Folder";
+        // 
+        // deleteUNITYLibraryFolderToolStripMenuItem
+        // 
+        deleteUNITYLibraryFolderToolStripMenuItem.Name = "deleteUNITYLibraryFolderToolStripMenuItem";
+        deleteUNITYLibraryFolderToolStripMenuItem.Size = new Size(216, 22);
+        deleteUNITYLibraryFolderToolStripMenuItem.Text = "Delete UNITY Library folder";
         // 
         // copyOutputToClipboardToolStripMenuItem
         // 
         copyOutputToClipboardToolStripMenuItem.Name = "copyOutputToClipboardToolStripMenuItem";
-        copyOutputToClipboardToolStripMenuItem.Size = new Size(212, 22);
+        copyOutputToClipboardToolStripMenuItem.Size = new Size(216, 22);
         copyOutputToClipboardToolStripMenuItem.Text = "Copy Output to Clipboard";
         // 
         // exitToolStripMenuItem
         // 
         exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-        exitToolStripMenuItem.Size = new Size(212, 22);
+        exitToolStripMenuItem.Size = new Size(216, 22);
         exitToolStripMenuItem.Text = "Exit";
+        // 
+        // openDebugLogToolStripMenuItem
+        // 
+        openDebugLogToolStripMenuItem.Name = "openDebugLogToolStripMenuItem";
+        openDebugLogToolStripMenuItem.Size = new Size(216, 22);
+        openDebugLogToolStripMenuItem.Text = "Open Debug Log";
         // 
         // gitStatusToolStripMenuItem
         // 
@@ -113,6 +127,12 @@ partial class Form1
         startBuildToolStripMenuItem.Name = "startBuildToolStripMenuItem";
         startBuildToolStripMenuItem.Size = new Size(73, 20);
         startBuildToolStripMenuItem.Text = "Start Build";
+        // 
+        // postProcessToolStripMenuItem
+        // 
+        postProcessToolStripMenuItem.Name = "postProcessToolStripMenuItem";
+        postProcessToolStripMenuItem.Size = new Size(85, 20);
+        postProcessToolStripMenuItem.Text = "Post Process";
         // 
         // projectInfoToolStripMenuItem
         // 
@@ -146,12 +166,6 @@ partial class Form1
         // 
         fileSystemWatcher1.EnableRaisingEvents = true;
         fileSystemWatcher1.SynchronizingObject = this;
-        // 
-        // postProcessToolStripMenuItem
-        // 
-        postProcessToolStripMenuItem.Name = "postProcessToolStripMenuItem";
-        postProcessToolStripMenuItem.Size = new Size(85, 20);
-        postProcessToolStripMenuItem.Text = "Post Process";
         // 
         // Form1
         // 
@@ -190,4 +204,6 @@ partial class Form1
     private ToolStripMenuItem gitPullToolStripMenuItem;
     private ToolStripMenuItem gitPushToolStripMenuItem;
     private ToolStripMenuItem postProcessToolStripMenuItem;
+    private ToolStripMenuItem deleteUNITYLibraryFolderToolStripMenuItem;
+    private ToolStripMenuItem openDebugLogToolStripMenuItem;
 }
