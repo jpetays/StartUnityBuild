@@ -71,7 +71,7 @@ public static class GitCommands
         const string outPrefix = "pull";
         Task.Run(async () =>
         {
-            var gitCommand = "pull --rebase=true --no-autostash origin main";
+            var gitCommand = "pull --rebase=true --tags --no-autostash origin main";
             Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
             var result = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
@@ -100,11 +100,10 @@ public static class GitCommands
             // Create a lightweight commit tag.
             getVerb = "tag";
             var bundle = settings.HasProductVersionBundle() ? "" : $"_bundle_{settings.BundleVersion}";
-            var track = string.IsNullOrWhiteSpace(settings.DeliveryTrack)
-                ? ""
-                : $"_{settings.DeliveryTrack.ToLowerInvariant()}";
-            var tagName = $"auto_build_{DateTime.Today:yyyy-MM-dd}_version_{settings.ProductVersion}{bundle}{track}";
-            gitCommand = $"{getVerb} -f {tagName}";
+            var track = string.IsNullOrWhiteSpace(settings.DeliveryTrack) ? "" : $"_{settings.DeliveryTrack}";
+            var tagName = $"auto_build_{DateTime.Today:yyyy-MM-dd}_version_{settings.ProductVersion}{bundle}{track}"
+                .ToLowerInvariant();
+            gitCommand = $"{getVerb} --force {tagName}";
             Form1.AddLine($">{getVerb}", $"git {gitCommand}");
             result = await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
