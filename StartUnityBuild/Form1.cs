@@ -60,15 +60,41 @@ public partial class Form1 : Form
         Text = _baseTitle;
         if (Files.HasProjectVersionFile(Directory.GetCurrentDirectory()))
         {
-            LoadProject();
-            return;
+            if (LoadProject())
+            {
+                return;
+            }
         }
         AddLine("INFO", "");
         AddLine("INFO", "-Use menu File->Set Project Folder to set UNITY project location");
         AddLine("INFO", "");
     }
 
-    private void LoadProject()
+    private void CheckUnityEditor()
+    {
+        var processes = Process.GetProcessesByName("Unity");
+        if (processes.Length == 0)
+        {
+            return;
+        }
+        for (var i = 0; i < processes.Length; ++i)
+        {
+            var process = processes[i];
+            var name = process.ProcessName;
+            var moduleName = process.MainModule?.FileName ?? "";
+            if (i == 0)
+            {
+                AddLine("", "");
+            }
+            AddLine("unity", $"+{name} - {process.MainWindowTitle} - {Path.GetFileName(moduleName)}");
+        }
+        AddLine("INFO", "");
+        AddLine("INFO", "-It seems that UNITY Editor is running");
+        AddLine("INFO", "-It is better to close them all to avoid any conflicts while building");
+        AddLine("INFO", "");
+    }
+
+    private bool LoadProject()
     {
         try
         {
@@ -87,7 +113,7 @@ public partial class Form1 : Form
             {
                 AddLine("ERROR", "Could not find any build targets");
             }
-            return;
+            return true;
         }
         catch (Exception x)
         {
@@ -101,9 +127,7 @@ public partial class Form1 : Form
                 }
             }
         }
-        AddLine("INFO", "");
-        AddLine("INFO", "-Use menu File->Set Project Folder to set UNITY project location");
-        AddLine("INFO", "");
+        return false;
     }
 
     private void SetupFileMenuCommands()
@@ -146,7 +170,7 @@ public partial class Form1 : Form
         FileSystemCommands.DeleteDirectories(unityOutputFolders, ReleaseMenuCommandSync);
     }
 
-    private void OpenDebugLog()
+    private static void OpenDebugLog()
     {
         var appDir = Path.GetDirectoryName(Application.ExecutablePath) ?? ".";
         var logFilename = Path.Combine(appDir, "logs", "StartUnityBuild_trace.log");
@@ -289,7 +313,11 @@ public partial class Form1 : Form
     {
         Thread.Yield();
         ExecuteMenuCommand(() =>
-            GitCommands.GitStatus(_settings.WorkingDirectory, () => { SetStatus("Ready", Color.Blue); }));
+            GitCommands.GitStatus(_settings.WorkingDirectory, () =>
+            {
+                SetStatus("Ready", Color.Blue);
+                CheckUnityEditor();
+            }));
     }
 
     private void ExecuteMenuCommandSync(string commandLabel, Action command)
