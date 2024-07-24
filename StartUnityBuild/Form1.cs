@@ -311,7 +311,7 @@ public partial class Form1 : Form
         label1.ForeColor = color;
     }
 
-    private static void OnKeyDown(object? sender, KeyEventArgs? e)
+    private static void OnKeyDown(object sender, KeyEventArgs e)
     {
         if (e is { Control: true, KeyCode: Keys.C })
         {

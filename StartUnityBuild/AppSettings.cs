@@ -12,7 +12,7 @@ public class AppSettings
         Application.ProductName ?? "StartUnityBuild",
         "StartUnityBuild.settings.json");
 
-    private static AppSettings? _instance;
+    private static AppSettings _instance;
 
     public static AppSettings Get()
     {

@@ -53,9 +53,7 @@ public class Args
 {
     public bool IsTesting { get; private set; }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public static Args Instance;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     public static string ParseArgs()
     {
@@ -68,7 +66,7 @@ public class Args
         using var enumerator = argsList.GetEnumerator();
         while (enumerator.MoveNext())
         {
-            var value = enumerator.Current.ToLower();
+            var value = enumerator.Current?.ToLower();
             if (value == isTesting)
             {
                 Instance.IsTesting = true;

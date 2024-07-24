@@ -9,7 +9,7 @@ namespace StartUnityBuild.Commands;
 public static class RunCommand
 {
     public static async Task<int> Execute(string prefix, string fileName, string arguments,
-        string workingDirectory, Dictionary<string, string>? environmentVariables,
+        string workingDirectory, Dictionary<string, string> environmentVariables,
         Action<string, string> readOutput, Action<string, string, int> readExitCode)
     {
         if (!Directory.Exists(workingDirectory))

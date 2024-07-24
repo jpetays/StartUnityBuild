@@ -26,7 +26,7 @@ public static class GitCommands
         });
         return;
 
-        void GitStatusFilter(string prefix, string? line)
+        void GitStatusFilter(string prefix, string line)
         {
             if (line == null)
             {
@@ -50,7 +50,7 @@ public static class GitCommands
             Form1.OutputListener(prefix, $"-status: {line}");
         }
 
-        void GitLogFilter(string prefix, string? line)
+        void GitLogFilter(string prefix, string line)
         {
             if (line == null)
             {

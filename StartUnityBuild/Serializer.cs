@@ -23,7 +23,7 @@ namespace StartUnityBuild
             }
         }
 
-        public static T? LoadStateJson<T>(string filename) where T : new()
+        public static T LoadStateJson<T>(string filename) where T : new()
         {
             if (!File.Exists(filename))
             {
