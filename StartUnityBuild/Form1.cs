@@ -152,10 +152,10 @@ public partial class Form1 : Form
         var logFilename = Path.Combine(appDir, "logs", "StartUnityBuild_trace.log");
         if (!File.Exists(logFilename))
         {
-            AddLine("ERROR", $"file not found {logFilename}");
+            AddLine("ERROR", $"File not found {logFilename}");
             return;
         }
-        var executable = "notepad.exe";
+        const string executable = "notepad.exe";
         try
         {
             AddLine(".file", $"open {logFilename}");
