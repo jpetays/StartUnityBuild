@@ -101,7 +101,7 @@ namespace PrgBuild
                     .Replace("$namespaceValue$", namespaceName)
                     .Replace("$CompiledOnDateValue$", Timestamp(date))
                     .Replace("$BundleVersionCodeValue$", bundleVersionCode)
-                    .Replace("$IsMuteOtherAudioSourcesValue$", isMuteOtherAudioSources.ToString().ToLower())
+                    .Replace("$IsMuteOtherAudioSourcesValue$", isMuteOtherAudioSources.ToString().ToLowerInvariant())
                 ;
             var original = File.ReadAllText(buildInfoFilename, Encoding);
             if (original == machineGeneratedBuildInfo)

@@ -57,7 +57,7 @@ public class Args
 
     public static string ParseArgs()
     {
-        var isTesting = "--isTesting".ToLower();
+        var isTesting = "--isTesting".ToLowerInvariant();
 
         var argsList = Environment.GetCommandLineArgs().ToList();
         argsList.RemoveAt(0);
@@ -66,7 +66,7 @@ public class Args
         using var enumerator = argsList.GetEnumerator();
         while (enumerator.MoveNext())
         {
-            var value = enumerator.Current?.ToLower();
+            var value = enumerator.Current?.ToLowerInvariant();
             if (value == isTesting)
             {
                 Instance.IsTesting = true;

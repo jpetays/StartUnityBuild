@@ -80,14 +80,11 @@ public static class GitCommands
         });
     }
 
-    public static void GitCommitAnPushWithLabel(BuildSettings settings, string options, Action finished)
+    public static void GitCommitAnPushWithTag(BuildSettings settings, string options, Action finished)
     {
         Task.Run(async () =>
         {
             var message = $"auto update version {settings.ProductVersion}";
-            var bundle = settings.HasProductVersionBundle() ? "" : $"_bundle_{settings.BundleVersion}";
-            var track = string.IsNullOrWhiteSpace(settings.DeliveryTrack) ? "" : $"_{settings.DeliveryTrack}";
-            var tagName = $"auto_build_{DateTime.Today:yyyy-MM-dd}_version_{settings.ProductVersion}{bundle}{track}";
             var files = new List<string>
             {
                 "ProjectSettings/ProjectSettings.asset",
@@ -102,6 +99,11 @@ public static class GitCommands
 
             // Create a lightweight commit tag.
             getVerb = "tag";
+            var bundle = settings.HasProductVersionBundle() ? "" : $"_bundle_{settings.BundleVersion}";
+            var track = string.IsNullOrWhiteSpace(settings.DeliveryTrack)
+                ? ""
+                : $"_{settings.DeliveryTrack.ToLowerInvariant()}";
+            var tagName = $"auto_build_{DateTime.Today:yyyy-MM-dd}_version_{settings.ProductVersion}{bundle}{track}";
             gitCommand = $"{getVerb} -f {tagName}";
             Form1.AddLine($">{getVerb}", $"git {gitCommand}");
             result = await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,

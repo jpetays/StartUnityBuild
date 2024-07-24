@@ -239,7 +239,7 @@ public partial class Form1 : Form
         }
         SetCaption(gitPushToolStripMenuItem, ++order);
         gitPushToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
-            () => { GitCommands.GitCommitAnPushWithLabel(_settings, _settings.PushOptions, ReleaseMenuCommandSync); });
+            () => { GitCommands.GitCommitAnPushWithTag(_settings, _settings.PushOptions, ReleaseMenuCommandSync); });
 
         SetCaption(startBuildToolStripMenuItem, ++order);
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Building",
