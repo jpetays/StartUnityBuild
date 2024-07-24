@@ -251,7 +251,7 @@ namespace PrgBuild
             public readonly NamedBuildTarget NamedBuildTarget;
             public readonly string OutputFolderName;
             public readonly string OutputPathName;
-            public readonly AndroidOptions? Android;
+            public readonly AndroidOptions Android;
 
             public BuildConfig(List<string> args)
             {

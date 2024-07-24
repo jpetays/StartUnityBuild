@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace Prg.Util
@@ -136,7 +135,6 @@ namespace Prg.Util
                 {
                     return false;
                 }
-                var ci = CultureInfo.InvariantCulture;
                 var dateString = $"{n[0]}.{n[1]}.{n[2]}";
                 return IsVersionDate(dateString);
             }

@@ -12,9 +12,10 @@ namespace PrgFrame.Util
     public class Timer : IDisposable
     {
         private readonly Stopwatch _stopwatch;
-        private readonly bool _isOneShot;
 
 #if UNITY_EDITOR
+        private readonly bool _isOneShot;
+
         public double TotalMinutes
         {
             get
@@ -72,7 +73,9 @@ namespace PrgFrame.Util
         public Timer(bool isOneShot = true)
         {
             _stopwatch = Stopwatch.StartNew();
+#if UNITY_EDITOR
             _isOneShot = isOneShot;
+#endif
         }
 
         public Timer Stop()
