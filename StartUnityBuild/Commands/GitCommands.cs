@@ -71,6 +71,8 @@ public static class GitCommands
         const string outPrefix = "pull";
         Task.Run(async () =>
         {
+            // Using --tags might be overkill but
+            // it should ensure that git push will never fail due to tag conflict with remote.
             var gitCommand = "pull --rebase=true --tags --no-autostash origin main";
             Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
             var result = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
@@ -97,7 +99,7 @@ public static class GitCommands
                 null, Form1.OutputListener, Form1.ExitListener);
             Form1.AddExitCode(getVerb, result, result == 0, showSuccess: false);
 
-            // Create a lightweight commit tag.
+            // Create a lightweight commit tag, --force will 'move' it 'upwards' if it exists already.
             getVerb = "tag";
             var bundle = settings.HasProductVersionBundle() ? "" : $"_bundle_{settings.BundleVersion}";
             var track = string.IsNullOrWhiteSpace(settings.DeliveryTrack) ? "" : $"_{settings.DeliveryTrack}";
