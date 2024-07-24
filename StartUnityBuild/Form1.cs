@@ -49,7 +49,8 @@ public partial class Form1 : Form
         label1.Text = "";
         timer1.Interval = 1000;
 
-        SetupMenuCommands();
+        SetupFileMenuCommands();
+        SetupBuildMenuCommands();
     }
 
     protected override void OnLoad(EventArgs e)
@@ -104,6 +105,16 @@ public partial class Form1 : Form
         AddLine("INFO", "");
     }
 
+    private void SetupFileMenuCommands()
+    {
+        setProjectFolderToolStripMenuItem.Click += (_, _) => { SetProjectFolder(); };
+        deleteUNITYLibraryFolderToolStripMenuItem.Click +=
+            (_, _) => ExecuteMenuCommandSync("Executing", DeleteUnityLibraryFolder);
+        openDebugLogToolStripMenuItem.Click += (_, _) => { OpenDebugLog(); };
+        copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
+        exitToolStripMenuItem.Click += (_, _) => Application.Exit();
+    }
+
     private void SetProjectFolder()
     {
         ClearLines();
@@ -123,11 +134,34 @@ public partial class Form1 : Form
         LoadProject();
     }
 
-    private void SetupMenuCommands()
+    private void DeleteUnityLibraryFolder()
     {
-        copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
-        exitToolStripMenuItem.Click += (_, _) => Application.Exit();
-        setProjectFolderToolStripMenuItem.Click += (_, _) => { SetProjectFolder(); };
+        var unityOutputFolders = new List<string>()
+        {
+            "Library",
+            "Temp",
+            "Obj",
+        };
+        FileSystemCommands.DeleteDirectories(unityOutputFolders, ReleaseMenuCommandSync);
+    }
+
+    private void OpenDebugLog()
+    {
+    }
+
+    private static void CopyLines()
+    {
+        var builder = new StringBuilder();
+        var listView = _instance.listView1;
+        foreach (var item in listView.Items)
+        {
+            builder.AppendLine(item is ListViewItem listViewItem ? listViewItem.Text : item.ToString());
+        }
+        Clipboard.SetText(builder.ToString());
+    }
+
+    private void SetupBuildMenuCommands()
+    {
         timer1.Tick += (_, _) =>
         {
             var duration = DateTime.Now - _commandStartTime;
@@ -223,7 +257,7 @@ public partial class Form1 : Form
             return;
         }
         ProjectCommands.WriteWebGLBuildHistory(_settings, true);
-        CopyCommands.CopyDirectories(_settings.WebGlBuildDirName, _settings.WebGlDistFolderName,
+        FileSystemCommands.CopyDirectories(_settings.WebGlBuildDirName, _settings.WebGlDistFolderName,
             ReleaseMenuCommandSync);
     }
 
@@ -435,17 +469,6 @@ public partial class Form1 : Form
         listView1.BeginUpdate();
         listView1.Items.Clear();
         listView1.EndUpdate();
-    }
-
-    private static void CopyLines()
-    {
-        var builder = new StringBuilder();
-        var listView = _instance.listView1;
-        foreach (var item in listView.Items)
-        {
-            builder.AppendLine(item is ListViewItem listViewItem ? listViewItem.Text : item.ToString());
-        }
-        Clipboard.SetText(builder.ToString());
     }
 
     private static void AddLine(string line, Color? color = null)
