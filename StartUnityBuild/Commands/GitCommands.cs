@@ -98,6 +98,12 @@ public static class GitCommands
             var result = await RunCommand.Execute(gitVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
             Form1.AddExitCode(gitVerb, result, result == 0, showSuccess: false);
+            if (result != 0)
+            {
+                Form1.AddLine($"{gitVerb}", $"-Commit failed, can not push anything");
+                finished();
+                return;
+            }
 
             // Create a lightweight commit tag, --force will 'move' it 'upwards' if it exists already.
             gitVerb = "tag";
@@ -129,7 +135,6 @@ public static class GitCommands
                 {
                     Form1.AddLine($"{gitVerb}", $"-Failed to push build tag, everything else should be ok");
                 }
-
             }
             Form1.AddExitCode(gitVerb, result, result == 0, showSuccess: true);
             if (Args.Instance.IsTesting)
