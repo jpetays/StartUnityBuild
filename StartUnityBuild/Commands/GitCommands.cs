@@ -111,16 +111,33 @@ public static class GitCommands
                 null, Form1.OutputListener, Form1.ExitListener);
             Form1.AddExitCode(gitVerb, result, result == 0, showSuccess: false);
 
+            // First push actual changes to make sure they get pushes ok.
             gitVerb = "push";
             var options = Args.Instance.IsTesting ? "--dry-run" : "";
-            gitCommand = $"{gitVerb} {options} --tags origin main";
+            gitCommand = $"{gitVerb} {options} origin main";
             Form1.AddLine($">{gitVerb}", $"git {gitCommand}");
             result = await RunCommand.Execute(gitVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
+            if (result == 0)
+            {
+                // Push tag if git push is ok.
+                gitCommand = $"{gitVerb} {options} --tags origin main";
+                Form1.AddLine($">{gitVerb}", $"git {gitCommand}");
+                var result2 = await RunCommand.Execute(gitVerb, "git", gitCommand, settings.WorkingDirectory,
+                    null, Form1.OutputListener, Form1.ExitListener);
+                if (result2 != 0)
+                {
+                    Form1.AddLine($"{gitVerb}", $"-Failed to push build tag, everything else should be ok");
+                }
+
+            }
             Form1.AddExitCode(gitVerb, result, result == 0, showSuccess: true);
             if (Args.Instance.IsTesting)
             {
-                Form1.AddLine($"{gitVerb}", $"-You should do 'git reset --hard HEAD~1' to reset git 'working tree'");
+                Form1.AddLine($"{gitVerb}", $"-You should reset git 'working tree' to state before changes:");
+                Form1.AddLine($"{gitVerb}", $"git reset --hard HEAD~1");
+                Form1.AddLine($"{gitVerb}", $"-You should also manually delete build tag before it gets pushed:");
+                Form1.AddLine($"{gitVerb}", $"git tag -d {tagName}");
             }
             finished();
         });
