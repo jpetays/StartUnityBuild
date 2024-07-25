@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>disable</Nullable>
-    <Version>$(VersionPrefix)1.0.4</Version>
+    <RootNamespace>PrgFrame</RootNamespace>
+    <Version>$(VersionPrefix)1.0.5</Version>
     <Company>$(Authors)</Company>
     <Authors>Jari Petays</Authors>
     <Description>Prg Build System for UNITY</Description>

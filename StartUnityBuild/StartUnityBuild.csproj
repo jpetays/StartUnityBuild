@@ -8,13 +8,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Copyright>Jari Petays</Copyright>
         <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-        <Version>$(VersionPrefix)1.2.6</Version>
+        <Version>$(VersionPrefix)1.2.7</Version>
         <Title>Start UNITY Build</Title>
         <Description>Starts UNITY Build using associated supporting ecosystem</Description>
         <ApplicationIcon>Tpdkdesign.net-Refresh-Cl-Windows-Download.ico</ApplicationIcon>
         <SignAssembly>False</SignAssembly>
         <RepositoryUrl>https://github.com/jpetays/StartUnityBuild</RepositoryUrl>
         <Authors>Jari Petays</Authors>
+        <Copyright>Jari Petays</Copyright>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
