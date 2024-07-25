@@ -72,12 +72,13 @@ public partial class Form1 : Form
 
     private void CheckUnityEditor()
     {
-        var processes = Process.GetProcessesByName("Unity");
-        if (processes.Length == 0)
+        var processes = Process.GetProcessesByName("Unity").ToList();
+        processes.AddRange(Process.GetProcessesByName("bee_backend").ToList());
+        if (processes.Count == 0)
         {
             return;
         }
-        for (var i = 0; i < processes.Length; ++i)
+        for (var i = 0; i < processes.Count; ++i)
         {
             var process = processes[i];
             var name = process.ProcessName;
@@ -92,8 +93,10 @@ public partial class Form1 : Form
         AddLine("INFO", "-It seems that UNITY Editor (or Bee build backend) is running");
         AddLine("INFO", "-It is better to close them all to avoid any conflicts while building");
         AddLine("INFO", "-If you do not have visible UNITY Editor but still get this error");
-        AddLine("INFO", "-then you have to reboot or manually kill all processes what remains after aborted or abandoned build");
-        AddLine("INFO", "-After that it might be goo to do File->Delete UNITY Library folder to start from clean state");
+        AddLine("INFO",
+            "-then you have to reboot or manually kill all processes what remains after aborted or abandoned build");
+        AddLine("INFO",
+            "-After that it might be goo to do File->Delete UNITY Library folder to start from clean state");
         AddLine("INFO", "");
     }
 
@@ -170,7 +173,46 @@ public partial class Form1 : Form
             "Temp",
             "Obj",
         };
-        FileSystemCommands.DeleteDirectories(unityOutputFolders, ReleaseMenuCommandSync);
+        FileSystemCommands.DeleteDirectories(unityOutputFolders, (success) =>
+        {
+            if (!success)
+            {
+                CheckUnityProcesses();
+            }
+            ReleaseMenuCommandSync();
+        });
+        return;
+
+        void CheckUnityProcesses()
+        {
+            var processes = Process.GetProcesses();
+            var modules = new HashSet<string>();
+            foreach (var process in processes)
+            {
+                string moduleName;
+                try
+                {
+                    moduleName = process.MainModule?.FileName ?? "";
+                    var isUnity = moduleName.Contains(@"\Editor\Data\Tools\") || moduleName.EndsWith("Unity.exe");
+                    if (!isUnity)
+                    {
+                        continue;
+                    }
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+                modules.Add($"{process.ProcessName} | {process.MainWindowTitle} | {moduleName}");
+            }
+            var list = modules.ToList();
+            list.Sort();
+            AddLine("proc", $"-Running processes thing might have open files and needs to be shutdown");
+            foreach (var item in list)
+            {
+                AddLine("proc", $"-{item}");
+            }
+        }
     }
 
     private static void OpenDebugLog()

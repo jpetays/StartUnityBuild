@@ -48,11 +48,12 @@ public static class FileSystemCommands
         }
     }
 
-    public static void DeleteDirectories(List<string> dirs, Action finished)
+    public static void DeleteDirectories(List<string> dirs, Action<bool> finished)
     {
         const string outPrefix = "delete";
         Task.Run(() =>
         {
+            var exitCode = 0;
             var isSuccess = true;
             var deleteCount = 0;
             foreach (var directory in dirs)
@@ -76,6 +77,7 @@ public static class FileSystemCommands
                 catch (Exception x)
                 {
                     Form1.AddLine($">{outPrefix}", $"Directory.Delete failed: {x.GetType().Name} {x.Message}");
+                    exitCode = -1;
                     isSuccess = false;
                     break;
                 }
@@ -84,8 +86,8 @@ public static class FileSystemCommands
             {
                 Form1.AddLine(outPrefix, $"-Everything is deleted already");
             }
-            Form1.AddExitCode(outPrefix, 0, isSuccess, showSuccess: true);
-            finished();
+            Form1.AddExitCode(outPrefix, exitCode, isSuccess, showSuccess: true);
+            finished(isSuccess);
         });
     }
 }
