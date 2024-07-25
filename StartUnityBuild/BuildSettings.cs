@@ -51,11 +51,6 @@ public class BuildSettings(string workingDirectory)
     public List<bool> BuildResult { get; private set; } = [];
 
     /// <summary>
-    /// Git options for push command.
-    /// </summary>
-    public string PushOptions { get; set; } = "";
-
-    /// <summary>
     /// Optional Delivery Track name for file system etc. operations.
     /// </summary>
     public string DeliveryTrack { get; set; } = "";

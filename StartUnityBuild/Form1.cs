@@ -89,8 +89,11 @@ public partial class Form1 : Form
             AddLine("unity", $"+{name} - {process.MainWindowTitle} - {Path.GetFileName(moduleName)}");
         }
         AddLine("INFO", "");
-        AddLine("INFO", "-It seems that UNITY Editor is running");
+        AddLine("INFO", "-It seems that UNITY Editor (or Bee build backend) is running");
         AddLine("INFO", "-It is better to close them all to avoid any conflicts while building");
+        AddLine("INFO", "-If you do not have visible UNITY Editor but still get this error");
+        AddLine("INFO", "-then you have to reboot or manually kill all processes what remains after aborted or abandoned build");
+        AddLine("INFO", "-After that it might be goo to do File->Delete UNITY Library folder to start from clean state");
         AddLine("INFO", "");
     }
 
@@ -233,13 +236,9 @@ public partial class Form1 : Form
                     UpdateProjectInfo(updated ? Color.Green : Color.Red);
                 });
         });
-        if (Args.Instance.IsTesting)
-        {
-            _settings.PushOptions = "--dry-run";
-        }
         SetCaption(gitPushToolStripMenuItem, ++order);
         gitPushToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
-            () => { GitCommands.GitCommitAnPushWithTag(_settings, _settings.PushOptions, ReleaseMenuCommandSync); });
+            () => { GitCommands.GitCommitAndPushWithTag(_settings, ReleaseMenuCommandSync); });
 
         SetCaption(startBuildToolStripMenuItem, ++order);
         startBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Building",

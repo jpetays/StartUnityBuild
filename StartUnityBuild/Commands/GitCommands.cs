@@ -73,7 +73,7 @@ public static class GitCommands
         {
             // Using --tags might be overkill but
             // it should ensure that git push will never fail due to tag conflict with remote.
-            var gitCommand = "pull --rebase=true --tags --no-autostash origin main";
+            const string gitCommand = "pull --rebase=true --tags --no-autostash origin main";
             Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
             var result = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
@@ -82,7 +82,7 @@ public static class GitCommands
         });
     }
 
-    public static void GitCommitAnPushWithTag(BuildSettings settings, string options, Action finished)
+    public static void GitCommitAndPushWithTag(BuildSettings settings, Action finished)
     {
         Task.Run(async () =>
         {
@@ -92,31 +92,36 @@ public static class GitCommands
                 "ProjectSettings/ProjectSettings.asset",
                 BuildInfoUpdater.GetGFitPath(settings.WorkingDirectory, settings.BuildInfoFilename),
             };
-            var getVerb = "commit";
-            var gitCommand = $"""{getVerb} -m "{message}" {string.Join(' ', files)}""";
-            Form1.AddLine($">{getVerb}", $"git {gitCommand}");
-            var result = await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
+            var gitVerb = "commit";
+            var gitCommand = $"""{gitVerb} -m "{message}" {string.Join(' ', files)}""";
+            Form1.AddLine($">{gitVerb}", $"git {gitCommand}");
+            var result = await RunCommand.Execute(gitVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
-            Form1.AddExitCode(getVerb, result, result == 0, showSuccess: false);
+            Form1.AddExitCode(gitVerb, result, result == 0, showSuccess: false);
 
             // Create a lightweight commit tag, --force will 'move' it 'upwards' if it exists already.
-            getVerb = "tag";
+            gitVerb = "tag";
             var bundle = settings.HasProductVersionBundle() ? "" : $"_bundle_{settings.BundleVersion}";
             var track = string.IsNullOrWhiteSpace(settings.DeliveryTrack) ? "" : $"_{settings.DeliveryTrack}";
             var tagName = $"auto_build_{DateTime.Today:yyyy-MM-dd}_version_{settings.ProductVersion}{bundle}{track}"
                 .ToLowerInvariant();
-            gitCommand = $"{getVerb} --force {tagName}";
-            Form1.AddLine($">{getVerb}", $"git {gitCommand}");
-            result = await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
+            gitCommand = $"{gitVerb} --force {tagName}";
+            Form1.AddLine($">{gitVerb}", $"git {gitCommand}");
+            result = await RunCommand.Execute(gitVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
-            Form1.AddExitCode(getVerb, result, result == 0, showSuccess: false);
+            Form1.AddExitCode(gitVerb, result, result == 0, showSuccess: false);
 
-            getVerb = "push";
-            gitCommand = $"{getVerb} {options} --tags origin main";
-            Form1.AddLine($">{getVerb}", $"git {gitCommand}");
-            result = await RunCommand.Execute(getVerb, "git", gitCommand, settings.WorkingDirectory,
+            gitVerb = "push";
+            var options = Args.Instance.IsTesting ? "--dry-run" : "";
+            gitCommand = $"{gitVerb} {options} --tags origin main";
+            Form1.AddLine($">{gitVerb}", $"git {gitCommand}");
+            result = await RunCommand.Execute(gitVerb, "git", gitCommand, settings.WorkingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
-            Form1.AddExitCode(getVerb, result, result == 0, showSuccess: true);
+            Form1.AddExitCode(gitVerb, result, result == 0, showSuccess: true);
+            if (Args.Instance.IsTesting)
+            {
+                Form1.AddLine($"{gitVerb}", $"-You should do 'git reset --hard HEAD~1' to reset git 'working tree'");
+            }
             finished();
         });
     }

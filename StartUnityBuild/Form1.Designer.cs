@@ -63,7 +63,7 @@ partial class Form1
         // 
         // fileToolStripMenuItem
         // 
-        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setProjectFolderToolStripMenuItem, deleteUNITYLibraryFolderToolStripMenuItem, copyOutputToClipboardToolStripMenuItem, openDebugLogToolStripMenuItem, exitToolStripMenuItem });
+        fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setProjectFolderToolStripMenuItem, copyOutputToClipboardToolStripMenuItem, openDebugLogToolStripMenuItem, deleteUNITYLibraryFolderToolStripMenuItem, exitToolStripMenuItem });
         fileToolStripMenuItem.Name = "fileToolStripMenuItem";
         fileToolStripMenuItem.Size = new Size(37, 20);
         fileToolStripMenuItem.Text = "File";
