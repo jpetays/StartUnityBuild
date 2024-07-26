@@ -128,6 +128,11 @@ public static class Files
                     settings.WebGlHostName = tokens[1].Trim();
                     continue;
                 }
+                if (key == "after.webgl.build.history.url")
+                {
+                    settings.WebGlBuildHistoryUrl = tokens[1].Trim();
+                    continue;
+                }
                 if (key == "after.webgl.build.history.json")
                 {
                     settings.WebGlBuildHistoryJson = tokens[1].Trim();

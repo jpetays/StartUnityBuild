@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 using NLog;
@@ -13,42 +14,34 @@ namespace StartUnityBuild.Commands;
 public static class ProjectCommands
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private static readonly Encoding Encoding = new UTF8Encoding(false);
 
     public static void WriteWebGLBuildHistory(BuildSettings settings, bool isSuccess)
     {
         const string outPrefix = "post";
         if (!isSuccess
             || string.IsNullOrWhiteSpace(settings.WebGlBuildHistoryJson)
+            || string.IsNullOrWhiteSpace(settings.WebGlBuildHistoryUrl)
             || !settings.HasPostProcessingFor(BuildName.WebGL))
         {
             Form1.AddLine("ERROR", "Can not do WebGL build history: conditions are not met");
             return;
         }
-        var webGlFolderName = Path.GetFileName(settings.WebGlDistFolderName);
-        if (string.IsNullOrWhiteSpace(webGlFolderName))
-        {
-            Form1.AddLine("ERROR", "Can not do WebGL build history: WebGL Folder Name empty");
-            return;
-        }
         var linkLabel = $"{settings.ProductVersion}";
-        var linkHref = $"{StripEnd(settings.WebGlHostName)}/{StripStart(webGlFolderName)}";
+        var linkHref = settings.WebGlBuildHistoryUrl;
         var releaseNotes = GetReleaseNotesText();
         var buildLogEntryFile = settings.WebGlBuildHistoryJson;
         WriteBuildLogEntry(settings.DeliveryTrack, DateTime.Now, linkLabel, linkHref, releaseNotes, buildLogEntryFile);
         var htmlFile = settings.WebGlBuildHistoryHtml;
         if (File.Exists(htmlFile))
         {
-            var fileInfo = new FileInfo(htmlFile)
-            {
-                LastWriteTime = DateTime.Now
-            };
-            Form1.AddLine(outPrefix, $".touch {fileInfo.LastWriteTime:G} {htmlFile}");
+            var lastWriteTime = DateTime.Now;
+            var builder = new StringBuilder(File.ReadAllText(htmlFile, Encoding));
+            builder.AppendLine().Append($"<!-- {lastWriteTime:G} -->");
+            File.WriteAllText(htmlFile, builder.ToString(), Encoding);
+            Form1.AddLine(outPrefix, $".touch {lastWriteTime:G} {htmlFile}");
         }
         return;
-
-        string StripStart(string path) => path.StartsWith('/') ? path[1..] : path;
-
-        string StripEnd(string path) => path.EndsWith('/') ? path[..^1] : path;
 
         string GetReleaseNotesText()
         {

@@ -12,6 +12,7 @@ public class BuildSettings(string workingDirectory)
     private const string BuildTargetName = "$BUILD_TARGET$";
     private const string UniqueNameName = "$UNIQUE_NAME$";
     private const string DeliveryTrackName = "$TRACK_NAME$";
+    private const string HostNameName = "$HOST_NAME$";
 
     public string WorkingDirectory { get; } = workingDirectory;
 
@@ -96,6 +97,15 @@ public class BuildSettings(string workingDirectory)
     public string WebGlHostName { get; set; } = "";
 
     /// <summary>
+    /// WebGL build history URL for this build.
+    /// </summary>
+    public string WebGlBuildHistoryUrl
+    {
+        get => ExpandUrl(_webGlBuildHistoryUrl);
+        set => _webGlBuildHistoryUrl = value;
+    }
+
+    /// <summary>
     /// WebGL build history book-keeping json filename.
     /// </summary>
     public string WebGlBuildHistoryJson { get; set; } = "";
@@ -174,6 +184,17 @@ public class BuildSettings(string workingDirectory)
         return path;
     }
 
+    private string ExpandUrl(string path)
+    {
+        if (!string.IsNullOrEmpty(WebGlHostName))
+        {
+            path = path.Replace(HostNameName, $"https://{WebGlHostName}");
+        }
+        path = path.Replace(DeliveryTrackName, DeliveryTrack);
+        path = path.Replace(UniqueNameName, BuildSequenceName);
+        return path;
+    }
+
     /// <summary>
     /// Gets cached and lazy-initialized <c>ProductVersion</c> + unique sequence name for this build settings instance
     /// that is suitable to be used for example in file or folder names.
@@ -193,6 +214,7 @@ public class BuildSettings(string workingDirectory)
         }
     }
 
+    private string _webGlBuildHistoryUrl = "";
     private string _webGlDistFolderName = "";
     private string _webGlBuildDirName = "";
     private string _uniqueBuildSequence = "";
