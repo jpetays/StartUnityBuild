@@ -71,12 +71,23 @@ public static class GitCommands
         const string outPrefix = "pull";
         Task.Run(async () =>
         {
-            // Using --tags might be overkill but
-            // it should ensure that git push will never fail due to tag conflict with remote.
-            const string gitCommand = "pull --rebase=true --tags --no-autostash origin main";
+            // First do 'normal' git pull to get files without tags.
+            var gitCommand = "pull --rebase=true --no-tags --no-autostash origin main";
             Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
             var result = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
                 null, Form1.OutputListener, Form1.ExitListener);
+            if (result == 0)
+            {
+                // Then get tags if git pull was ok.
+                gitCommand = "pull --rebase=true --tags --prune --no-autostash origin main";
+                Form1.AddLine($">{outPrefix}", $"git {gitCommand}");
+                var result2 = await RunCommand.Execute(outPrefix, "git", gitCommand, workingDirectory,
+                    null, Form1.OutputListener, Form1.ExitListener);
+                if (result2 != 0)
+                {
+                    Form1.AddLine($"{outPrefix}", $"-Failed to pull tags, everything else should be ok");
+                }
+            }
             Form1.AddExitCode(outPrefix, result, result == 0, showSuccess: true);
             finished();
         });
