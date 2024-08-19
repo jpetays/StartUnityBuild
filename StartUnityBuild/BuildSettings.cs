@@ -188,7 +188,7 @@ public class BuildSettings(string workingDirectory)
     {
         if (!string.IsNullOrEmpty(WebGlHostName))
         {
-            path = path.Replace(HostNameName, $"https://{WebGlHostName}");
+            path = path.Replace(HostNameName, WebGlHostName);
         }
         path = path.Replace(DeliveryTrackName, DeliveryTrack);
         path = path.Replace(UniqueNameName, BuildSequenceName);
