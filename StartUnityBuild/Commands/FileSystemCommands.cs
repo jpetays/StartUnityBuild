@@ -27,8 +27,13 @@ public static class FileSystemCommands
             var result = await RunCommand.Execute(outPrefix, $"{copyCommand}.exe", copyOptions, workingDirectory,
                 null, OutputListenerFilter, Form1.ExitListener);
             var isSuccess = result is >= 0 and <= 1;
-            if (!isSuccess)
+            if (isSuccess)
             {
+                Form1.AddLine($">{outPrefix}", $"copy from {Files.Quoted(sourceDir)} to {Files.Quoted(targetDir)}");
+            }
+            else
+            {
+                Form1.AddLine(outPrefix, $"copy from {Files.Quoted(sourceDir)} to {Files.Quoted(targetDir)}");
                 Form1.AddLine(outPrefix,
                     "-Robocopy reported that copy was not perfect, check the output for possible problems");
             }

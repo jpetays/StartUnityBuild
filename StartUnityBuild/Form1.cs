@@ -507,6 +507,7 @@ public partial class Form1 : Form
             AddLine(".file", $"webgl host {_settings.WebGlHostName}");
             AddLine(".file", $"webgl html {_settings.WebGlBuildHistoryHtml}");
             AddLine(".file", $"webgl json {_settings.WebGlBuildHistoryJson}");
+            AddLine(".file", $"webgl href {_settings.WebGlBuildHistoryUrl}");
             AddLine(".file", $"webgl build {_settings.WebGlBuildDirName}");
             AddLine(".file", $"webgl dist {_settings.WebGlDistFolderName}");
         }
