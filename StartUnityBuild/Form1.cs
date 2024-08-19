@@ -96,7 +96,7 @@ public partial class Form1 : Form
         AddLine("INFO",
             "-then you have to reboot or manually kill all processes what remains after aborted or abandoned build");
         AddLine("INFO",
-            "-After that it might be goo to do File->Delete UNITY Library folder to start from clean state");
+            "-After that it might be good to do File->Delete UNITY Library folder to start from clean state");
         AddLine("INFO", "");
     }
 
