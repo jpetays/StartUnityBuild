@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using NLog;
 using Prg.Util;
 using PrgBuild;
+using PrgFrame.Util;
 
 namespace StartUnityBuild.Commands;
 
@@ -166,7 +167,7 @@ public static class ProjectCommands
         });
     }
 
-    public static bool CopyFiles(BuildSettings settings)
+    public static bool CopyFilesToProject(BuildSettings settings)
     {
         const string outPrefix = "copy";
         try
@@ -174,8 +175,34 @@ public static class ProjectCommands
             var copyFiles = Files.GetCopyFiles(settings);
             foreach (var tuple in copyFiles)
             {
-                Form1.AddLine($">{outPrefix}", $"copy {tuple.Item1} to {tuple.Item2}");
-                File.Copy(tuple.Item1, tuple.Item2, overwrite: true);
+                var sourceFile = tuple.Item1;
+                var targetFile = tuple.Item2;
+                Form1.AddLine($">{outPrefix}", $"copy {sourceFile} to {targetFile}");
+                File.Copy(sourceFile, targetFile, overwrite: true);
+            }
+            return true;
+        }
+        catch (Exception x)
+        {
+            Form1.AddLine("ERROR", $"Copy failed: {x.GetType().Name} {x.Message}");
+            Logger.Trace(x.StackTrace);
+            return false;
+        }
+    }
+
+    public static bool CopyFilesToSecretKeys(BuildSettings settings)
+    {
+        const string outPrefix = "copy";
+        try
+        {
+            var copyFiles = Files.GetCopyFiles(settings);
+            foreach (var tuple in copyFiles)
+            {
+                var sourceFile = tuple.Item1;
+                var targetFile = tuple.Item2;
+                Form1.AddLine($">{outPrefix}", $"copy {sourceFile} to {targetFile}");
+                PathUtil.CreateDirectoryForFile(targetFile);
+                File.Copy(sourceFile, targetFile, overwrite: true);
             }
             return true;
         }

@@ -138,12 +138,22 @@ public partial class Form1 : Form
 
     private void SetupFileMenuCommands()
     {
+        reloadProjectToolStripMenuItem.Click += (_, _) => { ReloadProject(); };
         setProjectFolderToolStripMenuItem.Click += (_, _) => { SetProjectFolder(); };
         deleteUNITYLibraryFolderToolStripMenuItem.Click +=
             (_, _) => ExecuteMenuCommandSync("Executing", DeleteUnityLibraryFolder);
+        copyProjectFilesToSecretKeysFolderToolStripMenuItem.Click +=
+            (_, _) => ExecuteMenuCommandSync("Executing", CopyProjectFilesToSecretKeysFolder);
         openDebugLogToolStripMenuItem.Click += (_, _) => { OpenDebugLog(); };
         copyOutputToClipboardToolStripMenuItem.Click += (_, _) => CopyLines();
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
+    }
+
+    private void ReloadProject()
+    {
+        ClearLines();
+        _settings = new BuildSettings(Directory.GetCurrentDirectory());
+        LoadProject();
     }
 
     private void SetProjectFolder()
@@ -212,6 +222,15 @@ public partial class Form1 : Form
             {
                 AddLine("proc", $"-{item}");
             }
+        }
+    }
+
+    private void CopyProjectFilesToSecretKeysFolder()
+    {
+        if (!ProjectCommands.CopyFilesToSecretKeys(_settings))
+        {
+            AddLine("ERROR", $"Unable copy all files");
+            ReleaseMenuCommandSync();
         }
     }
 
@@ -289,7 +308,7 @@ public partial class Form1 : Form
                 // (1) Copy required (secret) files for build.
                 // (2) Build the project.
                 // (3) Revert copied and/or changed files.
-                if (!ProjectCommands.CopyFiles(_settings))
+                if (!ProjectCommands.CopyFilesToProject(_settings))
                 {
                     AddLine("ERROR", $"Unable to start build: can not copy required 'build project' files");
                     ReleaseMenuCommandSync();
