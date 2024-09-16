@@ -1,11 +1,38 @@
-﻿namespace PrgFrame
+﻿using System;
+using System.Diagnostics;
+using System.Reflection;
+
+namespace PrgFrame
 {
     public static class Info
     {
-        // When you change SemVer remember to edit PrgFrame.csproj to have same data.
-        // For compatibility reasons we do not want to read it from the assembly using
-        // System.Diagnostics and System.Reflection.
-        public static string SemVer => "1.0.2";
+        public static string SemVer
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_semVer))
+                {
+                    _semVer = GetVersion();
+                }
+                return _semVer;
+            }
+        }
+
         public static string Version => $"{nameof(PrgFrame)} {SemVer}";
+        private static string _semVer = "";
+
+        private static string GetVersion()
+        {
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+                return fileVersionInfo.ProductVersion.Split('+')[0];
+            }
+            catch (Exception)
+            {
+                return "0.0.0";
+            }
+        }
     }
 }

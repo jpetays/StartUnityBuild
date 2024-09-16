@@ -11,6 +11,9 @@ using UnityEngine;
 
 namespace PrgBuild
 {
+    /// <summary>
+    /// Entry point for UNITY commandline builds.
+    /// </summary>
     public static class Build
     {
         /// <summary>
@@ -30,7 +33,7 @@ namespace PrgBuild
         /// </returns>
         public static void BuildPlayer()
         {
-            Util.Trace($"buildSystem: {Info.Version}");
+            Util.Trace($"buildSystem: {Info.Version} ({PrgFrame.Info.SemVer})");
             Util.Trace($"unityVersion: {Application.unityVersion}");
             Util.Trace($"productName: {Application.productName}");
             Util.Trace($"productVersion: {Application.version}");
