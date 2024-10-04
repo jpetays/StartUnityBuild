@@ -41,6 +41,10 @@ public static class ProjectCommands
             File.WriteAllText(htmlFile, builder.ToString(), Encoding);
             Form1.AddLine(outPrefix, $".touch {lastWriteTime:G} {htmlFile}");
         }
+        else
+        {
+            Form1.AddLine(outPrefix, $"-touch FILE NOT FOUND: {htmlFile}");
+        }
         return;
 
         string GetReleaseNotesText()
@@ -228,6 +232,12 @@ public static class ProjectCommands
             Notes = releaseNotes
         });
         Form1.AddLine($".update", $"Build history log entries #{entries.List.Count} in {jsonFilename}");
+        if (!File.Exists(jsonFilename))
+        {
+            var directory = Path.GetDirectoryName(jsonFilename) ?? ".";
+            Form1.AddLine($".update", $"Create directory {directory}");
+            Directory.CreateDirectory(directory);
+        }
         Serializer.SaveStateJson(entries, jsonFilename, Formatting.Indented);
     }
 
