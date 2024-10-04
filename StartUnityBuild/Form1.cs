@@ -149,9 +149,12 @@ public partial class Form1 : Form
         exitToolStripMenuItem.Click += (_, _) => Application.Exit();
     }
 
-    private void ReloadProject()
+    private void ReloadProject(bool clear = true)
     {
-        ClearLines();
+        if (clear)
+        {
+            ClearLines();
+        }
         _settings = new BuildSettings(Directory.GetCurrentDirectory());
         LoadProject();
     }
@@ -285,7 +288,18 @@ public partial class Form1 : Form
 
         SetCaption(gitPullToolStripMenuItem, ++order);
         gitPullToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Executing",
-            () => { GitCommands.GitPull(_settings.WorkingDirectory, ReleaseMenuCommandSync); });
+            () =>
+            {
+                GitCommands.GitPull(_settings.WorkingDirectory, () =>
+                {
+                    // Wait for git command to finish its output.
+                    Thread.Sleep(2000);
+                    // Reload project - if might have been changed!
+                    ReloadProject(clear: false);
+                    AddExitCode("Reload", 0, true, showSuccess: true);
+                    ReleaseMenuCommandSync();
+                });
+            });
 
         SetCaption(updateBuildToolStripMenuItem, ++order);
         updateBuildToolStripMenuItem.Click += (_, _) => ExecuteMenuCommandSync("Updating", () =>
@@ -365,6 +379,11 @@ public partial class Form1 : Form
 
     private void UpdateProjectInfo(Color color)
     {
+        if (InvokeRequired)
+        {
+            Invoke(() => UpdateProjectInfo(color));
+            return;
+        }
         projectInfoToolStripMenuItem.Text = $"Version {_settings.ProductVersion} Bundle {_settings.BundleVersion}";
         projectInfoToolStripMenuItem.ForeColor = color;
     }
