@@ -8,8 +8,6 @@ namespace StartUnityBuild.Commands;
 /// </summary>
 public static class BuildCommands
 {
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
     /// <summary>
     /// Calls UNITY side "build command" whose output is:<br />
     /// - final binary if successful in output folder
@@ -94,13 +92,13 @@ public static class BuildCommands
                 {
                     if (File.Exists(buildLogFile))
                     {
-                        Logger.Trace($"File.Move({buildLogFile}, {prevLogFile}, overwrite: true);");
+                        Form1.AddLine($".file", $"Move from {buildLogFile} to {prevLogFile}");
                         File.Move(buildLogFile, prevLogFile, overwrite: true);
                     }
-                    Logger.Trace($"File.Truncate({Path.GetFullPath(buildLogFile)});");
+                    Form1.AddLine($".file", $"Truncate {Path.GetFullPath(buildLogFile)}");
                     File.WriteAllText(buildLogFile, "");
 
-                    Logger.Trace($"File.Truncate({Path.GetFullPath(outputLogFile)});");
+                    Form1.AddLine($".file", $"Truncate {Path.GetFullPath(outputLogFile)}");
                     File.WriteAllText(outputLogFile, "");
                     if (!File.Exists(outputLogMetafile))
                     {
@@ -114,9 +112,9 @@ public static class BuildCommands
                     {
                         return;
                     }
-                    Logger.Trace($"File.Copy({buildLogFile}, {outputLogFile}, overwrite: true);");
                     try
                     {
+                        Form1.AddLine($".file", $"Copy from {buildLogFile} to {outputLogFile}");
                         File.Copy(buildLogFile, outputLogFile, overwrite: true);
                     }
                     catch (Exception x)
