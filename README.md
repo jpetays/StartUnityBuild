@@ -53,9 +53,15 @@ Optionally it can be set from `File->Set Project Folder` menu that makes it glob
 
 #### Android
 
-The build system supports only [The Android App Bundle format](https://developer.android.com/guide/app-bundle/app-bundle-format) (.aab)
-that you can upload to Google Play.  
-We set `PlayerSettings.Android.minifyRelease` = **true** and `PlayerSettings.Android.useCustomKeystore` = **true** _(for signing)_.
+The build system supports both Android [App Bundle](https://developer.android.com/guide/app-bundle/app-bundle-format) (.aab)
+and [APK](https://en.wikipedia.org/wiki/Apk_(file_format)) (.apk) formats.  
+This setting is set in UNITY `Build Settings` dialog.  
+Note that you can only upload `App Bundle`s to Google Play.
+
+For `App Bundle` we set `PlayerSettings.Android.minifyRelease` = **true** and `PlayerSettings.Android.useCustomKeystore` = **true** _(for signing)_
+as these can not be used for local testing, only upload to Google Play.
+
+Old `APK` format can use any settings as it is intended for local testing only.
 
 `.\etc\secretKeys\AndroidOptions.txt` for Android production build config.
 

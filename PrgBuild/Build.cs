@@ -137,11 +137,17 @@ namespace PrgBuild
                 case BuildTarget.Android:
                 {
                     // Android settings we enforce to build App Bundle.
-                    EditorUserBuildSettings.buildAppBundle = true;
-                    PlayerSettings.Android.minifyRelease = true;
-                    PlayerSettings.Android.useCustomKeystore = true;
-                    Util.Trace($"Android.minifyRelease: {PlayerSettings.Android.minifyRelease}");
-                    Util.Trace($"Android.useCustomKeystore: {PlayerSettings.Android.useCustomKeystore}");
+                    Util.Trace($"buildAppBundle: {EditorUserBuildSettings.buildAppBundle}");
+                    if (EditorUserBuildSettings.buildAppBundle)
+                    {
+                        // Force signing.
+                        PlayerSettings.Android.useCustomKeystore = true;
+                        // Force minify.
+                        PlayerSettings.Android.minifyRelease = true;
+
+                        Util.Trace($"Android.useCustomKeystore: {PlayerSettings.Android.useCustomKeystore}");
+                        Util.Trace($"Android.minifyRelease: {PlayerSettings.Android.minifyRelease}");
+                    }
                     if (PlayerSettings.Android.useCustomKeystore)
                     {
                         if (config.Android == null)
@@ -320,8 +326,12 @@ namespace PrgBuild
                     return folder;
                 }
                 var appName = PathUtil.SanitizePath($"{Application.productName}_{Application.version}");
-                var appExtension = BuildTarget == BuildTarget.Android ? "aab" : "exe";
-                return Path.Combine(folder, $"{appName}.{appExtension}");
+                var appExtension = BuildTarget == BuildTarget.Android ? AndroidExtension() : DesktopExtension();
+                return Path.Combine(folder, $"{appName}{appExtension}");
+
+                string AndroidExtension() => EditorUserBuildSettings.buildAppBundle ? ".aab" : ".apk";
+
+                string DesktopExtension() => BuildTarget == BuildTarget.StandaloneWindows64 ? ".exe" : ".game";
             }
 
             private AndroidOptions GetAndroidOptions()
