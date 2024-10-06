@@ -16,8 +16,9 @@ public static class BuildCommands
     /// </summary>
     public static void BuildPlayer(BuildSettings settings, Action<bool> finished)
     {
-        // For quick testing use: Editor.Demo.BuildTest.TestBuild
-        const string executeMethod = "PrgBuild.Build.BuildPlayer";
+        // For quick testing use: Editor.Demo.BuildTest.TestBuild (in DemoProject)
+        const string executeMethod =
+            $"{nameof(PrgBuild)}.{nameof(PrgBuild.Build)}.{nameof(PrgBuild.Build.BuildPlayer)}";
         const int successReturn = 0;
         const int buildFailureReturn = 1;
         const int startFailureReturn = 2;
@@ -56,14 +57,18 @@ public static class BuildCommands
                 var outputLogFile = @$".\Assets\BuildReports\{buildTarget}.build.log.txt";
                 var outputLogMetafile = $"{outputLogFile}.meta";
                 PrepareFilesForBuild();
+                // Mandatory.
                 var arguments =
                     $" -buildTarget {buildTarget} -projectPath {Files.Quoted(projectPath)}" +
                     $" -logFile {Files.Quoted(buildLogFile)}" +
-                    $" -executeMethod {executeMethod} -quit -batchmode -semVer {PrgBuild.Info.SemVer}";
+                    $" -executeMethod {executeMethod} -quit -batchmode";
+                // Android.
                 if (buildTarget == BuildName.Android)
                 {
-                    arguments = $"{arguments} -android {settings.AndroidSettingsFileName}";
+                    arguments = $"{arguments} -androidFile {settings.AndroidSettingsFileName}";
                 }
+                // callerSemVer.
+                arguments = $"{arguments} -callerSemVer {PrgBuild.Info.SemVer}";
                 Form1.AddLine($".{outPrefix}", $"executable: {executable}");
                 Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
                 var result = await RunCommand.Execute(outPrefix, executable, arguments,
@@ -95,9 +100,11 @@ public static class BuildCommands
                         Form1.AddLine($".file", $"Move from {buildLogFile} to {prevLogFile}");
                         File.Move(buildLogFile, prevLogFile, overwrite: true);
                     }
+                    // This is UNITY Debug.Log output file.
                     Form1.AddLine($".file", $"Truncate {Path.GetFullPath(buildLogFile)}");
                     File.WriteAllText(buildLogFile, "");
 
+                    // It is copied here after build for Build Report analyzers.
                     Form1.AddLine($".file", $"Truncate {Path.GetFullPath(outputLogFile)}");
                     File.WriteAllText(outputLogFile, "");
                     if (!File.Exists(outputLogMetafile))

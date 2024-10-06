@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>disable</Nullable>
     <RootNamespace>PrgBuild</RootNamespace>
-    <Version>$(VersionPrefix)1.0.6</Version>
+    <Version>$(VersionPrefix)1.1.0</Version>
     <Company>$(Authors)</Company>
     <Authors>Jari Petays</Authors>
     <Description>Prg Build System for UNITY</Description>

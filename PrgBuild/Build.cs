@@ -24,7 +24,9 @@ namespace PrgBuild
         /// -buildTarget<br />
         /// -projectPath<br />
         /// -logFile<br />
-        /// [-android androidFilename]
+        /// Optional proprietary arguments:<br />
+        /// -androidFile androidFilename
+        /// -callerSemVer callerSemVer
         /// </summary>
         /// <returns>0 on success<br />
         /// 1 on build failed<br />
@@ -55,8 +57,8 @@ namespace PrgBuild
             var isValid = SemVer.Compare(options.CallerSemVer, Info.SemVer) >= 0;
             if (!isValid)
             {
-                Util.Trace(
-                    $"Caller build system version {options.CallerSemVer} must be equal or newer that App build system version {Info.SemVer}");
+                Util.Trace($"Caller 'build system' version {options.CallerSemVer} must be equal or newer than " +
+                           $"Application to build (our 'build system') version {Info.SemVer}");
                 EditorApplication.Exit(2);
                 return;
             }
@@ -192,7 +194,7 @@ namespace PrgBuild
             Util.Trace($"buildTarget: {options.BuildTargetName}");
             Util.Trace($"projectPath: {options.ProjectPath}");
             Util.Trace($"logFile: {options.LogFile}");
-            Util.Trace($"semVer: {options.CallerSemVer}");
+            Util.Trace($"callerSemVer: {options.CallerSemVer}");
             var defs = PlayerSettings.GetScriptingDefineSymbols(options.NamedBuildTarget)
                 .Split(';')
                 .ToList();
@@ -283,11 +285,11 @@ namespace PrgBuild
                             enumerator.MoveNext();
                             LogFile = enumerator.Current ?? "";
                             break;
-                        case "-android":
+                        case "-androidFile":
                             enumerator.MoveNext();
                             AndroidFile = enumerator.Current ?? "";
                             break;
-                        case "-semVer":
+                        case "-callerSemVer":
                             enumerator.MoveNext();
                             CallerSemVer = enumerator.Current ?? "";
                             break;
@@ -336,14 +338,23 @@ namespace PrgBuild
 
             private AndroidOptions GetAndroidOptions()
             {
-                if (!File.Exists(AndroidFile))
-                {
-                    throw new UnityException($"AndroidFile not found: {AndroidFile}");
-                }
                 var keyaliasName = "";
                 var keystoreName = "";
                 var keystorePassword = "";
                 var aliasPassword = "";
+                if (!File.Exists(AndroidFile))
+                {
+                    if (!PlayerSettings.Android.useCustomKeystore)
+                    {
+                        // Slip signing.
+                        return new AndroidOptions(keyaliasName, keystoreName, keystorePassword, aliasPassword);
+                    }
+                    if (string.IsNullOrWhiteSpace(AndroidFile))
+                    {
+                        throw new UnityException($"-androidFile not given in command line");
+                    }
+                    throw new UnityException($"-androidFile not found: {AndroidFile}");
+                }
                 foreach (var line in File.ReadAllLines(AndroidFile)
                              .Where(x => !(string.IsNullOrEmpty(x) || x.StartsWith('#')) && x.Contains('=')))
                 {
