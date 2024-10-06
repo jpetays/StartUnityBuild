@@ -1,4 +1,4 @@
-using NLog;
+using PrgBuild;
 using PrgFrame.Util;
 
 namespace StartUnityBuild.Commands;
@@ -18,7 +18,7 @@ public static class BuildCommands
     {
         // For quick testing use: Editor.Demo.BuildTest.TestBuild (in DemoProject)
         const string executeMethod =
-            $"{nameof(PrgBuild)}.{nameof(PrgBuild.Build)}.{nameof(PrgBuild.Build.BuildPlayer)}";
+            $"{nameof(PrgBuild)}.{nameof(Build)}.{nameof(Build.BuildPlayer)}";
         const int successReturn = 0;
         const int buildFailureReturn = 1;
         const int startFailureReturn = 2;
@@ -68,7 +68,7 @@ public static class BuildCommands
                     arguments = $"{arguments} -androidFile {settings.AndroidSettingsFileName}";
                 }
                 // callerSemVer.
-                arguments = $"{arguments} -callerSemVer {PrgBuild.Info.SemVer}";
+                arguments = $"{arguments} -callerSemVer {Info.SemVer}";
                 Form1.AddLine($".{outPrefix}", $"executable: {executable}");
                 Form1.AddLine($".{outPrefix}", $"arguments: {arguments}");
                 var result = await RunCommand.Execute(outPrefix, executable, arguments,
