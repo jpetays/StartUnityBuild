@@ -17,6 +17,11 @@ public class BuildSettings(string workingDirectory)
     public string WorkingDirectory { get; } = workingDirectory;
 
     /// <summary>
+    /// Build env file version.
+    /// </summary>
+    public string BuildEnvVer { get; set; } = "";
+
+    /// <summary>
     /// ProductName from ProjectSettings.asset.
     /// </summary>
     public string ProductName { get; set; } = "";

@@ -500,6 +500,8 @@ public partial class Form1 : Form
         _settings.BundleVersion = bundleVersion;
         _settings.IsMuteOtherAudioSources = muteOtherAudioSources;
         Files.LoadAutoBuildSettings(_settings);
+        AddLine(".env.ver", $"{_settings.BuildEnvVer}");
+        AddLine("Product", $"{_settings.ProductName}");
         var versionType = SemVer.GetVersionType(_settings.ProductVersion);
         AddLine("Product", $"{_settings.ProductName}");
         AddLine("Version", $"{_settings.ProductVersion} ({versionType})");

@@ -82,6 +82,7 @@ public static class Files
     {
         var path = GetAutoBuildFileName(settings.WorkingDirectory);
         Form1.AddLine(".file", $"{path}");
+        settings.BuildEnvVer = "";
         settings.BuildTargets.Clear();
         settings.CopyFilesBefore.Clear();
         settings.RevertFilesAfter.Clear();
@@ -91,6 +92,11 @@ public static class Files
             var tokens = line.Split('=', StringSplitOptions.RemoveEmptyEntries);
             var key = tokens[0].Trim();
             var value = tokens[1].Trim();
+            if (key == "build.env.ver")
+            {
+                settings.BuildEnvVer = tokens[1].Trim();
+                continue;
+            }
             if (key == "deliveryTrack")
             {
                 settings.DeliveryTrack = tokens[1].Trim();
